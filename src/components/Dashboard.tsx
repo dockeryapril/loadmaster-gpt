@@ -130,7 +130,7 @@ export function Dashboard({ loads, onAddLoad }: DashboardProps) {
 
       {/* Recent Loads */}
       {recentLoads.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-3 mb-8">
           <h3 className="text-lg font-semibold">Recent Loads</h3>
           <div className="space-y-2">
             {recentLoads.map((load) => (

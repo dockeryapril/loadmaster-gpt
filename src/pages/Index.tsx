@@ -220,7 +220,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-4 py-6 pb-28">
+      <div className="max-w-md mx-auto px-4 py-6 pb-36">
         {renderHeader()}
         {renderContent()}
       </div>
