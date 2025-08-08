@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, History, Calculator } from 'lucide-react';
+import { ArrowLeft, History, Calculator, LogOut } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useAuth } from '@/hooks/useAuth';
 import { Dashboard } from '@/components/Dashboard';
 import { LoadCalculator } from '@/components/LoadCalculator';
 import { LoadCard } from '@/components/LoadCard';
@@ -15,6 +16,20 @@ const Index = () => {
   const [loads, setLoads] = useLocalStorage<Load[]>('loadmaster-loads', []);
   const [editingLoad, setEditingLoad] = useState<Load | null>(null);
   const { toast } = useToast();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      window.location.href = '/auth';
+    }
+  };
 
   const handleSaveLoad = (loadData: Omit<Load, 'id' | 'createdAt'>) => {
     if (editingLoad) {
@@ -61,7 +76,21 @@ const Index = () => {
   };
 
   const renderHeader = () => {
-    if (currentView === 'dashboard') return null;
+    if (currentView === 'dashboard') {
+      return (
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">LoadMaster</h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="p-2"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
+      );
+    }
 
     return (
       <div className="flex items-center gap-4 mb-6">
