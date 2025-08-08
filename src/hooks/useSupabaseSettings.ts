@@ -35,6 +35,7 @@ export function useSupabaseSettings() {
           },
           weightLimit: Number(data.weight_limit),
           preferredLanes: data.preferred_lanes || [],
+          enableFuelCostTracking: Boolean(data.enable_fuel_cost_tracking),
         };
         setSettings(userSettings);
       } else {
@@ -70,6 +71,7 @@ export function useSupabaseSettings() {
           rpm_threshold_fair: newSettings.rpmThresholds.fair,
           weight_limit: newSettings.weightLimit,
           preferred_lanes: newSettings.preferredLanes,
+          enable_fuel_cost_tracking: newSettings.enableFuelCostTracking,
         }, {
           onConflict: 'user_id'
         });

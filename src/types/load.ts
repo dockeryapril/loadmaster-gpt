@@ -27,6 +27,7 @@ export interface UserSettings {
   };
   weightLimit: number; // in pounds
   preferredLanes: string[];
+  enableFuelCostTracking: boolean;
 }
 
 export interface LoadCalculationResult {
@@ -108,5 +109,6 @@ export const defaultUserSettings: UserSettings = {
     fair: 1.5
   },
   weightLimit: 80000,
-  preferredLanes: []
+  preferredLanes: [],
+  enableFuelCostTracking: false
 };

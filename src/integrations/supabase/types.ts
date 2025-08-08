@@ -80,6 +80,7 @@ export type Database = {
       user_settings: {
         Row: {
           created_at: string
+          enable_fuel_cost_tracking: boolean
           fuel_price: number
           id: string
           mpg: number
@@ -93,6 +94,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          enable_fuel_cost_tracking?: boolean
           fuel_price?: number
           id?: string
           mpg?: number
@@ -106,6 +108,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          enable_fuel_cost_tracking?: boolean
           fuel_price?: number
           id?: string
           mpg?: number

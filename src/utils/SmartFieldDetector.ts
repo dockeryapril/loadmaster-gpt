@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export interface DetectedField {
-  field: 'miles' | 'rate' | 'origin' | 'destination' | 'deadhead' | 'weight' | 'fsc' | 'tolls';
+  field: 'miles' | 'rate' | 'origin' | 'destination' | 'deadhead' | 'weight' | 'fsc' | 'tolls' | 'fuelCost';
   value: string;
   confidence: 'high' | 'medium' | 'low';
   position?: { start: number; end: number };
@@ -18,7 +18,7 @@ export class SmartFieldDetector {
   private static readonly HIGH_CONFIDENCE_THRESHOLD = 0.8;
   private static readonly MEDIUM_CONFIDENCE_THRESHOLD = 0.5;
 
-  static async detectFields(ocrText: string): Promise<FieldDetectionResult> {
+  static async detectFields(ocrText: string, enableFuelCostTracking: boolean = false): Promise<FieldDetectionResult> {
     const startTime = performance.now();
     
     try {
@@ -32,7 +32,7 @@ export class SmartFieldDetector {
       - deadhead (deadhead miles if mentioned)
       - weight (cargo weight in lbs)
       - fsc (fuel surcharge)
-      - tolls (toll costs)
+      - tolls (toll costs)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost if enabled)' : ''}
       
       Return ONLY a JSON object in this exact format:
       {
@@ -72,8 +72,10 @@ export class SmartFieldDetector {
         return this.fallbackDetection(ocrText, startTime);
       }
 
-      // Validate and clean up detected fields
-      const validatedFields = this.validateFields(parsedFields);
+      // Validate and clean up detected fields, filter out fuel cost if disabled
+      const validatedFields = this.validateFields(parsedFields).filter(field => 
+        enableFuelCostTracking || field.field !== 'fuelCost'
+      );
       const overallConfidence = this.calculateOverallConfidence(validatedFields);
       
       const processingTime = performance.now() - startTime;

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Settings as SettingsIcon, Save, RotateCcw } from 'lucide-react';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { defaultUserSettings } from '@/types/load';
@@ -22,6 +23,7 @@ export function Settings({ onClose }: SettingsProps) {
   const [goodRpm, setGoodRpm] = useState(settings.rpmThresholds.good.toString());
   const [fairRpm, setFairRpm] = useState(settings.rpmThresholds.fair.toString());
   const [weightLimit, setWeightLimit] = useState(settings.weightLimit.toString());
+  const [enableFuelCostTracking, setEnableFuelCostTracking] = useState(settings.enableFuelCostTracking);
 
   const handleSave = async () => {
     const newSettings = {
@@ -34,6 +36,7 @@ export function Settings({ onClose }: SettingsProps) {
         fair: parseFloat(fairRpm) || defaultUserSettings.rpmThresholds.fair,
       },
       weightLimit: parseFloat(weightLimit) || defaultUserSettings.weightLimit,
+      enableFuelCostTracking,
     };
     
     await updateSettings(newSettings);
@@ -48,6 +51,7 @@ export function Settings({ onClose }: SettingsProps) {
     setGoodRpm(defaultUserSettings.rpmThresholds.good.toString());
     setFairRpm(defaultUserSettings.rpmThresholds.fair.toString());
     setWeightLimit(defaultUserSettings.weightLimit.toString());
+    setEnableFuelCostTracking(defaultUserSettings.enableFuelCostTracking);
   };
 
   return (
@@ -154,6 +158,24 @@ export function Settings({ onClose }: SettingsProps) {
             <div className="text-sm text-muted-foreground">
               Loads above this weight will be flagged as overweight.
             </div>
+          </div>
+        </div>
+
+        {/* Fuel Cost Tracking */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Fuel Cost Tracking</h3>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="enableFuelCostTracking">Enable Fuel Cost Tracking</Label>
+              <div className="text-sm text-muted-foreground">
+                Track fuel costs in your load calculations. Can be enabled later if needed.
+              </div>
+            </div>
+            <Switch
+              id="enableFuelCostTracking"
+              checked={enableFuelCostTracking}
+              onCheckedChange={setEnableFuelCostTracking}
+            />
           </div>
         </div>
 

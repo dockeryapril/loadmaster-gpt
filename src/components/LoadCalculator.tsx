@@ -42,7 +42,7 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
     const fscNum = parseFloat(fsc) || 0;
     const tollsNum = parseFloat(tolls) || 0;
     const deadheadNum = parseFloat(deadheadMiles) || 0;
-    const fuelCostNum = parseFloat(fuelCost) || 0;
+    const fuelCostNum = settings.enableFuelCostTracking ? (parseFloat(fuelCost) || 0) : 0;
     const weightNum = parseFloat(weight) || 0;
 
     const totalMiles = milesNum + deadheadNum;
@@ -121,7 +121,7 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
       tolls: parseFloat(tolls) || undefined,
       weight: parseFloat(weight) || undefined,
       deadheadMiles: parseFloat(deadheadMiles) || undefined,
-      fuelCost: parseFloat(fuelCost) || undefined,
+      fuelCost: settings.enableFuelCostTracking ? (parseFloat(fuelCost) || undefined) : undefined,
       rpm: calculation.rpm,
       profit: calculation.profit,
       quality: calculation.quality,
@@ -176,6 +176,11 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
         case 'tolls':
           setTolls(value);
           break;
+        case 'fuelCost':
+          if (settings.enableFuelCostTracking) {
+            setFuelCost(value);
+          }
+          break;
       }
     });
     
@@ -198,6 +203,7 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
             onFieldsDetected={handleFieldsDetected}
             isProcessing={isProcessing}
             setIsProcessing={setIsProcessing}
+            enableFuelCostTracking={settings.enableFuelCostTracking}
           />
         )}
       
@@ -320,17 +326,19 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="fuelCost">Fuel Cost ($)</Label>
-              <Input
-                id="fuelCost"
-                type="number"
-                step="0.01"
-                value={fuelCost}
-                onChange={(e) => setFuelCost(e.target.value)}
-                placeholder="350.00"
-              />
-            </div>
+            {settings.enableFuelCostTracking && (
+              <div className="space-y-2">
+                <Label htmlFor="fuelCost">Fuel Cost ($)</Label>
+                <Input
+                  id="fuelCost"
+                  type="number"
+                  step="0.01"
+                  value={fuelCost}
+                  onChange={(e) => setFuelCost(e.target.value)}
+                  placeholder="350.00"
+                />
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>

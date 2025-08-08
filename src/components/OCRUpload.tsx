@@ -13,9 +13,10 @@ interface OCRUploadProps {
   onFieldsDetected?: (result: FieldDetectionResult) => void;
   isProcessing: boolean;
   setIsProcessing: (processing: boolean) => void;
+  enableFuelCostTracking?: boolean;
 }
 
-export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, setIsProcessing }: OCRUploadProps) {
+export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, setIsProcessing, enableFuelCostTracking = false }: OCRUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -58,7 +59,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
           description: "Using AI to detect load information.",
         });
 
-        const detectionResult = await SmartFieldDetector.detectFields(text);
+        const detectionResult = await SmartFieldDetector.detectFields(text, enableFuelCostTracking);
         
         // Apply learned corrections
         detectionResult.detectedFields = SmartFieldDetector.applyLearnedCorrections(
