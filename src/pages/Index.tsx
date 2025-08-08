@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, History, Calculator, LogOut } from 'lucide-react';
 import { Load } from '@/types/load';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSupabaseLoads } from '@/hooks/useSupabaseLoads';
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { Dashboard } from '@/components/Dashboard';
 import { LoadCalculator } from '@/components/LoadCalculator';
 import { LoadCard } from '@/components/LoadCard';
@@ -13,61 +14,34 @@ type View = 'dashboard' | 'calculator' | 'history';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
-  const [loads, setLoads] = useLocalStorage<Load[]>('loadmaster-loads', []);
   const [editingLoad, setEditingLoad] = useState<Load | null>(null);
   const { toast } = useToast();
   const { signOut } = useAuth();
+  const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad } = useSupabaseLoads();
+  const { settings } = useSupabaseSettings();
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Error signing out",
-        description: error.message,
-        variant: "destructive"
-      });
-    } else {
-      window.location.href = '/auth';
+    await signOut();
+  };
+
+  const handleSaveLoad = async (loadData: Omit<Load, 'id' | 'createdAt'>) => {
+    try {
+      if (editingLoad) {
+        // Update existing load
+        await updateLoad(editingLoad.id, loadData);
+        setEditingLoad(null);
+      } else {
+        // Add new load
+        await saveLoad(loadData);
+      }
+      setCurrentView('dashboard');
+    } catch (error) {
+      // Error handling is done in the hooks
     }
   };
 
-  const handleSaveLoad = (loadData: Omit<Load, 'id' | 'createdAt'>) => {
-    if (editingLoad) {
-      // Update existing load
-      const updatedLoads = loads.map(load => 
-        load.id === editingLoad.id 
-          ? { ...loadData, id: editingLoad.id, createdAt: editingLoad.createdAt }
-          : load
-      );
-      setLoads(updatedLoads);
-      setEditingLoad(null);
-      toast({
-        title: "Load Updated",
-        description: "Your load has been successfully updated.",
-      });
-    } else {
-      // Add new load
-      const newLoad: Load = {
-        ...loadData,
-        id: crypto.randomUUID(),
-        createdAt: new Date()
-      };
-      setLoads([newLoad, ...loads]);
-      toast({
-        title: "Load Saved",
-        description: `Load from ${loadData.origin} to ${loadData.destination} saved successfully.`,
-      });
-    }
-    setCurrentView('dashboard');
-  };
-
-  const handleDeleteLoad = (id: string) => {
-    setLoads(loads.filter(load => load.id !== id));
-    toast({
-      title: "Load Deleted",
-      description: "Load has been removed from your history.",
-      variant: "destructive"
-    });
+  const handleDeleteLoad = async (id: string) => {
+    await deleteLoad(id);
   };
 
   const handleEditLoad = (load: Load) => {
@@ -170,6 +144,14 @@ const Index = () => {
         );
       
       case 'history':
+        if (loadsLoading) {
+          return (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-sm text-muted-foreground mt-4">Loading your loads...</p>
+            </div>
+          );
+        }
         return (
           <div className="space-y-4">
             {loads.length === 0 ? (
@@ -219,6 +201,14 @@ const Index = () => {
         );
       
       default:
+        if (loadsLoading) {
+          return (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-sm text-muted-foreground mt-4">Loading dashboard...</p>
+            </div>
+          );
+        }
         return (
           <Dashboard
             loads={loads}

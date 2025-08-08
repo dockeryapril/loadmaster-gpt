@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Settings as SettingsIcon, Save, RotateCcw } from 'lucide-react';
-import { useSettings } from '@/hooks/useSettings';
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { defaultUserSettings } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,7 +13,7 @@ interface SettingsProps {
 }
 
 export function Settings({ onClose }: SettingsProps) {
-  const [settings, setSettings] = useSettings();
+  const { settings, updateSettings } = useSupabaseSettings();
   const { toast } = useToast();
   
   const [fuelPrice, setFuelPrice] = useState(settings.fuelPrice.toString());
@@ -23,7 +23,7 @@ export function Settings({ onClose }: SettingsProps) {
   const [fairRpm, setFairRpm] = useState(settings.rpmThresholds.fair.toString());
   const [weightLimit, setWeightLimit] = useState(settings.weightLimit.toString());
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newSettings = {
       ...settings,
       fuelPrice: parseFloat(fuelPrice) || defaultUserSettings.fuelPrice,
@@ -36,27 +36,18 @@ export function Settings({ onClose }: SettingsProps) {
       weightLimit: parseFloat(weightLimit) || defaultUserSettings.weightLimit,
     };
     
-    setSettings(newSettings);
-    toast({
-      title: "Settings Saved",
-      description: "Your preferences have been updated successfully.",
-    });
+    await updateSettings(newSettings);
     onClose?.();
   };
 
-  const handleReset = () => {
-    setSettings(defaultUserSettings);
+  const handleReset = async () => {
+    await updateSettings(defaultUserSettings);
     setFuelPrice(defaultUserSettings.fuelPrice.toString());
     setMpg(defaultUserSettings.mpg.toString());
     setExcellentRpm(defaultUserSettings.rpmThresholds.excellent.toString());
     setGoodRpm(defaultUserSettings.rpmThresholds.good.toString());
     setFairRpm(defaultUserSettings.rpmThresholds.fair.toString());
     setWeightLimit(defaultUserSettings.weightLimit.toString());
-    
-    toast({
-      title: "Settings Reset",
-      description: "All settings have been reset to default values.",
-    });
   };
 
   return (

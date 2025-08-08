@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calculator, Save, X, Camera } from 'lucide-react';
 import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, generateSmartTags, calculateProfit } from '@/types/load';
-import { useSettings } from '@/hooks/useSettings';
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { OCRUpload } from './OCRUpload';
 
 interface LoadCalculatorProps {
@@ -17,7 +17,7 @@ interface LoadCalculatorProps {
 }
 
 export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalculatorProps) {
-  const [settings] = useSettings();
+  const { settings } = useSupabaseSettings();
   const [showOCR, setShowOCR] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
