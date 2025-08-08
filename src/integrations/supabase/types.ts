@@ -14,7 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      loads: {
+        Row: {
+          created_at: string
+          deadhead_miles: number | null
+          destination: string
+          fsc: number | null
+          fuel_cost: number | null
+          id: string
+          miles: number
+          notes: string | null
+          origin: string
+          profit: number
+          quality: string
+          rate: number
+          rpm: number
+          tags: string[] | null
+          tolls: number | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          deadhead_miles?: number | null
+          destination: string
+          fsc?: number | null
+          fuel_cost?: number | null
+          id?: string
+          miles: number
+          notes?: string | null
+          origin: string
+          profit: number
+          quality: string
+          rate: number
+          rpm: number
+          tags?: string[] | null
+          tolls?: number | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          deadhead_miles?: number | null
+          destination?: string
+          fsc?: number | null
+          fuel_cost?: number | null
+          id?: string
+          miles?: number
+          notes?: string | null
+          origin?: string
+          profit?: number
+          quality?: string
+          rate?: number
+          rpm?: number
+          tags?: string[] | null
+          tolls?: number | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          fuel_price: number
+          id: string
+          mpg: number
+          preferred_lanes: string[] | null
+          rpm_threshold_excellent: number
+          rpm_threshold_fair: number
+          rpm_threshold_good: number
+          updated_at: string
+          user_id: string
+          weight_limit: number
+        }
+        Insert: {
+          created_at?: string
+          fuel_price?: number
+          id?: string
+          mpg?: number
+          preferred_lanes?: string[] | null
+          rpm_threshold_excellent?: number
+          rpm_threshold_fair?: number
+          rpm_threshold_good?: number
+          updated_at?: string
+          user_id: string
+          weight_limit?: number
+        }
+        Update: {
+          created_at?: string
+          fuel_price?: number
+          id?: string
+          mpg?: number
+          preferred_lanes?: string[] | null
+          rpm_threshold_excellent?: number
+          rpm_threshold_fair?: number
+          rpm_threshold_good?: number
+          updated_at?: string
+          user_id?: string
+          weight_limit?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
