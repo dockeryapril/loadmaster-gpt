@@ -9,6 +9,8 @@ import { Calculator, Save, X, Camera } from 'lucide-react';
 import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, generateSmartTags, calculateProfit } from '@/types/load';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { OCRUpload } from './OCRUpload';
+import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
+import { useToast } from '@/hooks/use-toast';
 
 interface LoadCalculatorProps {
   onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => void;
@@ -18,8 +20,10 @@ interface LoadCalculatorProps {
 
 export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalculatorProps) {
   const { settings } = useSupabaseSettings();
+  const { toast } = useToast();
   const [showOCR, setShowOCR] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [ocrResult, setOcrResult] = useState<any>(null);
   
   const [origin, setOrigin] = useState(initialData?.origin || '');
   const [destination, setDestination] = useState(initialData?.destination || '');
@@ -140,21 +144,62 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
     if (milesMatch) setMiles(milesMatch[1]);
     if (rateMatch) setRate(rateMatch[1].replace(',', ''));
     if (weightMatch) setWeight(weightMatch[1].replace(',', ''));
+  };
+
+  const handleFieldsDetected = (result: FieldDetectionResult) => {
+    // Auto-fill form fields based on AI detection
+    result.detectedFields.forEach(field => {
+      const value = field.value.replace(/[$,]/g, ''); // Clean currency/comma formatting
+      
+      switch (field.field) {
+        case 'miles':
+          setMiles(value);
+          break;
+        case 'rate':
+          setRate(value);
+          break;
+        case 'origin':
+          setOrigin(field.value);
+          break;
+        case 'destination':
+          setDestination(field.value);
+          break;
+        case 'deadhead':
+          setDeadheadMiles(value);
+          break;
+        case 'weight':
+          setWeight(value);
+          break;
+        case 'fsc':
+          setFsc(value);
+          break;
+        case 'tolls':
+          setTolls(value);
+          break;
+      }
+    });
     
+    setOcrResult(result);
     setShowOCR(false);
+    
+    toast({
+      title: "Fields auto-filled!",
+      description: `${result.detectedFields.length} fields detected and filled automatically.`,
+    });
   };
 
   const calculation = calculateLoad();
 
   return (
     <div className="space-y-6">
-      {showOCR && (
-        <OCRUpload
-          onTextExtracted={handleOCRText}
-          isProcessing={isProcessing}
-          setIsProcessing={setIsProcessing}
-        />
-      )}
+        {showOCR && (
+          <OCRUpload
+            onTextExtracted={handleOCRText}
+            onFieldsDetected={handleFieldsDetected}
+            isProcessing={isProcessing}
+            setIsProcessing={setIsProcessing}
+          />
+        )}
       
       <Card className="gradient-card border-0">
         <CardHeader className="pb-4">
