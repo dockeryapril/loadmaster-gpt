@@ -154,7 +154,7 @@ const Index = () => {
             </Button>
             
             <Button
-              variant="ghost"
+              variant={currentView === 'calculator' || currentView === 'entry-method' ? 'default' : 'ghost'}
               className="flex flex-col h-16 gap-1"
               onClick={handleAddNewLoad}
             >
