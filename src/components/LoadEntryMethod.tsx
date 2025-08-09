@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, Upload, Calculator, ArrowRight, Loader2 } from 'lucide-react';
 import { OCRUpload } from './OCRUpload';
+import { CameraInterface } from './CameraInterface';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +22,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOCRFallback, setShowOCRFallback] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
+  const [showCameraInterface, setShowCameraInterface] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
   
@@ -132,8 +135,31 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     fileInputRef.current?.click();
   };
 
-  const handleCameraClick = () => {
-    cameraInputRef.current?.click();
+  const handleCameraClick = async () => {
+    try {
+      // Try to use getUserMedia for direct camera access
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } 
+        });
+        
+        // Create a camera interface
+        setShowCameraInterface(true);
+        setCameraStream(stream);
+      } else {
+        // Fallback to file input with capture
+        cameraInputRef.current?.click();
+      }
+    } catch (error) {
+      console.error('Camera access failed:', error);
+      toast({
+        title: "Camera access failed",
+        description: "Falling back to file picker",
+        variant: "destructive",
+      });
+      // Fallback to file input
+      cameraInputRef.current?.click();
+    }
   };
 
   const handleFieldCorrection = (field: string, value: string) => {
@@ -173,6 +199,22 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     setCurrentDetectionResult(null);
     setCorrectedFields({});
   };
+
+  const handleCloseCameraInterface = () => {
+    setShowCameraInterface(false);
+    setCameraStream(null);
+  };
+
+  // Show camera interface
+  if (showCameraInterface && cameraStream) {
+    return (
+      <CameraInterface
+        stream={cameraStream}
+        onCapture={handleOCR}
+        onClose={handleCloseCameraInterface}
+      />
+    );
+  }
 
   const handleTextExtracted = (text: string) => {
     console.log('Text extracted:', text);
