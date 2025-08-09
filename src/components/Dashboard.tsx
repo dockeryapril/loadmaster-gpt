@@ -62,7 +62,7 @@ export function Dashboard({ loads, onAddLoad, onEdit }: DashboardProps) {
             </p>
             <Button 
               onClick={onAddLoad}
-              className="gradient-primary border-0 h-12 px-8 text-lg font-semibold"
+              className="h-12 px-8 text-lg font-semibold"
             >
               <Plus className="mr-2 h-5 w-5" />
               Add New Load

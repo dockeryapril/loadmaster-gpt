@@ -244,7 +244,7 @@ const Index = () => {
                   </p>
                   <Button 
                     onClick={handleAddNewLoad}
-                    className="gradient-primary border-0"
+                    className=""
                   >
                     <Calculator className="mr-2 h-4 w-4" />
                     Calculate First Load

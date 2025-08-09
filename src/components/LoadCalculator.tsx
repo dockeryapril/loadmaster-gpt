@@ -412,7 +412,7 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
             <Button
               onClick={handleSave}
               disabled={!origin || !destination || !miles || !rate}
-              className="flex-1 gradient-primary border-0"
+              className="flex-1"
             >
               <Save className="mr-2 h-4 w-4" />
               Save Load
