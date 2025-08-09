@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseLoads } from '@/hooks/useSupabaseLoads';
@@ -109,7 +109,7 @@ const Index = () => {
               onClick={() => setCurrentView('dashboard')}
             >
               <div className="p-1 rounded bg-primary/20">
-                <span className="text-lg">📊</span>
+                <LayoutDashboard className="h-5 w-5 text-primary" />
               </div>
               <span className="text-xs">Dashboard</span>
             </Button>
