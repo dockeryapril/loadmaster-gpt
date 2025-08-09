@@ -45,8 +45,16 @@ export const QuestionCard = ({
         return (
           <Input
             type="number"
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+            value={value ?? ''}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              if (inputValue === '') {
+                onChange(null);
+              } else {
+                const numValue = Number(inputValue);
+                onChange(isNaN(numValue) ? null : numValue);
+              }
+            }}
             placeholder={question.placeholder}
             min={question.validation?.min}
             max={question.validation?.max}
