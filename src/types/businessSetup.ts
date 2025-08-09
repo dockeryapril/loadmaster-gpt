@@ -255,7 +255,7 @@ export const businessSetupSections: QuestionSection[] = [
         label: 'Deadhead rate',
         description: 'Rate per mile, percentage, or flat amount',
         placeholder: '0.50',
-        dependsOn: { field: 'deadhead_compensation_type', value: 'none' },
+        dependsOn: { field: 'deadhead_compensation_type', value: 'per_mile' },
         validation: { min: 0, step: 0.01 }
       },
       {
@@ -314,13 +314,28 @@ export const businessSetupSections: QuestionSection[] = [
 ];
 
 export const calculateCompletionPercentage = (setup: Partial<BusinessSetup>): number => {
-  const requiredFields = businessSetupSections
-    .flatMap(section => section.questions)
-    .filter(q => q.required)
-    .map(q => q.id);
+  const allQuestions = businessSetupSections.flatMap(section => section.questions);
+  const requiredQuestions = allQuestions.filter(q => q.required && shouldShowQuestion(q, setup));
+  const completedQuestions = requiredQuestions.filter(q => {
+    const value = setup[q.id];
+    return value !== undefined && value !== null && value !== '';
+  });
   
-  const completedFields = requiredFields.filter(field => setup[field] != null);
-  return Math.round((completedFields.length / requiredFields.length) * 100);
+  // Debug logging
+  console.log('Setup completion calculation:', {
+    totalQuestions: allQuestions.length,
+    requiredQuestions: requiredQuestions.length,
+    completedQuestions: completedQuestions.length,
+    requiredQuestionIds: requiredQuestions.map(q => q.id),
+    completedQuestionIds: completedQuestions.map(q => q.id),
+    missingQuestions: requiredQuestions.filter(q => {
+      const value = setup[q.id];
+      return value === undefined || value === null || value === '';
+    }).map(q => q.id),
+    currentSetup: setup
+  });
+  
+  return requiredQuestions.length > 0 ? Math.round((completedQuestions.length / requiredQuestions.length) * 100) : 0;
 };
 
 export const shouldShowQuestion = (
@@ -330,5 +345,27 @@ export const shouldShowQuestion = (
   if (!question.dependsOn) return true;
   
   const dependentValue = setup[question.dependsOn.field];
-  return dependentValue !== question.dependsOn.value;
+  
+  // For deadhead compensation rate, show when type is NOT 'none'
+  if (question.id === 'deadhead_compensation_rate') {
+    return dependentValue !== 'none';
+  }
+  
+  // For fuel reimbursement rate, show when responsibility IS 'reimbursed'
+  if (question.id === 'fuel_reimbursement_rate') {
+    return dependentValue === 'reimbursed';
+  }
+  
+  // For maintenance deductible, show when coverage IS 'up_to_amount'
+  if (question.id === 'maintenance_deductible') {
+    return dependentValue === 'up_to_amount';
+  }
+  
+  // For weekly insurance payment, show when responsibility IS 'driver_pays'
+  if (question.id === 'weekly_insurance_payment') {
+    return dependentValue === 'driver_pays';
+  }
+  
+  // Default: show when the dependent value equals the expected value
+  return dependentValue === question.dependsOn.value;
 };
