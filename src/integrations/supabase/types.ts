@@ -140,6 +140,45 @@ export type Database = {
         }
         Relationships: []
       }
+      lane_history: {
+        Row: {
+          avg_rpm: number
+          created_at: string
+          destination: string
+          id: string
+          last_updated: string
+          load_count: number
+          origin: string
+          total_miles: number
+          total_revenue: number
+          user_id: string
+        }
+        Insert: {
+          avg_rpm: number
+          created_at?: string
+          destination: string
+          id?: string
+          last_updated?: string
+          load_count?: number
+          origin: string
+          total_miles: number
+          total_revenue: number
+          user_id: string
+        }
+        Update: {
+          avg_rpm?: number
+          created_at?: string
+          destination?: string
+          id?: string
+          last_updated?: string
+          load_count?: number
+          origin?: string
+          total_miles?: number
+          total_revenue?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       loads: {
         Row: {
           created_at: string
@@ -202,6 +241,149 @@ export type Database = {
           weight?: number | null
         }
         Relationships: []
+      }
+      negotiation_settings: {
+        Row: {
+          anchor_offset: number
+          created_at: string
+          floor_offset: number
+          heavy_enabled: boolean
+          heavy_method: string
+          heavy_value: number
+          heavy_weight_threshold: number
+          id: string
+          multi_stop_enabled: boolean
+          multi_stop_method: string
+          multi_stop_value: number
+          premium_freight_enabled: boolean
+          premium_freight_method: string
+          premium_freight_value: number
+          rush_enabled: boolean
+          rush_method: string
+          rush_threshold_hours: number
+          rush_value: number
+          updated_at: string
+          user_id: string
+          weekend_enabled: boolean
+          weekend_method: string
+          weekend_value: number
+        }
+        Insert: {
+          anchor_offset?: number
+          created_at?: string
+          floor_offset?: number
+          heavy_enabled?: boolean
+          heavy_method?: string
+          heavy_value?: number
+          heavy_weight_threshold?: number
+          id?: string
+          multi_stop_enabled?: boolean
+          multi_stop_method?: string
+          multi_stop_value?: number
+          premium_freight_enabled?: boolean
+          premium_freight_method?: string
+          premium_freight_value?: number
+          rush_enabled?: boolean
+          rush_method?: string
+          rush_threshold_hours?: number
+          rush_value?: number
+          updated_at?: string
+          user_id: string
+          weekend_enabled?: boolean
+          weekend_method?: string
+          weekend_value?: number
+        }
+        Update: {
+          anchor_offset?: number
+          created_at?: string
+          floor_offset?: number
+          heavy_enabled?: boolean
+          heavy_method?: string
+          heavy_value?: number
+          heavy_weight_threshold?: number
+          id?: string
+          multi_stop_enabled?: boolean
+          multi_stop_method?: string
+          multi_stop_value?: number
+          premium_freight_enabled?: boolean
+          premium_freight_method?: string
+          premium_freight_value?: number
+          rush_enabled?: boolean
+          rush_method?: string
+          rush_threshold_hours?: number
+          rush_value?: number
+          updated_at?: string
+          user_id?: string
+          weekend_enabled?: boolean
+          weekend_method?: string
+          weekend_value?: number
+        }
+        Relationships: []
+      }
+      negotiations: {
+        Row: {
+          anchor_rate: number
+          created_at: string
+          final_rate: number | null
+          floor_rate: number
+          id: string
+          iterations: number
+          load_id: string | null
+          message_sent: string | null
+          notes: string | null
+          original_offer: number
+          outcome: string | null
+          response_time_minutes: number | null
+          strategy_used: string
+          target_rate: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anchor_rate: number
+          created_at?: string
+          final_rate?: number | null
+          floor_rate: number
+          id?: string
+          iterations?: number
+          load_id?: string | null
+          message_sent?: string | null
+          notes?: string | null
+          original_offer: number
+          outcome?: string | null
+          response_time_minutes?: number | null
+          strategy_used: string
+          target_rate: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anchor_rate?: number
+          created_at?: string
+          final_rate?: number | null
+          floor_rate?: number
+          id?: string
+          iterations?: number
+          load_id?: string | null
+          message_sent?: string | null
+          notes?: string | null
+          original_offer?: number
+          outcome?: string | null
+          response_time_minutes?: number | null
+          strategy_used?: string
+          target_rate?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negotiations_load_id_fkey"
+            columns: ["load_id"]
+            isOneToOne: false
+            referencedRelation: "loads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_settings: {
         Row: {

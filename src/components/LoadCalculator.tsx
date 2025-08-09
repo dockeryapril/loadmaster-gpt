@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, Save, X, Camera } from 'lucide-react';
+import { Calculator, Save, X, Camera, TrendingUp } from 'lucide-react';
 import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, generateSmartTags, calculateProfit } from '@/types/load';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { LoadEntryMethod } from './LoadEntryMethod';
+import { NegotiationSheet } from './NegotiationSheet';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,6 +23,7 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const [showLoadEntry, setShowLoadEntry] = useState(false);
+  const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
   
   const [origin, setOrigin] = useState(initialData?.origin || '');
   const [destination, setDestination] = useState(initialData?.destination || '');
@@ -389,6 +391,16 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
               </Button>
             )}
             
+            <Button 
+              variant="outline" 
+              onClick={() => setShowNegotiationSheet(true)}
+              disabled={!origin || !destination || !miles || !rate}
+              className="flex-1"
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Negotiate
+            </Button>
+            
             <Button
               onClick={handleSave}
               disabled={!origin || !destination || !miles || !rate}
@@ -400,6 +412,22 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
           </div>
         </CardContent>
       </Card>
+
+      <NegotiationSheet
+        open={showNegotiationSheet}
+        onClose={() => setShowNegotiationSheet(false)}
+        load={{
+          origin,
+          destination,
+          miles: parseFloat(miles) || 0,
+          rate: parseFloat(rate) || 0,
+          fsc: parseFloat(fsc) || 0,
+          tolls: parseFloat(tolls) || 0,
+          weight: parseFloat(weight) || 0,
+          deadheadMiles: parseFloat(deadheadMiles) || 0,
+          notes
+        }}
+      />
     </div>
   );
 }

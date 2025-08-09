@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard } from 'lucide-react';
+import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard, TrendingUp } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseLoads } from '@/hooks/useSupabaseLoads';
@@ -9,11 +9,12 @@ import { Dashboard } from '@/components/Dashboard';
 import { LoadCalculator } from '@/components/LoadCalculator';
 import { LoadCard } from '@/components/LoadCard';
 import { Settings } from '@/components/Settings';
+import { NegotiationSettings } from '@/components/NegotiationSettings';
 import { LoadEntryMethod } from '@/components/LoadEntryMethod';
 import { useToast } from '@/hooks/use-toast';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 
-type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method';
+type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -175,7 +176,7 @@ const Index = () => {
             </Button>
 
             <Button
-              variant={currentView === 'settings' ? 'default' : 'ghost'}
+              variant={currentView === 'settings' || currentView === 'negotiation-settings' ? 'default' : 'ghost'}
               className="flex flex-col h-16 gap-1"
               onClick={() => setCurrentView('settings')}
             >
@@ -215,9 +216,26 @@ const Index = () => {
 
       case 'settings':
         return (
-          <Settings
-            onClose={() => setCurrentView('dashboard')}
-          />
+          <div className="space-y-4">
+            <div className="grid gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentView('negotiation-settings')}
+                className="flex items-center justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Negotiation Settings
+                </span>
+              </Button>
+            </div>
+            <Settings onClose={() => setCurrentView('dashboard')} />
+          </div>
+        );
+
+      case 'negotiation-settings':
+        return (
+          <NegotiationSettings onClose={() => setCurrentView('settings')} />
         );
       
       case 'history':
