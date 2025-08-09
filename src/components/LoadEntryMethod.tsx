@@ -85,12 +85,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
               >
                 <div className="flex items-center justify-center gap-4">
                   <div className="p-3 rounded-full bg-primary/20">
-                    <Camera className="h-6 w-6 text-primary" />
+                    <Upload className="h-6 w-6 text-primary" />
                   </div>
                   <div className="text-left">
-                    <div className="font-medium">Take Photo</div>
+                    <div className="font-medium">Upload Image</div>
                     <div className="text-sm text-muted-foreground">
-                      Use your camera to capture load documents
+                      Select photos from your device
                     </div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-muted-foreground" />
@@ -108,12 +108,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
               >
                 <div className="flex items-center justify-center gap-4">
                   <div className="p-3 rounded-full bg-primary/20">
-                    <Upload className="h-6 w-6 text-primary" />
+                    <Camera className="h-6 w-6 text-primary" />
                   </div>
                   <div className="text-left">
-                    <div className="font-medium">Upload Image</div>
+                    <div className="font-medium">Take Photo</div>
                     <div className="text-sm text-muted-foreground">
-                      Select photos from your device
+                      Use your camera to capture load documents
                     </div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-muted-foreground" />
