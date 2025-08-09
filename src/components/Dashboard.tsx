@@ -24,15 +24,29 @@ export function Dashboard({ loads, onAddLoad, onEdit }: DashboardProps) {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 
-  const getQualityIcon = (quality: Load['quality']) => {
+  const getQualityDotColor = (quality: Load['quality']) => {
     switch (quality) {
       case 'excellent':
+        return 'bg-emerald-500';
       case 'good':
-        return '🟢';
+        return 'bg-green-500';
       case 'fair':
-        return '🟡';
+        return 'bg-yellow-500';
       case 'poor':
-        return '🔴';
+        return 'bg-red-500';
+    }
+  };
+
+  const getQualityColor = (quality: Load['quality']) => {
+    switch (quality) {
+      case 'excellent':
+        return 'bg-emerald-500 hover:bg-emerald-600 text-white';
+      case 'good':
+        return 'bg-green-500 hover:bg-green-600 text-white';
+      case 'fair':
+        return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+      case 'poor':
+        return 'bg-red-500 hover:bg-red-600 text-white';
     }
   };
 
@@ -154,14 +168,14 @@ export function Dashboard({ loads, onAddLoad, onEdit }: DashboardProps) {
               <Card key={load.id} className="p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 flex-1">
-                    <span>{getQualityIcon(load.quality)}</span>
+                    <div className={`w-3 h-3 rounded-full ${getQualityDotColor(load.quality)}`} />
                     <div>
                       <div className="text-sm font-medium">{load.origin} → {load.destination}</div>
                       <div className="text-xs text-muted-foreground">{load.miles} mi • ${load.rate.toLocaleString()}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={load.quality === 'excellent' || load.quality === 'good' ? 'default' : 'destructive'}>
+                    <Badge className={getQualityColor(load.quality)}>
                       ${load.rpm.toFixed(2)}/mi
                     </Badge>
                     {onEdit && (
