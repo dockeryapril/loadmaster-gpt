@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_setup: {
+        Row: {
+          admin_fee_flat: number | null
+          admin_fee_percentage: number | null
+          carrier_company_name: string | null
+          created_at: string
+          deadhead_compensation_rate: number | null
+          deadhead_compensation_type: string | null
+          deadhead_minimum_miles: number | null
+          detention_minimum_hours: number | null
+          detention_pay_rate: number | null
+          extra_stop_rate: number | null
+          factoring_fee_percentage: number | null
+          fsc_handling: string | null
+          fsc_split_percentage: number | null
+          fuel_card_provided: boolean | null
+          fuel_reimbursement_rate: number | null
+          fuel_responsibility: string | null
+          id: string
+          insurance_responsibility: string | null
+          layover_pay_rate: number | null
+          loading_unloading_pay: number | null
+          maintenance_coverage: string | null
+          maintenance_deductible: number | null
+          maintenance_max_coverage: number | null
+          notes: string | null
+          other_weekly_deductions: number | null
+          pay_structure_type: string | null
+          performance_bonus_amount: number | null
+          performance_bonus_criteria: string | null
+          revenue_split_percentage: number | null
+          safety_bonus_amount: number | null
+          setup_completed_at: string | null
+          special_arrangements: string | null
+          tarping_pay: number | null
+          toll_responsibility: string | null
+          updated_at: string
+          user_id: string
+          weekly_escrow_payment: number | null
+          weekly_insurance_payment: number | null
+          weekly_truck_payment: number | null
+        }
+        Insert: {
+          admin_fee_flat?: number | null
+          admin_fee_percentage?: number | null
+          carrier_company_name?: string | null
+          created_at?: string
+          deadhead_compensation_rate?: number | null
+          deadhead_compensation_type?: string | null
+          deadhead_minimum_miles?: number | null
+          detention_minimum_hours?: number | null
+          detention_pay_rate?: number | null
+          extra_stop_rate?: number | null
+          factoring_fee_percentage?: number | null
+          fsc_handling?: string | null
+          fsc_split_percentage?: number | null
+          fuel_card_provided?: boolean | null
+          fuel_reimbursement_rate?: number | null
+          fuel_responsibility?: string | null
+          id?: string
+          insurance_responsibility?: string | null
+          layover_pay_rate?: number | null
+          loading_unloading_pay?: number | null
+          maintenance_coverage?: string | null
+          maintenance_deductible?: number | null
+          maintenance_max_coverage?: number | null
+          notes?: string | null
+          other_weekly_deductions?: number | null
+          pay_structure_type?: string | null
+          performance_bonus_amount?: number | null
+          performance_bonus_criteria?: string | null
+          revenue_split_percentage?: number | null
+          safety_bonus_amount?: number | null
+          setup_completed_at?: string | null
+          special_arrangements?: string | null
+          tarping_pay?: number | null
+          toll_responsibility?: string | null
+          updated_at?: string
+          user_id: string
+          weekly_escrow_payment?: number | null
+          weekly_insurance_payment?: number | null
+          weekly_truck_payment?: number | null
+        }
+        Update: {
+          admin_fee_flat?: number | null
+          admin_fee_percentage?: number | null
+          carrier_company_name?: string | null
+          created_at?: string
+          deadhead_compensation_rate?: number | null
+          deadhead_compensation_type?: string | null
+          deadhead_minimum_miles?: number | null
+          detention_minimum_hours?: number | null
+          detention_pay_rate?: number | null
+          extra_stop_rate?: number | null
+          factoring_fee_percentage?: number | null
+          fsc_handling?: string | null
+          fsc_split_percentage?: number | null
+          fuel_card_provided?: boolean | null
+          fuel_reimbursement_rate?: number | null
+          fuel_responsibility?: string | null
+          id?: string
+          insurance_responsibility?: string | null
+          layover_pay_rate?: number | null
+          loading_unloading_pay?: number | null
+          maintenance_coverage?: string | null
+          maintenance_deductible?: number | null
+          maintenance_max_coverage?: number | null
+          notes?: string | null
+          other_weekly_deductions?: number | null
+          pay_structure_type?: string | null
+          performance_bonus_amount?: number | null
+          performance_bonus_criteria?: string | null
+          revenue_split_percentage?: number | null
+          safety_bonus_amount?: number | null
+          setup_completed_at?: string | null
+          special_arrangements?: string | null
+          tarping_pay?: number | null
+          toll_responsibility?: string | null
+          updated_at?: string
+          user_id?: string
+          weekly_escrow_payment?: number | null
+          weekly_insurance_payment?: number | null
+          weekly_truck_payment?: number | null
+        }
+        Relationships: []
+      }
       loads: {
         Row: {
           created_at: string
@@ -79,6 +205,8 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          business_setup_completed: boolean | null
+          business_setup_completed_at: string | null
           created_at: string
           enable_fuel_cost_tracking: boolean
           fuel_price: number
@@ -88,11 +216,15 @@ export type Database = {
           rpm_threshold_excellent: number
           rpm_threshold_fair: number
           rpm_threshold_good: number
+          setup_completion_percentage: number | null
+          show_setup_reminders: boolean | null
           updated_at: string
           user_id: string
           weight_limit: number
         }
         Insert: {
+          business_setup_completed?: boolean | null
+          business_setup_completed_at?: string | null
           created_at?: string
           enable_fuel_cost_tracking?: boolean
           fuel_price?: number
@@ -102,11 +234,15 @@ export type Database = {
           rpm_threshold_excellent?: number
           rpm_threshold_fair?: number
           rpm_threshold_good?: number
+          setup_completion_percentage?: number | null
+          show_setup_reminders?: boolean | null
           updated_at?: string
           user_id: string
           weight_limit?: number
         }
         Update: {
+          business_setup_completed?: boolean | null
+          business_setup_completed_at?: string | null
           created_at?: string
           enable_fuel_cost_tracking?: boolean
           fuel_price?: number
@@ -116,6 +252,8 @@ export type Database = {
           rpm_threshold_excellent?: number
           rpm_threshold_fair?: number
           rpm_threshold_good?: number
+          setup_completion_percentage?: number | null
+          show_setup_reminders?: boolean | null
           updated_at?: string
           user_id?: string
           weight_limit?: number

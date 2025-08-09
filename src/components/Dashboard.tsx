@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, TrendingUp, DollarSign, Truck, BarChart3 } from 'lucide-react';
 import { Load } from '@/types/load';
+import { SetupBanner } from './SetupBanner';
 
 interface DashboardProps {
   loads: Load[];
@@ -36,6 +37,9 @@ export function Dashboard({ loads, onAddLoad }: DashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* Setup Banner */}
+      <SetupBanner />
+      
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">

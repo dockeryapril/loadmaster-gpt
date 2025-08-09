@@ -36,6 +36,10 @@ export function useSupabaseSettings() {
           weightLimit: Number(data.weight_limit),
           preferredLanes: data.preferred_lanes || [],
           enableFuelCostTracking: Boolean(data.enable_fuel_cost_tracking),
+          businessSetupCompleted: Boolean(data.business_setup_completed),
+          businessSetupCompletedAt: data.business_setup_completed_at,
+          showSetupReminders: Boolean(data.show_setup_reminders),
+          setupCompletionPercentage: Number(data.setup_completion_percentage) || 0,
         };
         setSettings(userSettings);
       } else {
@@ -55,30 +59,42 @@ export function useSupabaseSettings() {
     }
   };
 
-  // Update settings in Supabase
-  const updateSettings = async (newSettings: UserSettings) => {
+  // Update settings in Supabase (partial updates supported)
+  const updateSettings = async (partialSettings: Partial<UserSettings>) => {
     if (!user) return;
 
     try {
+      const mergedSettings = { ...settings, ...partialSettings };
+      
+      const updateData: any = {
+        user_id: user.id,
+      };
+
+      // Only update fields that are provided
+      if (partialSettings.fuelPrice !== undefined) updateData.fuel_price = partialSettings.fuelPrice;
+      if (partialSettings.mpg !== undefined) updateData.mpg = partialSettings.mpg;
+      if (partialSettings.rpmThresholds !== undefined) {
+        updateData.rpm_threshold_excellent = partialSettings.rpmThresholds.excellent;
+        updateData.rpm_threshold_good = partialSettings.rpmThresholds.good;
+        updateData.rpm_threshold_fair = partialSettings.rpmThresholds.fair;
+      }
+      if (partialSettings.weightLimit !== undefined) updateData.weight_limit = partialSettings.weightLimit;
+      if (partialSettings.preferredLanes !== undefined) updateData.preferred_lanes = partialSettings.preferredLanes;
+      if (partialSettings.enableFuelCostTracking !== undefined) updateData.enable_fuel_cost_tracking = partialSettings.enableFuelCostTracking;
+      if (partialSettings.businessSetupCompleted !== undefined) updateData.business_setup_completed = partialSettings.businessSetupCompleted;
+      if (partialSettings.businessSetupCompletedAt !== undefined) updateData.business_setup_completed_at = partialSettings.businessSetupCompletedAt;
+      if (partialSettings.showSetupReminders !== undefined) updateData.show_setup_reminders = partialSettings.showSetupReminders;
+      if (partialSettings.setupCompletionPercentage !== undefined) updateData.setup_completion_percentage = partialSettings.setupCompletionPercentage;
+
       const { error } = await supabase
         .from('user_settings')
-        .upsert({
-          user_id: user.id,
-          fuel_price: newSettings.fuelPrice,
-          mpg: newSettings.mpg,
-          rpm_threshold_excellent: newSettings.rpmThresholds.excellent,
-          rpm_threshold_good: newSettings.rpmThresholds.good,
-          rpm_threshold_fair: newSettings.rpmThresholds.fair,
-          weight_limit: newSettings.weightLimit,
-          preferred_lanes: newSettings.preferredLanes,
-          enable_fuel_cost_tracking: newSettings.enableFuelCostTracking,
-        }, {
+        .upsert(updateData, {
           onConflict: 'user_id'
         });
 
       if (error) throw error;
 
-      setSettings(newSettings);
+      setSettings(mergedSettings);
 
       toast({
         title: "Settings saved",

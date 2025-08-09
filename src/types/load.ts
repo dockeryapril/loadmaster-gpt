@@ -28,6 +28,10 @@ export interface UserSettings {
   weightLimit: number; // in pounds
   preferredLanes: string[];
   enableFuelCostTracking: boolean;
+  businessSetupCompleted?: boolean;
+  businessSetupCompletedAt?: string;
+  showSetupReminders?: boolean;
+  setupCompletionPercentage?: number;
 }
 
 export interface LoadCalculationResult {
@@ -110,5 +114,8 @@ export const defaultUserSettings: UserSettings = {
   },
   weightLimit: 80000,
   preferredLanes: [],
-  enableFuelCostTracking: false
+  enableFuelCostTracking: false,
+  businessSetupCompleted: false,
+  showSetupReminders: true,
+  setupCompletionPercentage: 0
 };
