@@ -80,6 +80,12 @@ export const BusinessSetupWizard = ({
   };
 
   const handleNext = () => {
+    // If setup is complete, go directly to preview
+    if (getCompletionPercentage() === 100) {
+      setShowPreview(true);
+      return;
+    }
+
     if (currentQuestionIndex < visibleQuestions.length - 1) {
       setQuestionIndex(currentQuestionIndex + 1);
     } else if (currentSectionIndex < businessSetupSections.length - 1) {
@@ -233,8 +239,7 @@ export const BusinessSetupWizard = ({
               onClick={handleNext}
               className="flex items-center gap-2"
             >
-              {currentSectionIndex === businessSetupSections.length - 1 && 
-               currentQuestionIndex === visibleQuestions.length - 1 ? (
+              {getCompletionPercentage() === 100 ? (
                 'Complete Setup'
               ) : (
                 <>
