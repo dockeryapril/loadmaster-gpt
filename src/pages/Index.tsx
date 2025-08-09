@@ -243,6 +243,7 @@ const Index = () => {
           <Dashboard
             loads={loads}
             onAddLoad={() => setCurrentView('calculator')}
+            onEdit={handleEditLoad}
           />
         );
     }

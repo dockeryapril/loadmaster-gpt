@@ -1,16 +1,17 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, TrendingUp, DollarSign, Truck, BarChart3 } from 'lucide-react';
+import { Plus, TrendingUp, DollarSign, Truck, BarChart3, Edit } from 'lucide-react';
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
 
 interface DashboardProps {
   loads: Load[];
   onAddLoad: () => void;
+  onEdit?: (load: Load) => void;
 }
 
-export function Dashboard({ loads, onAddLoad }: DashboardProps) {
+export function Dashboard({ loads, onAddLoad, onEdit }: DashboardProps) {
   const stats = {
     totalLoads: loads.length,
     avgRPM: loads.length > 0 ? loads.reduce((sum, load) => sum + load.rpm, 0) / loads.length : 0,
@@ -120,13 +121,25 @@ export function Dashboard({ loads, onAddLoad }: DashboardProps) {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <div className="text-sm font-medium">{stats.bestLoad.origin} → {stats.bestLoad.destination}</div>
               <div className="text-xs text-muted-foreground">{stats.bestLoad.miles} miles</div>
             </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-success">${stats.bestLoad.rpm.toFixed(2)}/mi</div>
-              <div className="text-xs">${stats.bestLoad.rate.toLocaleString()}</div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-lg font-bold text-success">${stats.bestLoad.rpm.toFixed(2)}/mi</div>
+                <div className="text-xs">${stats.bestLoad.rate.toLocaleString()}</div>
+              </div>
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(stats.bestLoad!)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </Card>
@@ -140,16 +153,28 @@ export function Dashboard({ loads, onAddLoad }: DashboardProps) {
             {recentLoads.map((load) => (
               <Card key={load.id} className="p-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-1">
                     <span>{getQualityIcon(load.quality)}</span>
                     <div>
                       <div className="text-sm font-medium">{load.origin} → {load.destination}</div>
                       <div className="text-xs text-muted-foreground">{load.miles} mi • ${load.rate.toLocaleString()}</div>
                     </div>
                   </div>
-                  <Badge variant={load.quality === 'excellent' || load.quality === 'good' ? 'default' : 'destructive'}>
-                    ${load.rpm.toFixed(2)}/mi
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={load.quality === 'excellent' || load.quality === 'good' ? 'default' : 'destructive'}>
+                      ${load.rpm.toFixed(2)}/mi
+                    </Badge>
+                    {onEdit && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit(load)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </Card>
             ))}
