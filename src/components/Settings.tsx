@@ -186,7 +186,7 @@ export function Settings({ onClose }: SettingsProps) {
             Reset to Defaults
           </Button>
           
-          <Button onClick={handleSave} className="flex-1 gradient-primary border-0">
+          <Button onClick={handleSave} className="flex-1">
             <Save className="mr-2 h-4 w-4" />
             Save Settings
           </Button>
