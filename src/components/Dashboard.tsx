@@ -57,6 +57,11 @@ export function Dashboard({ loads, onAddLoad, onEdit }: DashboardProps) {
       
       {/* Header */}
       <div className="text-center space-y-2">
+        <div className="flex justify-center mb-3">
+          <div className="p-3 rounded-full bg-primary/10">
+            <Truck className="h-12 w-12 text-primary" />
+          </div>
+        </div>
         <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
           LoadMaster GPT
         </h1>
