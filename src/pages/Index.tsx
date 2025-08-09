@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, History, Calculator, LogOut } from 'lucide-react';
+import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseLoads } from '@/hooks/useSupabaseLoads';
@@ -8,9 +8,10 @@ import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { Dashboard } from '@/components/Dashboard';
 import { LoadCalculator } from '@/components/LoadCalculator';
 import { LoadCard } from '@/components/LoadCard';
+import { Settings } from '@/components/Settings';
 import { useToast } from '@/hooks/use-toast';
 
-type View = 'dashboard' | 'calculator' | 'history';
+type View = 'dashboard' | 'calculator' | 'history' | 'settings';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -54,14 +55,24 @@ const Index = () => {
       return (
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">LoadMaster</h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="p-2"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentView('settings')}
+              className="p-2"
+            >
+              <SettingsIcon className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="p-2"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       );
     }
@@ -80,7 +91,8 @@ const Index = () => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-xl font-bold">
-          {currentView === 'calculator' ? (editingLoad ? 'Edit Load' : 'New Load') : 'Load History'}
+          {currentView === 'calculator' ? (editingLoad ? 'Edit Load' : 'New Load') : 
+           currentView === 'history' ? 'Load History' : 'Settings'}
         </h1>
       </div>
     );
@@ -90,7 +102,7 @@ const Index = () => {
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-safe">
         <div className="max-w-md mx-auto px-4 py-3">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <Button
               variant={currentView === 'dashboard' ? 'default' : 'ghost'}
               className="flex flex-col h-16 gap-1"
@@ -123,6 +135,17 @@ const Index = () => {
               </div>
               <span className="text-xs">History</span>
             </Button>
+
+            <Button
+              variant={currentView === 'settings' ? 'default' : 'ghost'}
+              className="flex flex-col h-16 gap-1"
+              onClick={() => setCurrentView('settings')}
+            >
+              <div className="p-1 rounded bg-primary/20">
+                <SettingsIcon className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs">Settings</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -140,6 +163,13 @@ const Index = () => {
               setCurrentView('dashboard');
               setEditingLoad(null);
             }}
+          />
+        );
+
+      case 'settings':
+        return (
+          <Settings
+            onClose={() => setCurrentView('dashboard')}
           />
         );
       
