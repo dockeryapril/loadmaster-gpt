@@ -9,9 +9,11 @@ import { Dashboard } from '@/components/Dashboard';
 import { LoadCalculator } from '@/components/LoadCalculator';
 import { LoadCard } from '@/components/LoadCard';
 import { Settings } from '@/components/Settings';
+import { LoadEntryMethod } from '@/components/LoadEntryMethod';
 import { useToast } from '@/hooks/use-toast';
+import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 
-type View = 'dashboard' | 'calculator' | 'history' | 'settings';
+type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -47,6 +49,42 @@ const Index = () => {
 
   const handleEditLoad = (load: Load) => {
     setEditingLoad(load);
+    setCurrentView('calculator');
+  };
+
+  const handleAddNewLoad = () => {
+    setEditingLoad(null);
+    setCurrentView('entry-method');
+  };
+
+  const handleManualEntry = () => {
+    setEditingLoad(null);
+    setCurrentView('calculator');
+  };
+
+  const handleOCRFieldsDetected = (result: FieldDetectionResult) => {
+    // Convert detectedFields array to an object for easier access
+    const fieldsMap = result.detectedFields.reduce((acc, field) => {
+      acc[field.field] = field.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    // Create a partial Load object from the OCR result
+    const ocrLoad: Partial<Load> = {
+      origin: fieldsMap.origin || '',
+      destination: fieldsMap.destination || '',
+      miles: fieldsMap.miles ? parseFloat(fieldsMap.miles) : undefined,
+      rate: fieldsMap.rate ? parseFloat(fieldsMap.rate) : undefined,
+      fsc: fieldsMap.fsc ? parseFloat(fieldsMap.fsc) : undefined,
+      weight: fieldsMap.weight ? parseFloat(fieldsMap.weight) : undefined,
+      deadheadMiles: fieldsMap.deadhead ? parseFloat(fieldsMap.deadhead) : undefined,
+      fuelCost: fieldsMap.fuelCost ? parseFloat(fieldsMap.fuelCost) : undefined,
+      tolls: fieldsMap.tolls ? parseFloat(fieldsMap.tolls) : undefined,
+      notes: '',
+    };
+    
+    // Set as editing load to pre-populate the calculator
+    setEditingLoad(ocrLoad as Load);
     setCurrentView('calculator');
   };
 
@@ -92,7 +130,8 @@ const Index = () => {
         </Button>
         <h1 className="text-xl font-bold">
           {currentView === 'calculator' ? (editingLoad ? 'Edit Load' : 'New Load') : 
-           currentView === 'history' ? 'Load History' : 'Settings'}
+           currentView === 'history' ? 'Load History' : 
+           currentView === 'settings' ? 'Settings' : 'Add New Load'}
         </h1>
       </div>
     );
@@ -117,7 +156,7 @@ const Index = () => {
             <Button
               variant="ghost"
               className="flex flex-col h-16 gap-1"
-              onClick={() => setCurrentView('calculator')}
+              onClick={handleAddNewLoad}
             >
               <div className="p-1 rounded bg-primary/20">
                 <Calculator className="h-5 w-5 text-primary" />
@@ -154,6 +193,15 @@ const Index = () => {
 
   const renderContent = () => {
     switch (currentView) {
+      case 'entry-method':
+        return (
+          <LoadEntryMethod
+            onFieldsDetected={handleOCRFieldsDetected}
+            onManualEntry={handleManualEntry}
+            onClose={() => setCurrentView('dashboard')}
+          />
+        );
+
       case 'calculator':
         return (
           <LoadCalculator
@@ -195,7 +243,7 @@ const Index = () => {
                     Your analyzed loads will appear here
                   </p>
                   <Button 
-                    onClick={() => setCurrentView('calculator')}
+                    onClick={handleAddNewLoad}
                     className="gradient-primary border-0"
                   >
                     <Calculator className="mr-2 h-4 w-4" />
@@ -210,7 +258,7 @@ const Index = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentView('calculator')}
+                    onClick={handleAddNewLoad}
                   >
                     <Calculator className="mr-2 h-4 w-4" />
                     New Load
@@ -242,7 +290,7 @@ const Index = () => {
         return (
           <Dashboard
             loads={loads}
-            onAddLoad={() => setCurrentView('calculator')}
+            onAddLoad={handleAddNewLoad}
             onEdit={handleEditLoad}
           />
         );
