@@ -15,25 +15,25 @@ export function LoadCard({ load, onDelete, onEdit }: LoadCardProps) {
   const getQualityColor = (quality: Load['quality']) => {
     switch (quality) {
       case 'excellent':
-        return 'bg-success text-success-foreground';
+        return 'bg-green-500 text-white';
       case 'good':
-        return 'bg-success/80 text-success-foreground';
+        return 'bg-green-500 text-white';
       case 'fair':
-        return 'bg-warning text-warning-foreground';
+        return 'bg-yellow-500 text-white';
       case 'poor':
-        return 'bg-destructive text-destructive-foreground';
+        return 'bg-red-500 text-white';
     }
   };
 
-  const getQualityIcon = (quality: Load['quality']) => {
+  const getQualityDotColor = (quality: Load['quality']) => {
     switch (quality) {
       case 'excellent':
       case 'good':
-        return '🟢';
+        return 'bg-green-500';
       case 'fair':
-        return '🟡';
+        return 'bg-yellow-500';
       case 'poor':
-        return '🔴';
+        return 'bg-red-500';
     }
   };
 
@@ -41,7 +41,7 @@ export function LoadCard({ load, onDelete, onEdit }: LoadCardProps) {
     <Card className="p-4 space-y-3 hover:bg-card/80 transition-colors animate-slide-up">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-lg">{getQualityIcon(load.quality)}</span>
+          <div className={`w-3 h-3 rounded-full ${getQualityDotColor(load.quality)}`}></div>
           <Badge className={getQualityColor(load.quality)}>
             ${load.rpm.toFixed(2)}/mi
           </Badge>

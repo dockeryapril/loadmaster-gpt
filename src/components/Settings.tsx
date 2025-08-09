@@ -110,6 +110,7 @@ export function Settings({ onClose }: SettingsProps) {
                   value={excellentRpm}
                   onChange={(e) => setExcellentRpm(e.target.value)}
                   placeholder="2.5"
+                  className="h-10"
                 />
               </div>
               
@@ -122,6 +123,7 @@ export function Settings({ onClose }: SettingsProps) {
                   value={goodRpm}
                   onChange={(e) => setGoodRpm(e.target.value)}
                   placeholder="2.0"
+                  className="h-10"
                 />
               </div>
               
@@ -134,6 +136,7 @@ export function Settings({ onClose }: SettingsProps) {
                   value={fairRpm}
                   onChange={(e) => setFairRpm(e.target.value)}
                   placeholder="1.5"
+                  className="h-10"
                 />
               </div>
             </div>

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calculator, Save, X, Camera } from 'lucide-react';
 import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, generateSmartTags, calculateProfit } from '@/types/load';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
-import { OCRUpload } from './OCRUpload';
+import { LoadEntryMethod } from './LoadEntryMethod';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,9 +21,7 @@ interface LoadCalculatorProps {
 export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalculatorProps) {
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
-  const [showOCR, setShowOCR] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [ocrResult, setOcrResult] = useState<any>(null);
+  const [showLoadEntry, setShowLoadEntry] = useState(false);
   
   const [origin, setOrigin] = useState(initialData?.origin || '');
   const [destination, setDestination] = useState(initialData?.destination || '');
@@ -132,20 +130,6 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
     onSaveLoad?.(loadData);
   };
 
-  const handleOCRText = (extractedText: string) => {
-    // Simple parsing logic - can be enhanced based on common load board formats
-    const text = extractedText.toLowerCase();
-    
-    // Try to extract common patterns
-    const milesMatch = text.match(/(\d+)\s*mi/);
-    const rateMatch = text.match(/\$(\d+(?:,\d+)?(?:\.\d{2})?)/);
-    const weightMatch = text.match(/(\d+(?:,\d+)?)\s*lbs?/);
-    
-    if (milesMatch) setMiles(milesMatch[1]);
-    if (rateMatch) setRate(rateMatch[1].replace(',', ''));
-    if (weightMatch) setWeight(weightMatch[1].replace(',', ''));
-  };
-
   const handleFieldsDetected = (result: FieldDetectionResult) => {
     // Auto-fill form fields based on AI detection
     result.detectedFields.forEach(field => {
@@ -184,8 +168,7 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
       }
     });
     
-    setOcrResult(result);
-    setShowOCR(false);
+    setShowLoadEntry(false);
     
     toast({
       title: "Fields auto-filled!",
@@ -197,13 +180,11 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
 
   return (
     <div className="space-y-6">
-        {showOCR && (
-          <OCRUpload
-            onTextExtracted={handleOCRText}
+        {showLoadEntry && (
+          <LoadEntryMethod
             onFieldsDetected={handleFieldsDetected}
-            isProcessing={isProcessing}
-            setIsProcessing={setIsProcessing}
-            enableFuelCostTracking={settings.enableFuelCostTracking}
+            onManualEntry={() => setShowLoadEntry(false)}
+            onClose={() => setShowLoadEntry(false)}
           />
         )}
       
@@ -217,10 +198,9 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
               Load Calculator
             </div>
             <Button
-              onClick={() => setShowOCR(!showOCR)}
+              onClick={() => setShowLoadEntry(!showLoadEntry)}
               variant="ghost"
               size="sm"
-              disabled={isProcessing}
             >
               <Camera className="h-4 w-4" />
             </Button>
