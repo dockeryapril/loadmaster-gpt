@@ -96,11 +96,9 @@ export const SetupPreview = ({
             <Calculator className="h-5 w-5" />
             Setup Summary
           </CardTitle>
-          {mode === 'modal' && (
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
         
         <div className="flex items-center gap-4">
@@ -181,7 +179,13 @@ export const SetupPreview = ({
             </Button>
             
             <Button
-              onClick={onComplete}
+              onClick={() => {
+                onComplete();
+                // Close the modal after completion
+                if (isComplete) {
+                  setTimeout(() => onClose(), 500);
+                }
+              }}
               disabled={saving}
               className="flex-1"
             >
@@ -190,9 +194,18 @@ export const SetupPreview = ({
           </div>
           
           {isComplete && (
-            <p className="text-xs text-center text-muted-foreground">
-              All future load calculations will use your personalized business arrangement
-            </p>
+            <div className="space-y-2">
+              <p className="text-xs text-center text-muted-foreground">
+                All future load calculations will use your personalized business arrangement
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={onClose}
+                className="w-full"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
           )}
         </div>
       </CardContent>

@@ -35,12 +35,29 @@ export const SetupBanner = () => {
 
   if (showWizard) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-        <BusinessSetupWizard
-          mode="modal"
-          onClose={() => setShowWizard(false)}
-          onComplete={handleCompleteSetup}
-        />
+      <div 
+        className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+        onClick={(e) => {
+          // Close on overlay click (but not on modal content click)
+          if (e.target === e.currentTarget) {
+            setShowWizard(false);
+          }
+        }}
+        onKeyDown={(e) => {
+          // Close on escape key
+          if (e.key === 'Escape') {
+            setShowWizard(false);
+          }
+        }}
+        tabIndex={-1}
+      >
+        <div className="max-h-[90vh] overflow-y-auto w-full max-w-4xl">
+          <BusinessSetupWizard
+            mode="modal"
+            onClose={() => setShowWizard(false)}
+            onComplete={handleCompleteSetup}
+          />
+        </div>
       </div>
     );
   }
