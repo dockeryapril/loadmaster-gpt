@@ -11,7 +11,9 @@ import { LoadCard } from '@/components/LoadCard';
 import { Settings } from '@/components/Settings';
 import { NegotiationSettings } from '@/components/NegotiationSettings';
 import { LoadEntryMethod } from '@/components/LoadEntryMethod';
+import { CoreDataMigrationModal } from '@/components/CoreDataMigrationModal';
 import { useToast } from '@/hooks/use-toast';
+import { useCoreDataMigration } from '@/hooks/useCoreDataMigration';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 
 type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
@@ -19,10 +21,19 @@ type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method'
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [editingLoad, setEditingLoad] = useState<Load | null>(null);
+  const [showMigrationModal, setShowMigrationModal] = useState(false);
   const { toast } = useToast();
   const { signOut } = useAuth();
   const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad } = useSupabaseLoads();
   const { settings } = useSupabaseSettings();
+  const { hasCoreData } = useCoreDataMigration();
+
+  // Check for Core data on mount
+  useState(() => {
+    if (hasCoreData()) {
+      setTimeout(() => setShowMigrationModal(true), 1000);
+    }
+  });
 
   const handleSignOut = async () => {
     await signOut();
@@ -321,6 +332,11 @@ const Index = () => {
         {renderContent()}
       </div>
       {renderBottomNav()}
+      
+      <CoreDataMigrationModal 
+        open={showMigrationModal} 
+        onOpenChange={setShowMigrationModal} 
+      />
     </div>
   );
 };
