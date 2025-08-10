@@ -131,7 +131,9 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground min-h-screen;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    min-height: 100vh;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
     font-variation-settings: 'opsz' 32;
@@ -144,8 +146,7 @@ All colors MUST be HSL.
   }
 
   /* Dark mode by default */
-  html {
-    @apply dark;
+  html.dark {
   }
 
   /* Large touch targets for mobile */
