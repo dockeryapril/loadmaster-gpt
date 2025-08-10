@@ -1,17 +1,8 @@
-// Redirect to v1 app
-import { useEffect } from 'react';
+// Import the v1 app directly
+import V1App from '@/App';
 
 function App() {
-  useEffect(() => {
-    // This is a temporary redirect - in production you'd handle routing differently
-    window.location.href = '/v1';
-  }, []);
-
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p>Redirecting to LoadMaster Pro...</p>
-    </div>
-  );
+  return <V1App />;
 }
 
 export default App;
