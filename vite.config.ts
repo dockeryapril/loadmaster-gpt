@@ -22,5 +22,6 @@ export default defineConfig(({ mode }) => ({
   root: "./apps/v1",
   build: {
     outDir: "../../dist/v1",
+    emptyOutDir: true,
   },
 }));
