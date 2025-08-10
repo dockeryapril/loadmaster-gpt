@@ -394,7 +394,6 @@ export type Database = {
           fuel_price: number
           id: string
           mpg: number
-          plan: string
           preferred_lanes: string[] | null
           rpm_threshold_excellent: number
           rpm_threshold_fair: number
@@ -413,7 +412,6 @@ export type Database = {
           fuel_price?: number
           id?: string
           mpg?: number
-          plan?: string
           preferred_lanes?: string[] | null
           rpm_threshold_excellent?: number
           rpm_threshold_fair?: number
@@ -432,7 +430,6 @@ export type Database = {
           fuel_price?: number
           id?: string
           mpg?: number
-          plan?: string
           preferred_lanes?: string[] | null
           rpm_threshold_excellent?: number
           rpm_threshold_fair?: number

@@ -16,12 +16,7 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./apps/v1/src"),
+      "@": path.resolve(__dirname, "./src"),
     },
-  },
-  root: "./apps/v1",
-  build: {
-    outDir: "../../dist/v1",
-    emptyOutDir: true,
   },
 }));
