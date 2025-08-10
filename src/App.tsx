@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Core from "./pages/Core";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,17 +28,18 @@ const AppContent = () => {
     );
   }
 
-  if (!user) {
-    return <Auth />;
-  }
-
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
+      <Route path="/core" element={<Core />} />
       <Route path="/" element={
-        <ProtectedRoute>
-          <Index />
-        </ProtectedRoute>
+        user ? (
+          <ProtectedRoute>
+            <Index />
+          </ProtectedRoute>
+        ) : (
+          <Auth />
+        )
       } />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
