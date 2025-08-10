@@ -19,7 +19,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./apps/v1/src"),
     },
   },
+  root: "./apps/v1",
   build: {
-    outDir: "./dist/v1",
+    outDir: "../../dist/v1",
   },
 }));
