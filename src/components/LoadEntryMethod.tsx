@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
+import { logOCRStart, logOCREnd } from '@/utils/metrics';
 
 interface LoadEntryMethodProps {
   onFieldsDetected: (result: FieldDetectionResult) => void;
@@ -42,7 +43,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
     setOcrProgress(0);
-    
+    const startTime = logOCRStart('LoadEntryMethod');
     try {
       toast({
         title: "Processing image...",
@@ -118,6 +119,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
               'Could not detect load information. Switching to manual entry.',
             variant: 'destructive',
           });
+          logOCREnd('LoadEntryMethod', startTime, false, 'field_detection_failed');
           onManualEntry();
           return;
         }
@@ -149,12 +151,14 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           title: "Text extracted successfully!",
           description: `Found ${detectionResult.detectedFields.length} load fields. ${autoFillFields.length} auto-filled.`,
         });
+        logOCREnd('LoadEntryMethod', startTime, true);
       } else {
         toast({
           title: "No text detected",
           description: "Check lighting and retake the photo or upload a clearer image.",
           variant: "destructive",
         });
+        logOCREnd('LoadEntryMethod', startTime, false, 'no_text');
       }
     } catch (error) {
       console.error('OCR error:', error);
@@ -164,6 +168,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         variant: "destructive",
       });
       setShowOCRFallback(true);
+      logOCREnd('LoadEntryMethod', startTime, false, error);
     } finally {
       setIsProcessing(false);
       setOcrProgress(0);

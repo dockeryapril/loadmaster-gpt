@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
+import { logOCRStart, logOCREnd } from '@/utils/metrics';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -38,7 +39,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
     setOcrProgress(0);
-    
+    const startTime = logOCRStart('OCRUpload');
     try {
       toast({
         title: "Processing image...",
@@ -118,6 +119,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
               'Could not detect load information. Switching to manual entry.',
             variant: 'destructive',
           });
+          logOCREnd('OCRUpload', startTime, false, 'field_detection_failed');
           onManualEntry();
           return;
         }
@@ -150,12 +152,14 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           title: "Text extracted successfully!",
           description: `Found ${detectionResult.detectedFields.length} load fields. ${autoFillFields.length} auto-filled.`,
         });
+        logOCREnd('OCRUpload', startTime, true);
       } else {
         toast({
           title: "No text detected",
           description: "Check lighting and retake the photo or upload a clearer image.",
           variant: "destructive",
         });
+        logOCREnd('OCRUpload', startTime, false, 'no_text');
       }
     } catch (error) {
       console.error('OCR error:', error);
@@ -164,6 +168,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
         variant: "destructive",
       });
+      logOCREnd('OCRUpload', startTime, false, error);
     } finally {
       setIsProcessing(false);
       setOcrProgress(0);
