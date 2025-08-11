@@ -112,22 +112,30 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
   useFocusTrap(dialogRef, handleClose);
 
   return (
-    <div ref={dialogRef} className="fixed inset-0 bg-black z-50 flex flex-col outline-none" role="dialog" aria-modal="true" tabIndex={-1}>
+    <div
+      ref={dialogRef}
+      className="fixed inset-0 bg-black z-50 flex flex-col outline-none"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="camera-dialog-title"
+      tabIndex={-1}
+    >
       {/* Header */}
-      <div className="flex justify-between items-center p-4 sm:p-6 text-white">
-        <h2 className="text-lg font-semibold">Take Photo</h2>
+      <header className="flex justify-between items-center p-4 sm:p-6 text-white">
+        <h2 id="camera-dialog-title" className="text-lg font-semibold">Take Photo</h2>
         <Button
           variant="ghost"
           size="icon"
           onClick={handleClose}
           className="text-white hover:bg-white/20"
+          aria-label="Close"
         >
           <X className="h-6 w-6" />
         </Button>
-      </div>
+      </header>
 
       {/* Camera/Preview Area */}
-      <div className="flex-1 relative">
+      <main className="flex-1 relative">
         {!capturedImage ? (
           <>
             <video
@@ -159,16 +167,17 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
             </div>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Controls */}
-      <div className="p-4 sm:p-6 bg-black">
+      <footer className="p-4 sm:p-6 bg-black">
         {!capturedImage ? (
           <div className="flex justify-center">
             <Button
               onClick={capturePhoto}
               size="lg"
               className="rounded-full w-14 h-14 sm:w-16 sm:h-16 bg-white hover:bg-white/90 text-black"
+              aria-label="Capture photo"
             >
               <Camera className="h-8 w-8" />
             </Button>
@@ -192,7 +201,7 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
             </Button>
           </div>
         )}
-      </div>
+      </footer>
     </div>
   );
 }

@@ -296,14 +296,15 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   }
 
   return (
-    <Card className="p-6 border-2 border-dashed border-border hover:border-muted-foreground transition-colors">
-      <div className="text-center space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Extract Text from Image</h3>
-          <p className="text-sm text-muted-foreground">
-            Take a photo or upload an image of your load details - AI will auto-fill the form
-          </p>
-        </div>
+    <section aria-labelledby="ocr-upload-heading">
+      <Card className="p-6 border-2 border-dashed border-border hover:border-muted-foreground transition-colors">
+        <div className="text-center space-y-4">
+          <div className="space-y-2">
+            <h2 id="ocr-upload-heading" className="text-lg font-semibold">Extract Text from Image</h2>
+            <p className="text-sm text-muted-foreground">
+              Take a photo or upload an image of your load details - AI will auto-fill the form
+            </p>
+          </div>
 
         {isProcessing ? (
           <div className="flex flex-col items-center gap-3 py-8">
@@ -366,7 +367,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           <p>✓ Red highlights = needs review</p>
           <p>For best results, ensure text is clear and well-lit</p>
         </div>
-      </div>
-    </Card>
+        </div>
+      </Card>
+    </section>
   );
 }
