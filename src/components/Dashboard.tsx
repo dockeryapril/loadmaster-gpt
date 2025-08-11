@@ -5,6 +5,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, TrendingUp, DollarSign, Truck, BarChart3, Edit } from 'lucide-react';
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface DashboardProps {
   loads: Load[];
@@ -14,6 +16,20 @@ interface DashboardProps {
 }
 
 export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps) {
+  const [showSkeleton, setShowSkeleton] = useState(!!loading);
+  const [contentVisible, setContentVisible] = useState(!loading);
+
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => setShowSkeleton(false), 300);
+      setContentVisible(true);
+      return () => clearTimeout(timer);
+    } else {
+      setShowSkeleton(true);
+      setContentVisible(false);
+    }
+  }, [loading]);
+
   const stats = {
     totalLoads: loads.length,
     avgRPM: loads.length > 0 ? loads.reduce((sum, load) => sum + load.rpm, 0) / loads.length : 0,
@@ -93,21 +109,31 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
       </Card>
 
       {/* Stats Grid */}
-      {loading ? (
-        <div className="grid grid-cols-2 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-4 text-center">
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-6 mx-auto" />
-                <Skeleton className="h-6 w-16 mx-auto" />
-                <Skeleton className="h-4 w-20 mx-auto" />
-              </div>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        loads.length > 0 && (
-          <div className="grid grid-cols-2 gap-4">
+      <div className="relative">
+        {showSkeleton && (
+          <div className={cn(
+            "grid grid-cols-2 gap-4 transition-opacity duration-500",
+            loading ? "opacity-100" : "opacity-0"
+          )}>
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="p-4 text-center">
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-6 mx-auto" />
+                  <Skeleton className="h-6 w-16 mx-auto" />
+                  <Skeleton className="h-4 w-20 mx-auto" />
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {loads.length > 0 && (
+          <div
+            className={cn(
+              "grid grid-cols-2 gap-4 transition-opacity duration-500",
+              contentVisible ? "opacity-100" : "opacity-0"
+            )}
+          >
             <Card className="p-4 text-center">
               <div className="space-y-2">
                 <TrendingUp className="h-6 w-6 text-primary mx-auto" />
@@ -140,17 +166,29 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
               </div>
             </Card>
           </div>
-        )
-      )}
+        )}
+      </div>
 
       {/* Best Load */}
-      {loading ? (
-        <Card className="p-4">
-          <Skeleton className="h-20 w-full" />
-        </Card>
-      ) : (
-        stats.bestLoad && stats.bestLoad.rpm > 0 && (
-          <Card className="p-4">
+      <div className="relative">
+        {showSkeleton && (
+          <Card
+            className={cn(
+              "p-4 transition-opacity duration-500",
+              loading ? "opacity-100" : "opacity-0"
+            )}
+          >
+            <Skeleton className="h-20 w-full" />
+          </Card>
+        )}
+
+        {stats.bestLoad && stats.bestLoad.rpm > 0 && (
+          <Card
+            className={cn(
+              "p-4 transition-opacity duration-500",
+              contentVisible ? "opacity-100" : "opacity-0"
+            )}
+          >
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-success/20">
                 <TrendingUp className="h-4 w-4 text-success" />
@@ -183,24 +221,36 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
               </div>
             </div>
           </Card>
-        )
-      )}
+        )}
+      </div>
 
       {/* Recent Loads */}
-      {loading ? (
-        <div className="space-y-3 mb-8">
-          <Skeleton className="h-6 w-32" />
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i} className="p-3">
-                <Skeleton className="h-12 w-full" />
-              </Card>
-            ))}
+      <div className="relative">
+        {showSkeleton && (
+          <div
+            className={cn(
+              "space-y-3 mb-8 transition-opacity duration-500",
+              loading ? "opacity-100" : "opacity-0"
+            )}
+          >
+            <Skeleton className="h-6 w-32" />
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i} className="p-3">
+                  <Skeleton className="h-12 w-full" />
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      ) : (
-        recentLoads.length > 0 && (
-          <div className="space-y-3 mb-8">
+        )}
+
+        {recentLoads.length > 0 && (
+          <div
+            className={cn(
+              "space-y-3 mb-8 transition-opacity duration-500",
+              contentVisible ? "opacity-100" : "opacity-0"
+            )}
+          >
             <h3 className="text-lg font-semibold">Recent Loads</h3>
             <div className="space-y-2">
               {recentLoads.map((load) => (
@@ -233,12 +283,17 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
               ))}
             </div>
           </div>
-        )
-      )}
+        )}
+      </div>
 
       {/* Empty State */}
       {!loading && loads.length === 0 && (
-        <Card className="p-8 text-center">
+        <Card
+          className={cn(
+            "p-8 text-center transition-opacity duration-500",
+            contentVisible ? "opacity-100" : "opacity-0"
+          )}
+        >
           <div className="space-y-4">
             <div className="p-4 rounded-full bg-muted w-fit mx-auto">
               <Truck className="h-8 w-8 text-muted-foreground" />
