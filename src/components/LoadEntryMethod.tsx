@@ -26,6 +26,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const [showCorrection, setShowCorrection] = useState(false);
   const [showCameraInterface, setShowCameraInterface] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraTriggerElement, setCameraTriggerElement] = useState<HTMLElement | null>(null);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -227,7 +228,9 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     fileInputRef.current?.click();
   };
 
-  const handleCameraClick = async () => {
+  const handleCameraClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Remember the element that opened the camera so focus can return
+    setCameraTriggerElement(e.currentTarget);
     try {
       // Try to use getUserMedia for direct camera access
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -304,6 +307,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         stream={cameraStream}
         onCapture={handleOCR}
         onClose={handleCloseCameraInterface}
+        triggerElement={cameraTriggerElement}
       />
     );
   }

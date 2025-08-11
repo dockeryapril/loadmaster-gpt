@@ -7,13 +7,17 @@ interface CameraInterfaceProps {
   stream: MediaStream;
   onCapture: (file: File) => void;
   onClose: () => void;
+  /** The element that triggered the camera interface */
+  triggerElement?: HTMLElement | null;
 }
 
-export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceProps) {
+export function CameraInterface({ stream, onCapture, onClose, triggerElement }: CameraInterfaceProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const captureButtonRef = useRef<HTMLButtonElement>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -41,6 +45,13 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
     };
   }, [stream]);
 
+  // Focus the capture button when the interface opens or when retaking a photo
+  useEffect(() => {
+    if (!capturedImage) {
+      captureButtonRef.current?.focus();
+    }
+  }, [capturedImage]);
+
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -58,11 +69,18 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
         // Convert to blob and create file
         canvas.toBlob((blob) => {
           if (blob) {
-            const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+            // Store captured image preview
             setCapturedImage(canvas.toDataURL());
+            setStatusMessage('Photo captured.');
+          } else {
+            setStatusMessage('Capture failed.');
           }
         }, 'image/jpeg', 0.9);
+      } else {
+        setStatusMessage('Capture failed.');
       }
+    } else {
+      setStatusMessage('Capture failed.');
     }
   };
 
@@ -72,7 +90,10 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
         if (blob) {
           const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
           onCapture(file);
+          setStatusMessage('Photo saved.');
           handleClose();
+        } else {
+          setStatusMessage('Failed to save photo.');
         }
       }, 'image/jpeg', 0.9);
     }
@@ -107,7 +128,8 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
     }
     setCapturedImage(null);
     onClose();
-  }, [stream, onClose]);
+    triggerElement?.focus();
+  }, [stream, onClose, triggerElement]);
 
   useFocusTrap(dialogRef, handleClose);
 
@@ -174,6 +196,7 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
         {!capturedImage ? (
           <div className="flex justify-center">
             <Button
+              ref={captureButtonRef}
               onClick={capturePhoto}
               size="lg"
               className="rounded-full w-14 h-14 sm:w-16 sm:h-16 bg-white hover:bg-white/90 text-black"
@@ -202,6 +225,7 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
           </div>
         )}
       </footer>
+      <div aria-live="polite" className="sr-only">{statusMessage}</div>
     </div>
   );
 }
