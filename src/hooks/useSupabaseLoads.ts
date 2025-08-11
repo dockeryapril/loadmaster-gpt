@@ -118,7 +118,7 @@ export function useSupabaseLoads() {
       const creationTimestamp = new Date().toISOString();
       const loadNumber = (loadData as any).loadNumber;
 
-      let duplicateQuery = supabase
+      let duplicateQuery: any = supabase
         .from('loads')
         .select('id')
         .eq('user_id', user.id)

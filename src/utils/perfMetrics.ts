@@ -29,7 +29,7 @@ function sendMetrics(): void {
     timestamp: new Date().toISOString()
   };
 
-  supabase.from('perf_metrics').insert(payload).then(({ error }) => {
+  (supabase as any).from('perf_metrics').insert(payload as any).then(({ error }) => {
     if (error) {
       console.error('Supabase perf metrics error:', error);
       console.log('perf_metrics', payload);

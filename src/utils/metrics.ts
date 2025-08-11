@@ -14,7 +14,7 @@ export async function logEvent(event: string, data: Record<string, unknown> = {}
   };
 
   try {
-    const { error } = await supabase.from('log_events').insert(payload);
+    const { error } = await (supabase as any).from('log_events').insert(payload as any);
     if (error) {
       console.error('Supabase log error:', error);
       console.log('log_event', payload);

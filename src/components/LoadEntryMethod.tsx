@@ -38,6 +38,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const imageElementRef = useRef<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
 

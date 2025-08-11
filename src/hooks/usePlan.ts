@@ -39,12 +39,13 @@ export function usePlan() {
 
         const { data, error } = await supabase
           .from("user_settings")
-          .select("plan, plan_change_source, plan_changed_at")
+          .select("*")
           .single();
         if (!error && data && mounted) {
-          if (data.plan) setPlan(data.plan as "free" | "pro");
-          setPlanChangeSource((data.plan_change_source as string) || null);
-          setPlanChangedAt((data.plan_changed_at as string) || null);
+          const row = data as any;
+          if (row.plan) setPlan(row.plan as "free" | "pro");
+          setPlanChangeSource((row.plan_change_source as string) || null);
+          setPlanChangedAt((row.plan_changed_at as string) || null);
         }
       } catch (error: any) {
         logError('Error fetching plan:', error);
