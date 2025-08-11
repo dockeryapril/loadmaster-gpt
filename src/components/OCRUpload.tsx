@@ -35,22 +35,43 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
 
       // Step 1: Preprocess image for better OCR
       const preprocessResult = await OCRPreprocessor.preprocessImage(file);
-      
-      // Step 2: Extract text with Tesseract
-      const { data: { text } } = await Tesseract.recognize(
-        preprocessResult.processedImageUrl,
-        'eng',
-        {
-          logger: m => {
-            if (m.status === 'recognizing text') {
-              console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+
+      // Step 2: Extract text with Tesseract and retry logic
+      let text = '';
+      const maxAttempts = 3;
+      try {
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            const result = await Tesseract.recognize(
+              preprocessResult.processedImageUrl,
+              'eng',
+              {
+                logger: m => {
+                  if (m.status === 'recognizing text') {
+                    console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+                  }
+                }
+              }
+            );
+            text = result.data.text;
+            break;
+          } catch (err) {
+            if (attempt < maxAttempts) {
+              toast({
+                title: `OCR attempt ${attempt} failed`,
+                description: `Retrying... (${attempt + 1}/${maxAttempts})`,
+                variant: "destructive",
+              });
+              await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+            } else {
+              throw err;
             }
           }
         }
-      );
-
-      // Cleanup processed image
-      OCRPreprocessor.cleanup(preprocessResult.processedImageUrl);
+      } finally {
+        // Cleanup processed image
+        OCRPreprocessor.cleanup(preprocessResult.processedImageUrl);
+      }
 
       if (text.trim()) {
         // Step 3: AI-powered field detection
@@ -98,7 +119,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
       console.error('OCR error:', error);
       toast({
         title: "OCR failed",
-        description: "Failed to extract text from the image. Please try again.",
+        description: "Failed to extract text after multiple attempts. Please retake the photo or enter details manually.",
         variant: "destructive",
       });
     } finally {
