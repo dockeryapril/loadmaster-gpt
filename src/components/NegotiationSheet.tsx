@@ -170,7 +170,7 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
               )}
 
               {calculation.lane_baseline_rpm && (
-                <div className="mt-3 p-2 bg-muted/50 rounded">
+                <div className="mt-4 p-2 bg-muted/50 rounded">
                   <Label className="text-xs text-muted-foreground">Lane Baseline RPM:</Label>
                   <span className="ml-2 font-medium">${calculation.lane_baseline_rpm.toFixed(2)}</span>
                 </div>

@@ -412,7 +412,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       {/* OCR Options */}
       <div className="space-y-4">
         <div className="text-center">
-          <h3 className="text-lg font-medium mb-3">Scan Load Document</h3>
+          <h3 className="text-lg font-medium mb-4">Scan Load Document</h3>
           <p className="text-xs text-muted-foreground mb-4">
             Recommended: Automatically extract information from images
           </p>
@@ -427,7 +427,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 onClick={handleUploadClick}
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className="p-3 rounded-full bg-primary/20">
+                  <div className="icon-badge bg-primary/20">
                     <Upload className="h-6 w-6 text-primary" />
                   </div>
                   <div className="text-left">
@@ -450,7 +450,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 onClick={handleCameraClick}
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className="p-3 rounded-full bg-primary/20">
+                  <div className="icon-badge bg-primary/20">
                     <Camera className="h-6 w-6 text-primary" />
                   </div>
                   <div className="text-left">
@@ -485,7 +485,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             onClick={onManualEntry}
           >
             <div className="flex items-center justify-center gap-4 p-4">
-              <div className="p-3 rounded-full bg-muted">
+              <div className="icon-badge bg-muted">
                 <Calculator className="h-6 w-6 text-muted-foreground" />
               </div>
               <div className="text-left">

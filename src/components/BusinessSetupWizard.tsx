@@ -203,7 +203,7 @@ export const BusinessSetupWizard = ({
 
         {/* AI suggestions notice */}
         {suggestions && Object.keys(suggestions).length > 0 && (
-          <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+          <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
             <Lightbulb className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium text-blue-900">AI Suggestions Available</p>

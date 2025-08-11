@@ -119,7 +119,7 @@ export const QuestionCard = ({
 
           {/* AI suggestion */}
           {suggestion !== undefined && suggestion !== value && (
-            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <Lightbulb className="h-4 w-4 text-amber-600 flex-shrink-0" />
               <div className="flex-1 text-sm">
                 <p className="font-medium text-amber-900">AI Suggestion:</p>

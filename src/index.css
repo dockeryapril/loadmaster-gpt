@@ -199,3 +199,8 @@ All colors MUST be HSL.
     animation: pulse-glow 2s infinite;
   }
 }
+@layer components {
+  .icon-badge {
+    @apply p-4 rounded-full;
+  }
+}

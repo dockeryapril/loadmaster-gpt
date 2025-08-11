@@ -75,8 +75,8 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
 
       {/* Header */}
       <header className="text-center space-y-2">
-        <div className="flex justify-center mb-3">
-          <div className="p-3 rounded-full bg-primary/10">
+        <div className="flex justify-center mb-4">
+          <div className="icon-badge bg-primary/10">
             <Truck className="h-12 w-12 text-primary" />
           </div>
         </div>
@@ -90,7 +90,7 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
       <section aria-labelledby="add-load-heading">
         <Card className="p-6 gradient-card text-center">
           <div className="space-y-4">
-            <div className="p-3 rounded-full bg-primary/20 w-fit mx-auto">
+            <div className="icon-badge bg-primary/20 w-fit mx-auto">
               <Plus className="h-8 w-8 text-primary" />
             </div>
             <div>
@@ -192,7 +192,7 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
               contentVisible ? "opacity-100" : "opacity-0"
             )}
           >
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-lg bg-success/20">
                 <TrendingUp className="h-4 w-4 text-success" />
               </div>
@@ -233,14 +233,14 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
         {showSkeleton && (
           <div
             className={cn(
-              "space-y-3 mb-8 transition-opacity duration-500",
+              "space-y-4 mb-8 transition-opacity duration-500",
               loading ? "opacity-100" : "opacity-0"
             )}
           >
             <Skeleton className="h-6 w-32" />
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className="p-3">
+                <Card key={i} className="p-4">
                   <Skeleton className="h-12 w-full" />
                 </Card>
               ))}
@@ -251,14 +251,14 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
         {recentLoads.length > 0 && (
           <div
             className={cn(
-              "space-y-3 mb-8 transition-opacity duration-500",
+              "space-y-4 mb-8 transition-opacity duration-500",
               contentVisible ? "opacity-100" : "opacity-0"
             )}
           >
             <h2 id="recent-loads-heading" className="text-lg font-semibold">Recent Loads</h2>
             <div className="space-y-2">
               {recentLoads.map((load) => (
-                <Card key={load.id} className="p-3">
+                <Card key={load.id} className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-1">
                       <div className={`w-3 h-3 rounded-full ${getQualityDotColor(load.quality)}`} />
