@@ -3,6 +3,7 @@ import Tesseract from 'tesseract.js';
 import { Camera, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDetector';
@@ -28,6 +29,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [ocrProgress, setOcrProgress] = useState(0);
   const fullImagePromiseRef = useRef<Promise<string> | null>(null);
   const fullImageUrlRef = useRef<string | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -35,6 +37,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
 
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
+    setOcrProgress(0);
     
     try {
       toast({
@@ -57,7 +60,9 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
               {
                 logger: m => {
                   if (m.status === 'recognizing text') {
-                    console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+                    const progress = m.progress * 100;
+                    setOcrProgress(progress);
+                    console.log(`OCR Progress: ${Math.round(progress)}%`);
                   }
                 }
               }
@@ -161,6 +166,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
       });
     } finally {
       setIsProcessing(false);
+      setOcrProgress(0);
       if (fullImageUrlRef.current) {
         URL.revokeObjectURL(fullImageUrlRef.current);
         fullImageUrlRef.current = null;
@@ -309,7 +315,9 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
               />
             )}
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <div className="text-sm text-muted-foreground space-y-1">
+            <Progress value={ocrProgress} className="w-48" />
+            <p className="text-sm text-muted-foreground">{Math.round(ocrProgress)}%</p>
+            <div className="text-sm text-muted-foreground space-y-1 text-center">
               <p>Processing image...</p>
               <p className="text-xs">Optimizing → OCR → AI Analysis</p>
             </div>

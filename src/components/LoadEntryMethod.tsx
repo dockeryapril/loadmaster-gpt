@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import Tesseract from 'tesseract.js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Camera, Upload, Calculator, ArrowRight, Loader2 } from 'lucide-react';
 import { OCRUpload } from './OCRUpload';
 import { CameraInterface } from './CameraInterface';
@@ -26,6 +27,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
+  const [ocrProgress, setOcrProgress] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -37,6 +39,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
 
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
+    setOcrProgress(0);
     
     try {
       toast({
@@ -59,7 +62,9 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
               {
                 logger: m => {
                   if (m.status === 'recognizing text') {
-                    console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+                    const progress = m.progress * 100;
+                    setOcrProgress(progress);
+                    console.log(`OCR Progress: ${Math.round(progress)}%`);
                   }
                 }
               }
@@ -159,6 +164,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       setShowOCRFallback(true);
     } finally {
       setIsProcessing(false);
+      setOcrProgress(0);
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
         objectUrlRef.current = null;
@@ -371,6 +377,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         <Card className="p-8">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <Progress value={ocrProgress} className="w-48" />
+            <p className="text-sm text-muted-foreground">{Math.round(ocrProgress)}%</p>
             <div className="text-center space-y-2">
               <p className="font-medium">Processing your image</p>
               <p className="text-sm text-muted-foreground">
