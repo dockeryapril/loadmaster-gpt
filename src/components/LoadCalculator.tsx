@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, Save, X, Camera, TrendingUp } from 'lucide-react';
+import { Calculator, Save, X, Camera, TrendingUp, Loader2 } from 'lucide-react';
 import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, generateSmartTags, calculateProfit } from '@/types/load';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { LoadEntryMethod } from './LoadEntryMethod';
@@ -24,6 +24,7 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
   const { toast } = useToast();
   const [showLoadEntry, setShowLoadEntry] = useState(false);
   const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
+  const [saving, setSaving] = useState(false);
   
   const [origin, setOrigin] = useState(initialData?.origin || '');
   const [destination, setDestination] = useState(initialData?.destination || '');
@@ -105,13 +106,13 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!origin || !destination || !miles || !rate) {
       return;
     }
 
     const calculation = calculateLoad();
-    
+
     const loadData: Omit<Load, 'id' | 'createdAt'> = {
       origin,
       destination,
@@ -129,7 +130,14 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
       notes
     };
 
-    onSaveLoad?.(loadData);
+    if (onSaveLoad) {
+      setSaving(true);
+      try {
+        await onSaveLoad(loadData);
+      } finally {
+        setSaving(false);
+      }
+    }
   };
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {
@@ -391,8 +399,8 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
               </Button>
             )}
             
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowNegotiationSheet(true)}
               disabled={!origin || !destination || !miles || !rate}
               className="flex-1"
@@ -400,14 +408,18 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
               <TrendingUp className="h-4 w-4 mr-2" />
               Negotiate
             </Button>
-            
+
             <Button
               onClick={handleSave}
-              disabled={!origin || !destination || !miles || !rate}
+              disabled={saving || !origin || !destination || !miles || !rate}
               className="flex-1"
             >
-              <Save className="mr-2 h-4 w-4" />
-              Save Load
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              {saving ? 'Saving...' : 'Save Load'}
             </Button>
           </div>
         </CardContent>
