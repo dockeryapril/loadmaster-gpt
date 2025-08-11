@@ -27,6 +27,9 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const [showCorrection, setShowCorrection] = useState(false);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const fullImagePromiseRef = useRef<Promise<string> | null>(null);
+  const fullImageUrlRef = useRef<string | null>(null);
 
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
@@ -46,7 +49,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
       try {
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
-            const result = await Tesseract.recognize(
+            const recognizePromise = Tesseract.recognize(
               preprocessResult.processedImageUrl,
               'eng',
               {
@@ -57,6 +60,10 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
                 }
               }
             );
+
+            fullImagePromiseRef.current?.then(url => setPreviewSrc(url));
+
+            const result = await recognizePromise;
             text = result.data.text;
             break;
           } catch (err) {
@@ -152,12 +159,41 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
       });
     } finally {
       setIsProcessing(false);
+      if (fullImageUrlRef.current) {
+        URL.revokeObjectURL(fullImageUrlRef.current);
+        fullImageUrlRef.current = null;
+      }
+      setPreviewSrc(null);
     }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
+      if (fullImageUrlRef.current) {
+        URL.revokeObjectURL(fullImageUrlRef.current);
+        fullImageUrlRef.current = null;
+      }
+
+      createImageBitmap(file, { resizeWidth: 200, resizeHeight: 200 })
+        .then(bitmap => {
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(bitmap, 0, 0);
+          setPreviewSrc(canvas.toDataURL());
+        })
+        .catch(err => console.error('Preview generation error:', err));
+
+      fullImagePromiseRef.current = new Promise(resolve => {
+        const url = URL.createObjectURL(file);
+        fullImageUrlRef.current = url;
+        const img = new Image();
+        img.onload = () => resolve(url);
+        img.src = url;
+      });
+
       handleOCR(file);
     } else {
       toast({
@@ -235,6 +271,13 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
 
         {isProcessing ? (
           <div className="flex flex-col items-center gap-3 py-8">
+            {previewSrc && (
+              <img
+                src={previewSrc}
+                alt="Selected image preview"
+                className="max-h-48 object-contain rounded"
+              />
+            )}
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <div className="text-sm text-muted-foreground space-y-1">
               <p>Processing image...</p>
@@ -243,7 +286,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           </div>
         ) : (
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
+            <Button
               onClick={handleCameraCapture}
               variant="outline"
               className="flex items-center gap-2"
