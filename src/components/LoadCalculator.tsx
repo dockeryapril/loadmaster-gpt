@@ -349,14 +349,22 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                     name="miles"
                     rules={{
                       required: 'Miles are required',
-                      validate: (value) =>
-                        parseFloat(value) > 0 || 'Miles must be greater than 0',
+                      validate: (value) => {
+                        const num = parseFloat(value);
+                        if (num <= 0) {
+                          return 'Miles must be greater than 0';
+                        }
+                        if (num > 3000) {
+                          return 'Miles cannot exceed 3000';
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Miles</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="450" {...field} />
+                          <Input type="number" min={0} max={3000} placeholder="450" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -366,16 +374,23 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                     control={form.control}
                     name="deadheadMiles"
                     rules={{
-                      validate: (value) =>
-                        value === '' ||
-                        parseFloat(value) >= 0 ||
-                        'Deadhead miles must be 0 or more',
+                      validate: (value) => {
+                        if (value === '') return true;
+                        const num = parseFloat(value);
+                        if (num < 0) {
+                          return 'Deadhead miles cannot be negative';
+                        }
+                        if (num > 3000) {
+                          return 'Deadhead miles cannot exceed 3000';
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Deadhead Miles</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="50" {...field} />
+                          <Input type="number" min={0} max={3000} placeholder="50" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -389,8 +404,16 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                     name="rate"
                     rules={{
                       required: 'Rate is required',
-                      validate: (value) =>
-                        parseFloat(value) > 0 || 'Rate must be greater than 0',
+                      validate: (value) => {
+                        const num = parseFloat(value);
+                        if (num <= 0) {
+                          return 'Rate must be greater than 0';
+                        }
+                        if (num > 10000) {
+                          return 'Rate cannot exceed 10000';
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
@@ -399,6 +422,8 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                           <Input
                             type="number"
                             step="0.01"
+                            min={0}
+                            max={10000}
                             placeholder="2500.00"
                             {...field}
                           />
@@ -411,10 +436,17 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                     control={form.control}
                     name="fsc"
                     rules={{
-                      validate: (value) =>
-                        value === '' ||
-                        parseFloat(value) >= 0 ||
-                        'FSC must be 0 or more',
+                      validate: (value) => {
+                        if (value === '') return true;
+                        const num = parseFloat(value);
+                        if (num < 0) {
+                          return 'FSC cannot be negative';
+                        }
+                        if (num > 10000) {
+                          return 'FSC cannot exceed 10000';
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
@@ -423,6 +455,8 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                           <Input
                             type="number"
                             step="0.01"
+                            min={0}
+                            max={10000}
                             placeholder="250.00"
                             {...field}
                           />
@@ -438,10 +472,17 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                     control={form.control}
                     name="tolls"
                     rules={{
-                      validate: (value) =>
-                        value === '' ||
-                        parseFloat(value) >= 0 ||
-                        'Tolls must be 0 or more',
+                      validate: (value) => {
+                        if (value === '') return true;
+                        const num = parseFloat(value);
+                        if (num < 0) {
+                          return 'Tolls cannot be negative';
+                        }
+                        if (num > 10000) {
+                          return 'Tolls cannot exceed 10000';
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
@@ -450,6 +491,8 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                           <Input
                             type="number"
                             step="0.01"
+                            min={0}
+                            max={10000}
                             placeholder="85.00"
                             {...field}
                           />
@@ -462,16 +505,23 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                     control={form.control}
                     name="weight"
                     rules={{
-                      validate: (value) =>
-                        value === '' ||
-                        parseFloat(value) >= 0 ||
-                        'Weight must be 0 or more',
+                      validate: (value) => {
+                        if (value === '') return true;
+                        const num = parseFloat(value);
+                        if (num < 0) {
+                          return 'Weight cannot be negative';
+                        }
+                        if (num > 100000) {
+                          return 'Weight cannot exceed 100000';
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Weight (lbs)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="45000" {...field} />
+                          <Input type="number" min={0} max={100000} placeholder="45000" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -484,10 +534,17 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                     control={form.control}
                     name="fuelCost"
                     rules={{
-                      validate: (value) =>
-                        value === '' ||
-                        parseFloat(value) >= 0 ||
-                        'Fuel cost must be 0 or more',
+                      validate: (value) => {
+                        if (value === '') return true;
+                        const num = parseFloat(value);
+                        if (num < 0) {
+                          return 'Fuel cost cannot be negative';
+                        }
+                        if (num > 10000) {
+                          return 'Fuel cost cannot exceed 10000';
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
@@ -496,6 +553,8 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                           <Input
                             type="number"
                             step="0.01"
+                            min={0}
+                            max={10000}
                             placeholder="350.00"
                             {...field}
                           />
