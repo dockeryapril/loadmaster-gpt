@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import Tesseract from 'tesseract.js';
-import { Camera, Upload, Loader2, Eye } from 'lucide-react';
+import { Camera, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -11,12 +11,16 @@ import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
   onFieldsDetected?: (result: FieldDetectionResult) => void;
+  /**
+   * Invoked when field detection fails and manual entry is required.
+   */
+  onManualEntry: () => void;
   isProcessing: boolean;
   setIsProcessing: (processing: boolean) => void;
   enableFuelCostTracking?: boolean;
 }
 
-export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, setIsProcessing, enableFuelCostTracking = false }: OCRUploadProps) {
+export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, isProcessing, setIsProcessing, enableFuelCostTracking = false }: OCRUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -80,24 +84,48 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
           description: "Using AI to detect load information.",
         });
 
-        const detectionResult = await SmartFieldDetector.detectFields(text, enableFuelCostTracking);
-        
+        let detectionResult: FieldDetectionResult | null = null;
+        try {
+          detectionResult = await SmartFieldDetector.detectFields(
+            text,
+            enableFuelCostTracking
+          );
+        } catch (err) {
+          console.error('Field detection error:', err);
+        }
+
+        if (!detectionResult || detectionResult.detectedFields.length === 0) {
+          setShowCorrection(false);
+          setCurrentDetectionResult(null);
+          setCorrectedFields({});
+          toast({
+            title: 'Field detection failed',
+            description:
+              'Could not detect load information. Switching to manual entry.',
+            variant: 'destructive',
+          });
+          onManualEntry();
+          return;
+        }
+
         // Apply learned corrections
         detectionResult.detectedFields = SmartFieldDetector.applyLearnedCorrections(
           detectionResult.detectedFields
         );
 
         // Auto-fill high confidence fields immediately
-        const autoFillFields = detectionResult.detectedFields.filter(f => f.confidence === 'high');
+        const autoFillFields = detectionResult.detectedFields.filter(
+          f => f.confidence === 'high'
+        );
         if (autoFillFields.length > 0 && onFieldsDetected) {
           onFieldsDetected(detectionResult);
         }
 
         // Show correction interface if there are uncertain fields
-        const uncertainFields = detectionResult.detectedFields.filter(f => 
-          f.confidence === 'medium' || f.confidence === 'low'
+        const uncertainFields = detectionResult.detectedFields.filter(
+          f => f.confidence === 'medium' || f.confidence === 'low'
         );
-        
+
         if (uncertainFields.length > 0) {
           setCurrentDetectionResult(detectionResult);
           setShowCorrection(true);

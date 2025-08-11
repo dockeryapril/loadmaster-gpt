@@ -88,21 +88,45 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           description: "Using AI to detect load information.",
         });
 
-        const detectionResult = await SmartFieldDetector.detectFields(text, settings.enableFuelCostTracking);
-        
+        let detectionResult: FieldDetectionResult | null = null;
+        try {
+          detectionResult = await SmartFieldDetector.detectFields(
+            text,
+            settings.enableFuelCostTracking
+          );
+        } catch (err) {
+          console.error('Field detection error:', err);
+        }
+
+        if (!detectionResult || detectionResult.detectedFields.length === 0) {
+          setShowCorrection(false);
+          setCurrentDetectionResult(null);
+          setCorrectedFields({});
+          toast({
+            title: 'Field detection failed',
+            description:
+              'Could not detect load information. Switching to manual entry.',
+            variant: 'destructive',
+          });
+          onManualEntry();
+          return;
+        }
+
         // Apply learned corrections
         detectionResult.detectedFields = SmartFieldDetector.applyLearnedCorrections(
           detectionResult.detectedFields
         );
 
         // Auto-fill high confidence fields immediately
-        const autoFillFields = detectionResult.detectedFields.filter(f => f.confidence === 'high');
-        
-        // Show correction interface if there are uncertain fields
-        const uncertainFields = detectionResult.detectedFields.filter(f => 
-          f.confidence === 'medium' || f.confidence === 'low'
+        const autoFillFields = detectionResult.detectedFields.filter(
+          f => f.confidence === 'high'
         );
-        
+
+        // Show correction interface if there are uncertain fields
+        const uncertainFields = detectionResult.detectedFields.filter(
+          f => f.confidence === 'medium' || f.confidence === 'low'
+        );
+
         if (uncertainFields.length > 0) {
           setCurrentDetectionResult(detectionResult);
           setShowCorrection(true);
@@ -273,6 +297,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         <OCRUpload
           onTextExtracted={handleTextExtracted}
           onFieldsDetected={handleFieldsDetected}
+          onManualEntry={onManualEntry}
           isProcessing={isProcessing}
           setIsProcessing={setIsProcessing}
           enableFuelCostTracking={settings.enableFuelCostTracking}
