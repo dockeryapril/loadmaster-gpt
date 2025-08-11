@@ -304,12 +304,18 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                   <FormField
                     control={form.control}
                     name="origin"
-                    rules={{ required: 'Origin is required' }}
+                    rules={{
+                      required: 'Origin is required',
+                      pattern: {
+                        value: /^[^,]+,\s*[A-Z]{2}$/,
+                        message: 'Format: City, ST',
+                      },
+                    }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Origin</FormLabel>
                         <FormControl>
-                          <Input placeholder="City, State" {...field} />
+                          <Input placeholder="City, ST" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -318,12 +324,18 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
                   <FormField
                     control={form.control}
                     name="destination"
-                    rules={{ required: 'Destination is required' }}
+                    rules={{
+                      required: 'Destination is required',
+                      pattern: {
+                        value: /^[^,]+,\s*[A-Z]{2}$/,
+                        message: 'Format: City, ST',
+                      },
+                    }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Destination</FormLabel>
                         <FormControl>
-                          <Input placeholder="City, State" {...field} />
+                          <Input placeholder="City, ST" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
