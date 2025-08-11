@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Camera, X, RotateCcw, Check } from 'lucide-react';
 
 interface CameraInterfaceProps {
@@ -25,6 +24,18 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        canvasRef.current = null;
+      }
+      setCapturedImage(null);
     };
   }, [stream]);
 
@@ -67,6 +78,13 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
 
   const retakePhoto = () => {
     setCapturedImage(null);
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.width = 0;
+      canvas.height = 0;
+    }
   };
 
   const handleClose = () => {
@@ -74,6 +92,18 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.width = 0;
+      canvas.height = 0;
+      canvasRef.current = null;
+    }
+    setCapturedImage(null);
     onClose();
   };
 
