@@ -7,6 +7,8 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/hooks/usePlan';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { logEvent } from '@/utils/metrics';
 
 // Simple negotiation logic for Core version
 const calculateNegotiation = (miles: number, rate: number, weight?: number) => {
@@ -122,7 +124,25 @@ const Core = () => {
     navigate('/auth');
   };
 
-  const handleUpgradeToPro = () => {
+  const handleUpgradeToPro = async () => {
+    const timestamp = new Date().toISOString();
+    try {
+      await supabase
+        .from('user_settings')
+        .update({
+          plan: 'pro',
+          plan_changed_at: timestamp,
+          plan_change_source: 'core_upgrade_button'
+        });
+      await logEvent('plan_change', {
+        from: plan,
+        to: 'pro',
+        source: 'core_upgrade_button',
+        timestamp
+      });
+    } catch (err) {
+      /* ignore analytics errors */
+    }
     navigate('/');
   };
 

@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logError } from '@/utils/errorLogger';
+import { logEvent } from '@/utils/metrics';
 
 export function usePlan() {
   const [plan, setPlan] = useState<"free" | "pro">("free");
   const [loading, setLoading] = useState(true);
+  const [planChangeSource, setPlanChangeSource] = useState<string | null>(null);
+  const [planChangedAt, setPlanChangedAt] = useState<string | null>(null);
+  const previousPlan = useRef<"free" | "pro">();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,9 +37,14 @@ export function usePlan() {
           return;
         }
 
-        const { data, error } = await supabase.from("user_settings").select("plan").single();
-        if (!error && data?.plan && mounted) {
-          setPlan(data.plan as "free" | "pro");
+        const { data, error } = await supabase
+          .from("user_settings")
+          .select("plan, plan_change_source, plan_changed_at")
+          .single();
+        if (!error && data && mounted) {
+          if (data.plan) setPlan(data.plan as "free" | "pro");
+          setPlanChangeSource((data.plan_change_source as string) || null);
+          setPlanChangedAt((data.plan_changed_at as string) || null);
         }
       } catch (error: any) {
         logError('Error fetching plan:', error);
@@ -52,6 +61,21 @@ export function usePlan() {
     })();
     return () => { mounted = false; };
   }, []);
+
+  useEffect(() => {
+    const prev = previousPlan.current;
+    if (prev && prev !== plan) {
+      const timestamp = planChangedAt || new Date().toISOString();
+      logEvent('plan_change', {
+        from: prev,
+        to: plan,
+        source: planChangeSource || 'unknown',
+        timestamp
+      }).catch(() => {});
+      if (!planChangedAt) setPlanChangedAt(timestamp);
+    }
+    previousPlan.current = plan;
+  }, [plan, planChangeSource, planChangedAt]);
 
   return { plan, isPro: plan === "pro", loading };
 }
