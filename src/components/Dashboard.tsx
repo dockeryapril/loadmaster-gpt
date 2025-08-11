@@ -69,12 +69,12 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
   };
 
   return (
-    <div className="space-y-6">
+    <main className="space-y-6">
       {/* Setup Banner */}
       <SetupBanner />
-      
+
       {/* Header */}
-      <div className="text-center space-y-2">
+      <header className="text-center space-y-2">
         <div className="flex justify-center mb-3">
           <div className="p-3 rounded-full bg-primary/10">
             <Truck className="h-12 w-12 text-primary" />
@@ -84,32 +84,35 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
           LoadMaster GPT
         </h1>
         <p className="text-muted-foreground">Smart Load Analysis for Owner-Operators</p>
-      </div>
+      </header>
 
       {/* Add Load CTA */}
-      <Card className="p-6 gradient-card text-center">
-        <div className="space-y-4">
-          <div className="p-3 rounded-full bg-primary/20 w-fit mx-auto">
-            <Plus className="h-8 w-8 text-primary" />
+      <section aria-labelledby="add-load-heading">
+        <Card className="p-6 gradient-card text-center">
+          <div className="space-y-4">
+            <div className="p-3 rounded-full bg-primary/20 w-fit mx-auto">
+              <Plus className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h2 id="add-load-heading" className="text-xl font-semibold mb-2">Ready to analyze a new load?</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Calculate RPM, evaluate weight impact, and make smart decisions in seconds
+              </p>
+              <Button
+                onClick={onAddLoad}
+                className="h-12 px-8 text-lg font-semibold"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Add New Load
+              </Button>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Ready to analyze a new load?</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Calculate RPM, evaluate weight impact, and make smart decisions in seconds
-            </p>
-            <Button 
-              onClick={onAddLoad}
-              className="h-12 px-8 text-lg font-semibold"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Add New Load
-            </Button>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </section>
 
       {/* Stats Grid */}
-      <div className="relative">
+      <section aria-labelledby="stats-heading" className="relative">
+        <h2 id="stats-heading" className="sr-only">Dashboard statistics</h2>
         {showSkeleton && (
           <div className={cn(
             "grid grid-cols-2 gap-4 transition-opacity duration-500",
@@ -167,10 +170,10 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
             </Card>
           </div>
         )}
-      </div>
+      </section>
 
       {/* Best Load */}
-      <div className="relative">
+      <section aria-labelledby="best-load-heading" className="relative">
         {showSkeleton && (
           <Card
             className={cn(
@@ -194,7 +197,7 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
                 <TrendingUp className="h-4 w-4 text-success" />
               </div>
               <div>
-                <h3 className="font-semibold">Best Load</h3>
+                <h2 id="best-load-heading" className="font-semibold">Best Load</h2>
                 <p className="text-sm text-muted-foreground">Highest RPM this period</p>
               </div>
             </div>
@@ -214,6 +217,7 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
                     size="sm"
                     onClick={() => onEdit(stats.bestLoad!)}
                     className="h-8 w-8 p-0"
+                    aria-label="Edit best load"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -222,10 +226,10 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
             </div>
           </Card>
         )}
-      </div>
+      </section>
 
       {/* Recent Loads */}
-      <div className="relative">
+      <section aria-labelledby="recent-loads-heading" className="relative">
         {showSkeleton && (
           <div
             className={cn(
@@ -251,7 +255,7 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
               contentVisible ? "opacity-100" : "opacity-0"
             )}
           >
-            <h3 className="text-lg font-semibold">Recent Loads</h3>
+            <h2 id="recent-loads-heading" className="text-lg font-semibold">Recent Loads</h2>
             <div className="space-y-2">
               {recentLoads.map((load) => (
                 <Card key={load.id} className="p-3">
@@ -273,6 +277,7 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
                           size="sm"
                           onClick={() => onEdit(load)}
                           className="h-8 w-8 p-0"
+                          aria-label="Edit load"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -284,32 +289,34 @@ export function Dashboard({ loads, onAddLoad, onEdit, loading }: DashboardProps)
             </div>
           </div>
         )}
-      </div>
+      </section>
 
       {/* Empty State */}
       {!loading && loads.length === 0 && (
-        <Card
-          className={cn(
-            "p-8 text-center transition-opacity duration-500",
-            contentVisible ? "opacity-100" : "opacity-0"
-          )}
-        >
-          <div className="space-y-4">
-            <div className="p-4 rounded-full bg-muted w-fit mx-auto">
-              <Truck className="h-8 w-8 text-muted-foreground" />
+        <section aria-labelledby="empty-state-heading">
+          <Card
+            className={cn(
+              "p-8 text-center transition-opacity duration-500",
+              contentVisible ? "opacity-100" : "opacity-0"
+            )}
+          >
+            <div className="space-y-4">
+              <div className="p-4 rounded-full bg-muted w-fit mx-auto">
+                <Truck className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h2 id="empty-state-heading" className="text-lg font-semibold mb-2">No loads analyzed yet</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Start by adding your first load to see RPM calculations and analytics
+                </p>
+                <Button variant="outline" onClick={onAddLoad}>
+                  Get Started
+                </Button>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">No loads analyzed yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Start by adding your first load to see RPM calculations and analytics
-              </p>
-              <Button variant="outline" onClick={onAddLoad}>
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </section>
       )}
-    </div>
+    </main>
   );
 }
