@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import Tesseract from 'tesseract.js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -307,6 +308,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     );
   }
 
+  useFocusTrap(dialogRef, onClose);
+
   const handleTextExtracted = (text: string) => {
     console.log('Text extracted:', text);
   };
@@ -318,7 +321,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   // Show correction interface
   if (showCorrection && currentDetectionResult) {
     return (
-      <OCRCorrectionInterface
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1}>
+        <OCRCorrectionInterface
         detectedFields={currentDetectionResult.detectedFields}
         rawText={currentDetectionResult.rawText}
         onFieldCorrection={handleFieldCorrection}
@@ -326,13 +330,14 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         onCancel={handleCancelCorrections}
         overallConfidence={currentDetectionResult.confidence}
       />
+      </div>
     );
   }
 
   // Show OCR fallback if needed
   if (showOCRFallback) {
     return (
-      <div className="space-y-6">
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} className="space-y-6">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Extract Text from Image</h2>
           <p className="text-sm text-muted-foreground">
@@ -366,7 +371,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   // Show processing overlay if needed
   if (isProcessing) {
     return (
-      <div className="space-y-6">
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} className="space-y-6">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Processing Image</h2>
           <p className="text-sm text-muted-foreground">
@@ -392,7 +397,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   }
 
   return (
-    <div className="space-y-6">
+    <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} className="space-y-6">
       <div className="text-center">
         <h2 className="text-xl font-semibold mb-2">Add New Load</h2>
         <p className="text-sm text-muted-foreground">

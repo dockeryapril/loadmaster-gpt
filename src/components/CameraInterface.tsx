@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Button } from '@/components/ui/button';
 import { Camera, X, RotateCcw, Check } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface CameraInterfaceProps {
 export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
     }
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     // Stop camera stream
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
@@ -105,10 +107,12 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
     }
     setCapturedImage(null);
     onClose();
-  };
+  }, [stream, onClose]);
+
+  useFocusTrap(dialogRef, handleClose);
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div ref={dialogRef} className="fixed inset-0 bg-black z-50 flex flex-col outline-none" role="dialog" aria-modal="true" tabIndex={-1}>
       {/* Header */}
       <div className="flex justify-between items-center p-4 sm:p-6 text-white">
         <h2 className="text-lg font-semibold">Take Photo</h2>
