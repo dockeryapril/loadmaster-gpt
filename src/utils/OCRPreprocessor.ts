@@ -25,14 +25,19 @@ export class OCRPreprocessor {
 
       img.onload = () => {
         const originalSize = { width: img.width, height: img.height };
-        
-        // Calculate optimal dimensions
+
+        // Calculate optimal dimensions, further limiting size on small screens
+        const viewportWidth =
+          typeof window !== 'undefined' ? window.innerWidth : this.MAX_WIDTH;
+        const mobileCap = viewportWidth * 2; // account for device pixel ratio
+        const maxWidth = Math.min(this.MAX_WIDTH, mobileCap);
+        const maxHeight = Math.min(this.MAX_HEIGHT, mobileCap);
         const scale = Math.min(
-          this.MAX_WIDTH / img.width,
-          this.MAX_HEIGHT / img.height,
+          maxWidth / img.width,
+          maxHeight / img.height,
           1 // Don't upscale
         );
-        
+
         const newWidth = Math.floor(img.width * scale);
         const newHeight = Math.floor(img.height * scale);
         
@@ -44,6 +49,14 @@ export class OCRPreprocessor {
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
         
         // Convert to blob
+        const maxOriginalDimension = Math.max(img.width, img.height);
+        let quality = this.QUALITY;
+        if (maxOriginalDimension > 4000) {
+          quality = 0.6;
+        } else if (maxOriginalDimension > 3000) {
+          quality = 0.7;
+        }
+
         canvas.toBlob((blob) => {
           if (!blob) {
             reject(new Error('Failed to process image'));
@@ -59,7 +72,7 @@ export class OCRPreprocessor {
             processedSize: { width: newWidth, height: newHeight },
             processingTime
           });
-        }, 'image/jpeg', this.QUALITY);
+        }, 'image/jpeg', quality);
       };
       
       img.onerror = () => reject(new Error('Failed to load image'));
