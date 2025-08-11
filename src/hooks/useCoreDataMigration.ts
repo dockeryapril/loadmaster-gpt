@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/errorLogger';
 
 interface CoreHistoryItem {
   id: string;
@@ -29,7 +30,7 @@ export function useCoreDataMigration() {
       if (!raw) return [];
       return JSON.parse(raw);
     } catch (error) {
-      console.error('Error reading Core data:', error);
+      logError('Error reading Core data:', error);
       return [];
     }
   };
@@ -81,7 +82,7 @@ export function useCoreDataMigration() {
           .single();
 
         if (loadError) {
-          console.error('Error creating load:', loadError);
+          logError('Error creating load:', loadError);
           continue;
         }
 
@@ -114,7 +115,7 @@ export function useCoreDataMigration() {
 
       return { imported: count };
     } catch (error: any) {
-      console.error('Error importing Core data:', error);
+      logError('Error importing Core data:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",

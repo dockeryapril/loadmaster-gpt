@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { BusinessSetup, calculateCompletionPercentage } from '@/types/businessSetup';
+import { logError } from '@/utils/errorLogger';
 
 export const useBusinessSetup = () => {
   const { user } = useAuth();
@@ -32,7 +33,7 @@ export const useBusinessSetup = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching business setup:', error);
+        logError('Error fetching business setup:', error);
         toast({
           title: "Error",
           description: "Failed to load business setup",
@@ -43,7 +44,7 @@ export const useBusinessSetup = () => {
 
       setSetup(data as BusinessSetup | null);
     } catch (error: any) {
-      console.error('Unexpected error:', error);
+      logError('Unexpected error:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",
@@ -92,7 +93,7 @@ export const useBusinessSetup = () => {
         .single();
 
       if (error) {
-        console.error('Error saving business setup:', error);
+        logError('Error saving business setup:', error);
         toast({
           title: "Error",
           description: "Failed to save business setup",
@@ -127,7 +128,7 @@ export const useBusinessSetup = () => {
 
       return true;
     } catch (error: any) {
-      console.error('Unexpected error:', error);
+      logError('Unexpected error:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",
@@ -218,7 +219,7 @@ export const useBusinessSetup = () => {
 
       return suggestions;
     } catch (error: any) {
-      console.error('Error generating suggestions:', error);
+      logError('Error generating suggestions:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",

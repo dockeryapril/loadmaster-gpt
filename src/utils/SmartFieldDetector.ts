@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/utils/errorLogger';
 
 export interface DetectedField {
   field: 'miles' | 'rate' | 'origin' | 'destination' | 'deadhead' | 'weight' | 'fsc' | 'tolls' | 'fuelCost';
@@ -56,7 +57,7 @@ export class SmartFieldDetector {
       });
 
       if (error) {
-        console.error('AI field detection failed:', error);
+        logError('AI field detection failed:', error);
         return this.fallbackDetection(ocrText, startTime);
       }
 
@@ -68,7 +69,7 @@ export class SmartFieldDetector {
         const parsed = JSON.parse(aiResponse);
         parsedFields = parsed.fields || [];
       } catch (parseError) {
-        console.error('Failed to parse AI response:', parseError);
+        logError('Failed to parse AI response:', parseError);
         return this.fallbackDetection(ocrText, startTime);
       }
 
@@ -88,7 +89,7 @@ export class SmartFieldDetector {
       };
 
     } catch (error) {
-      console.error('Error in AI field detection:', error);
+      logError('Error in AI field detection:', error);
       return this.fallbackDetection(ocrText, startTime);
     }
   }
