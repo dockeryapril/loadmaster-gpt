@@ -59,7 +59,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
             if (attempt < maxAttempts) {
               toast({
                 title: `OCR attempt ${attempt} failed`,
-                description: `Retrying... (${attempt + 1}/${maxAttempts})`,
+                description: `Trying again (${attempt + 1}/${maxAttempts}). Ensure the image is clear.`,
                 variant: "destructive",
               });
               await new Promise(resolve => setTimeout(resolve, attempt * 1000));
@@ -110,8 +110,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
         });
       } else {
         toast({
-          title: "No text found",
-          description: "Could not extract any text from the image. Please try a clearer image.",
+          title: "No text detected",
+          description: "Check lighting and retake the photo or upload a clearer image.",
           variant: "destructive",
         });
       }
@@ -119,7 +119,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
       console.error('OCR error:', error);
       toast({
         title: "OCR failed",
-        description: "Failed to extract text after multiple attempts. Please retake the photo or enter details manually.",
+        description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
         variant: "destructive",
       });
     } finally {
@@ -133,8 +133,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, isProcessing, set
       handleOCR(file);
     } else {
       toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
+        title: "Unsupported file",
+        description: "Choose a JPEG or PNG photo and try again.",
         variant: "destructive",
       });
     }

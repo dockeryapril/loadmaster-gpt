@@ -120,7 +120,7 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="border-2 border-white/50 rounded-lg w-80 h-48 flex items-center justify-center">
               <p className="text-white/70 text-sm text-center px-4">
-                Position your load document within this frame
+                Align your load document in the frame and ensure good lighting
               </p>
             </div>
           </div>
