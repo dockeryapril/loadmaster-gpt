@@ -13,6 +13,15 @@ export const useBusinessSetup = () => {
 
   const fetchSetup = async () => {
     if (!user?.id) return;
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Failed to load business setup",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -33,13 +42,21 @@ export const useBusinessSetup = () => {
       }
 
       setSetup(data as BusinessSetup | null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Unexpected error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Failed to load business setup",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -47,6 +64,15 @@ export const useBusinessSetup = () => {
 
   const saveSetup = async (setupData: Partial<BusinessSetup>) => {
     if (!user?.id) return;
+
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Save will retry when online",
+        variant: "destructive",
+      });
+      return false;
+    }
 
     try {
       setSaving(true);
@@ -86,7 +112,7 @@ export const useBusinessSetup = () => {
         .eq('user_id', user.id);
 
       setSetup(data as BusinessSetup);
-      
+
       if (isCompleted) {
         toast({
           title: "Setup Complete!",
@@ -100,13 +126,21 @@ export const useBusinessSetup = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Unexpected error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Save will retry when online",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      }
       return false;
     } finally {
       setSaving(false);
@@ -133,6 +167,15 @@ export const useBusinessSetup = () => {
   // AI-powered setup suggestions based on existing load data
   const generateSetupSuggestions = async () => {
     if (!user?.id) return null;
+
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Unable to generate suggestions while offline",
+        variant: "destructive",
+      });
+      return null;
+    }
 
     try {
       // Fetch user's historical load data to analyze patterns
@@ -174,8 +217,15 @@ export const useBusinessSetup = () => {
       }
 
       return suggestions;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating suggestions:', error);
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Unable to generate suggestions while offline",
+          variant: "destructive",
+        });
+      }
       return null;
     }
   };

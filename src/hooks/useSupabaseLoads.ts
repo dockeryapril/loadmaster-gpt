@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Load } from '@/types/load';
@@ -9,11 +9,51 @@ export function useSupabaseLoads() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const pendingMutations = useRef<(() => Promise<any>)[]>([]);
+
+  const handleOffline = (retry?: () => Promise<any>) => {
+    toast({
+      title: "Connection lost",
+      description: "Save will retry when online",
+      variant: "destructive",
+    });
+    if (retry) pendingMutations.current.push(retry);
+  };
+
+  const isNetworkError = (error: any) =>
+    error instanceof Error &&
+    error.message?.toLowerCase().includes('failed to fetch');
+
+  useEffect(() => {
+    const flushQueue = async () => {
+      const queue = [...pendingMutations.current];
+      pendingMutations.current = [];
+      for (const fn of queue) {
+        try {
+          await fn();
+        } catch (err) {
+          console.error('Retry failed:', err);
+        }
+      }
+    };
+    window.addEventListener('online', flushQueue);
+    return () => window.removeEventListener('online', flushQueue);
+  }, []);
 
   // Fetch loads from Supabase
   const fetchLoads = async () => {
     if (!user) return;
-    
+
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Failed to load your saved loads.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('loads')
@@ -46,11 +86,19 @@ export function useSupabaseLoads() {
       setLoads(transformedLoads);
     } catch (error: any) {
       console.error('Error fetching loads:', error);
-      toast({
-        title: "Error loading data",
-        description: "Failed to load your saved loads.",
-        variant: "destructive",
-      });
+      if (isNetworkError(error)) {
+        toast({
+          title: "Connection lost",
+          description: "Failed to load your saved loads.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error loading data",
+          description: "Failed to load your saved loads.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -59,6 +107,11 @@ export function useSupabaseLoads() {
   // Save a new load to Supabase
   const saveLoad = async (loadData: Omit<Load, 'id' | 'createdAt'>) => {
     if (!user) return;
+
+    if (!navigator.onLine) {
+      handleOffline(() => saveLoad(loadData));
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -115,18 +168,27 @@ export function useSupabaseLoads() {
       return newLoad;
     } catch (error: any) {
       console.error('Error saving load:', error);
-      toast({
-        title: "Error saving load",
-        description: error.message || "Failed to save the load.",
-        variant: "destructive",
-      });
-      throw error;
+      if (isNetworkError(error)) {
+        handleOffline(() => saveLoad(loadData));
+      } else {
+        toast({
+          title: "Error saving load",
+          description: error.message || "Failed to save the load.",
+          variant: "destructive",
+        });
+        throw error;
+      }
     }
   };
 
   // Delete a load from Supabase
   const deleteLoad = async (id: string) => {
     if (!user) return;
+
+    if (!navigator.onLine) {
+      handleOffline(() => deleteLoad(id));
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -146,17 +208,26 @@ export function useSupabaseLoads() {
       });
     } catch (error: any) {
       console.error('Error deleting load:', error);
-      toast({
-        title: "Error deleting load",
-        description: error.message || "Failed to delete the load.",
-        variant: "destructive",
-      });
+      if (isNetworkError(error)) {
+        handleOffline(() => deleteLoad(id));
+      } else {
+        toast({
+          title: "Error deleting load",
+          description: error.message || "Failed to delete the load.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   // Update an existing load
   const updateLoad = async (id: string, loadData: Omit<Load, 'id' | 'createdAt'>) => {
     if (!user) return;
+
+    if (!navigator.onLine) {
+      handleOffline(() => updateLoad(id, loadData));
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -214,12 +285,16 @@ export function useSupabaseLoads() {
       return updatedLoad;
     } catch (error: any) {
       console.error('Error updating load:', error);
-      toast({
-        title: "Error updating load",
-        description: error.message || "Failed to update the load.",
-        variant: "destructive",
-      });
-      throw error;
+      if (isNetworkError(error)) {
+        handleOffline(() => updateLoad(id, loadData));
+      } else {
+        toast({
+          title: "Error updating load",
+          description: error.message || "Failed to update the load.",
+          variant: "destructive",
+        });
+        throw error;
+      }
     }
   };
 

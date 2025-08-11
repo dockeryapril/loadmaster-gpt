@@ -13,6 +13,16 @@ export function useNegotiationSettings() {
   const fetchSettings = async () => {
     if (!user) return;
 
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Failed to load your negotiation settings.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('negotiation_settings')
@@ -40,11 +50,19 @@ export function useNegotiationSettings() {
       }
     } catch (error: any) {
       console.error('Error fetching negotiation settings:', error);
-      toast({
-        title: "Error loading negotiation settings",
-        description: "Failed to load your negotiation settings. Using defaults.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Failed to load your negotiation settings.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error loading negotiation settings",
+          description: "Failed to load your negotiation settings. Using defaults.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -52,6 +70,15 @@ export function useNegotiationSettings() {
 
   const updateSettings = async (updates: Partial<NegotiationSettings>) => {
     if (!user || !settings) return;
+
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Save will retry when online",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -69,11 +96,19 @@ export function useNegotiationSettings() {
       });
     } catch (error: any) {
       console.error('Error updating negotiation settings:', error);
-      toast({
-        title: "Error saving settings",
-        description: error.message || "Failed to save your negotiation settings.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Save will retry when online",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error saving settings",
+          description: error.message || "Failed to save your negotiation settings.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

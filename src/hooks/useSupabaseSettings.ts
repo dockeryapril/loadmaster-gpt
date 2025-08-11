@@ -13,7 +13,17 @@ export function useSupabaseSettings() {
   // Fetch settings from Supabase
   const fetchSettings = async () => {
     if (!user) return;
-    
+
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Failed to load your settings.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('user_settings')
@@ -48,11 +58,19 @@ export function useSupabaseSettings() {
       }
     } catch (error: any) {
       console.error('Error fetching settings:', error);
-      toast({
-        title: "Error loading settings",
-        description: "Failed to load your settings. Using defaults.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Failed to load your settings.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error loading settings",
+          description: "Failed to load your settings. Using defaults.",
+          variant: "destructive",
+        });
+      }
       setSettings(defaultUserSettings);
     } finally {
       setLoading(false);
@@ -63,9 +81,18 @@ export function useSupabaseSettings() {
   const updateSettings = async (partialSettings: Partial<UserSettings>) => {
     if (!user) return;
 
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Save will retry when online",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const mergedSettings = { ...settings, ...partialSettings };
-      
+
       const updateData: any = {
         user_id: user.id,
       };
@@ -102,11 +129,19 @@ export function useSupabaseSettings() {
       });
     } catch (error: any) {
       console.error('Error updating settings:', error);
-      toast({
-        title: "Error saving settings",
-        description: error.message || "Failed to save your settings.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Save will retry when online",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error saving settings",
+          description: error.message || "Failed to save your settings.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
