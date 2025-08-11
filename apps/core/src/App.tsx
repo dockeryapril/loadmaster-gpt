@@ -8,6 +8,8 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { HistoryItem } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { logEvent } from '@/utils/metrics';
 
 const DEFAULT_USER_SETTINGS = {
   rpmThresholds: {
@@ -90,7 +92,25 @@ function App() {
     window.location.href = '/auth';
   };
 
-  const handleUpgradeToPro = () => {
+  const handleUpgradeToPro = async () => {
+    const timestamp = new Date().toISOString();
+    try {
+      await supabase
+        .from('user_settings')
+        .update({
+          plan: 'pro',
+          plan_changed_at: timestamp,
+          plan_change_source: 'core_app'
+        });
+      await logEvent('plan_change', {
+        from: plan,
+        to: 'pro',
+        source: 'core_app',
+        timestamp
+      });
+    } catch {
+      /* ignore analytics errors */
+    }
     // Navigate to v1 for upgrade flow
     window.location.href = '/';
   };
