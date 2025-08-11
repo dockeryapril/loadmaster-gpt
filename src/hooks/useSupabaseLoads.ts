@@ -114,25 +114,55 @@ export function useSupabaseLoads() {
     }
 
     try {
+      const creationTimestamp = new Date().toISOString();
+      const loadNumber = (loadData as any).loadNumber;
+
+      let duplicateQuery = supabase
+        .from('loads')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('origin', loadData.origin)
+        .eq('destination', loadData.destination);
+
+      duplicateQuery = loadNumber
+        ? duplicateQuery.eq('load_number', loadNumber)
+        : duplicateQuery.eq('created_at', creationTimestamp);
+
+      const { data: existingLoad, error: dupError } = await duplicateQuery.limit(1);
+
+      if (dupError) throw dupError;
+
+      if (existingLoad && existingLoad.length > 0) {
+        toast({
+          title: 'Duplicate load',
+          description: 'This load seems already entered.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('loads')
-        .insert([{
-          user_id: user.id,
-          origin: loadData.origin,
-          destination: loadData.destination,
-          miles: loadData.miles,
-          rate: loadData.rate,
-          fsc: loadData.fsc || 0,
-          tolls: loadData.tolls || 0,
-          weight: loadData.weight,
-          deadhead_miles: loadData.deadheadMiles || 0,
-          fuel_cost: loadData.fuelCost || 0,
-          rpm: loadData.rpm,
-          profit: loadData.profit,
-          quality: loadData.quality,
-          tags: loadData.tags,
-          notes: loadData.notes,
-        }])
+        .insert([
+          {
+            user_id: user.id,
+            origin: loadData.origin,
+            destination: loadData.destination,
+            miles: loadData.miles,
+            rate: loadData.rate,
+            fsc: loadData.fsc || 0,
+            tolls: loadData.tolls || 0,
+            weight: loadData.weight,
+            deadhead_miles: loadData.deadheadMiles || 0,
+            fuel_cost: loadData.fuelCost || 0,
+            rpm: loadData.rpm,
+            profit: loadData.profit,
+            quality: loadData.quality,
+            tags: loadData.tags,
+            notes: loadData.notes,
+            created_at: creationTimestamp,
+          },
+        ])
         .select()
         .single();
 
