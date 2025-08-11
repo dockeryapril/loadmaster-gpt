@@ -12,6 +12,8 @@ import { LoadEntryMethod } from './LoadEntryMethod';
 import { NegotiationSheet } from './NegotiationSheet';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface LoadCalculatorProps {
   onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => void;
@@ -20,7 +22,7 @@ interface LoadCalculatorProps {
 }
 
 export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalculatorProps) {
-  const { settings } = useSupabaseSettings();
+  const { settings, loading: settingsLoading } = useSupabaseSettings();
   const { toast } = useToast();
   const [showLoadEntry, setShowLoadEntry] = useState(false);
   const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
@@ -36,6 +38,20 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
   const [deadheadMiles, setDeadheadMiles] = useState(initialData?.deadheadMiles?.toString() || '');
   const [fuelCost, setFuelCost] = useState(initialData?.fuelCost?.toString() || '');
   const [notes, setNotes] = useState(initialData?.notes || '');
+
+  const [showSkeleton, setShowSkeleton] = useState(true);
+  const [contentVisible, setContentVisible] = useState(false);
+
+  useEffect(() => {
+    if (!settingsLoading) {
+      const timer = setTimeout(() => setShowSkeleton(false), 300);
+      setContentVisible(true);
+      return () => clearTimeout(timer);
+    } else {
+      setShowSkeleton(true);
+      setContentVisible(false);
+    }
+  }, [settingsLoading]);
 
   const calculateLoad = (): LoadCalculationResult => {
     const milesNum = parseFloat(miles) || 0;
@@ -190,256 +206,279 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
 
   return (
     <div className="space-y-6">
-        {showLoadEntry && (
-          <LoadEntryMethod
-            onFieldsDetected={handleFieldsDetected}
-            onManualEntry={() => setShowLoadEntry(false)}
-            onClose={() => setShowLoadEntry(false)}
-          />
-        )}
-      
-      <Card className="gradient-card border-0">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center justify-between text-foreground">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <Calculator className="h-5 w-5 text-primary" />
-              </div>
-              Load Calculator
-            </div>
-            <Button
-              onClick={() => setShowLoadEntry(!showLoadEntry)}
-              variant="ghost"
-              size="sm"
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
+      {showLoadEntry && (
+        <LoadEntryMethod
+          onFieldsDetected={handleFieldsDetected}
+          onManualEntry={() => setShowLoadEntry(false)}
+          onClose={() => setShowLoadEntry(false)}
+        />
+      )}
+
+      {showSkeleton && (
+        <Card
+          className={cn(
+            "p-6 transition-opacity duration-500",
+            settingsLoading ? "opacity-100" : "opacity-0"
+          )}
+        >
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="origin">Origin</Label>
-                <Input
-                  id="origin"
-                  value={origin}
-                  onChange={(e) => setOrigin(e.target.value)}
-                  placeholder="City, State"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="destination">Destination</Label>
-                <Input
-                  id="destination"
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  placeholder="City, State"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="miles">Miles</Label>
-                <Input
-                  id="miles"
-                  type="number"
-                  value={miles}
-                  onChange={(e) => setMiles(e.target.value)}
-                  placeholder="450"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="deadheadMiles">Deadhead Miles</Label>
-                <Input
-                  id="deadheadMiles"
-                  type="number"
-                  value={deadheadMiles}
-                  onChange={(e) => setDeadheadMiles(e.target.value)}
-                  placeholder="50"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="rate">Rate ($)</Label>
-                <Input
-                  id="rate"
-                  type="number"
-                  step="0.01"
-                  value={rate}
-                  onChange={(e) => setRate(e.target.value)}
-                  placeholder="2500.00"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="fsc">FSC ($)</Label>
-                <Input
-                  id="fsc"
-                  type="number"
-                  step="0.01"
-                  value={fsc}
-                  onChange={(e) => setFsc(e.target.value)}
-                  placeholder="250.00"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="tolls">Tolls ($)</Label>
-                <Input
-                  id="tolls"
-                  type="number"
-                  step="0.01"
-                  value={tolls}
-                  onChange={(e) => setTolls(e.target.value)}
-                  placeholder="85.00"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="weight">Weight (lbs)</Label>
-                <Input
-                  id="weight"
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  placeholder="45000"
-                />
-              </div>
-            </div>
-            
-            {settings.enableFuelCostTracking && (
-              <div className="space-y-2">
-                <Label htmlFor="fuelCost">Fuel Cost ($)</Label>
-                <Input
-                  id="fuelCost"
-                  type="number"
-                  step="0.01"
-                  value={fuelCost}
-                  onChange={(e) => setFuelCost(e.target.value)}
-                  placeholder="350.00"
-                />
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Additional notes about this load..."
-                rows={2}
-              />
-            </div>
+            <Skeleton className="h-6 w-1/3" />
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
           </div>
-          
-          <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Revenue Per Mile</span>
-              <div className="text-right">
-                <div className="text-2xl font-bold">${calculation.rpm.toFixed(2)}</div>
-                <Badge variant={getQualityColor(calculation.quality)} className="text-xs">
-                  {calculation.quality}
-                </Badge>
+        </Card>
+      )}
+
+      <div
+        className={cn(
+          "space-y-6 transition-opacity duration-500",
+          contentVisible ? "opacity-100" : "opacity-0"
+        )}
+      >
+        <Card className="gradient-card border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center justify-between text-foreground">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-primary/20">
+                  <Calculator className="h-5 w-5 text-primary" />
+                </div>
+                Load Calculator
               </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Estimated Profit</span>
-              <div className="text-right">
-                <div className="text-xl font-bold text-success">${calculation.profit.toFixed(2)}</div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <div className="text-muted-foreground">Total Miles</div>
-                <div className="font-medium">{calculation.totalMiles}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Net Rate</div>
-                <div className="font-medium">${calculation.netRate.toFixed(2)}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Weight Impact</div>
-                <Badge variant={getWeightColor(calculation.weightImpact)} className="text-xs">
-                  {calculation.weightImpact}
-                </Badge>
-              </div>
-            </div>
-            
-            {calculation.tags.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-sm text-muted-foreground">Smart Tags</div>
-                <div className="flex flex-wrap gap-1">
-                  {calculation.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
+              <Button
+                onClick={() => setShowLoadEntry(!showLoadEntry)}
+                variant="ghost"
+                size="sm"
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="origin">Origin</Label>
+                  <Input
+                    id="origin"
+                    value={origin}
+                    onChange={(e) => setOrigin(e.target.value)}
+                    placeholder="City, State"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="destination">Destination</Label>
+                  <Input
+                    id="destination"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="City, State"
+                  />
                 </div>
               </div>
-            )}
-          </div>
-          
-          <div className="flex gap-3">
-            {onClose && (
-              <Button variant="outline" onClick={onClose} className="flex-1">
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-            )}
-            
-            <Button
-              variant="outline"
-              onClick={() => setShowNegotiationSheet(true)}
-              disabled={!origin || !destination || !miles || !rate}
-              className="flex-1"
-            >
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Negotiate
-            </Button>
 
-            <Button
-              onClick={handleSave}
-              disabled={saving || !origin || !destination || !miles || !rate}
-              className="flex-1"
-            >
-              {saving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="miles">Miles</Label>
+                  <Input
+                    id="miles"
+                    type="number"
+                    value={miles}
+                    onChange={(e) => setMiles(e.target.value)}
+                    placeholder="450"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="deadheadMiles">Deadhead Miles</Label>
+                  <Input
+                    id="deadheadMiles"
+                    type="number"
+                    value={deadheadMiles}
+                    onChange={(e) => setDeadheadMiles(e.target.value)}
+                    placeholder="50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="rate">Rate ($)</Label>
+                  <Input
+                    id="rate"
+                    type="number"
+                    step="0.01"
+                    value={rate}
+                    onChange={(e) => setRate(e.target.value)}
+                    placeholder="2500.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fsc">FSC ($)</Label>
+                  <Input
+                    id="fsc"
+                    type="number"
+                    step="0.01"
+                    value={fsc}
+                    onChange={(e) => setFsc(e.target.value)}
+                    placeholder="250.00"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="tolls">Tolls ($)</Label>
+                  <Input
+                    id="tolls"
+                    type="number"
+                    step="0.01"
+                    value={tolls}
+                    onChange={(e) => setTolls(e.target.value)}
+                    placeholder="85.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="weight">Weight (lbs)</Label>
+                  <Input
+                    id="weight"
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    placeholder="45000"
+                  />
+                </div>
+              </div>
+
+              {settings.enableFuelCostTracking && (
+                <div className="space-y-2">
+                  <Label htmlFor="fuelCost">Fuel Cost ($)</Label>
+                  <Input
+                    id="fuelCost"
+                    type="number"
+                    step="0.01"
+                    value={fuelCost}
+                    onChange={(e) => setFuelCost(e.target.value)}
+                    placeholder="350.00"
+                  />
+                </div>
               )}
-              {saving ? 'Saving...' : 'Save Load'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
-      <NegotiationSheet
-        open={showNegotiationSheet}
-        onClose={() => setShowNegotiationSheet(false)}
-        load={{
-          origin,
-          destination,
-          miles: parseFloat(miles) || 0,
-          rate: parseFloat(rate) || 0,
-          fsc: parseFloat(fsc) || 0,
-          tolls: parseFloat(tolls) || 0,
-          weight: parseFloat(weight) || 0,
-          deadheadMiles: parseFloat(deadheadMiles) || 0,
-          notes
-        }}
-      />
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Additional notes about this load..."
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Revenue Per Mile</span>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">${calculation.rpm.toFixed(2)}</div>
+                  <Badge variant={getQualityColor(calculation.quality)} className="text-xs">
+                    {calculation.quality}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Estimated Profit</span>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-success">${calculation.profit.toFixed(2)}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="text-muted-foreground">Total Miles</div>
+                  <div className="font-medium">{calculation.totalMiles}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Net Rate</div>
+                  <div className="font-medium">${calculation.netRate.toFixed(2)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Weight Impact</div>
+                  <Badge variant={getWeightColor(calculation.weightImpact)} className="text-xs">
+                    {calculation.weightImpact}
+                  </Badge>
+                </div>
+              </div>
+
+              {calculation.tags.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Smart Tags</div>
+                  <div className="flex flex-wrap gap-1">
+                    {calculation.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              {onClose && (
+                <Button variant="outline" onClick={onClose} className="flex-1">
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                onClick={() => setShowNegotiationSheet(true)}
+                disabled={!origin || !destination || !miles || !rate}
+                className="flex-1"
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Negotiate
+              </Button>
+
+              <Button
+                onClick={handleSave}
+                disabled={saving || !origin || !destination || !miles || !rate}
+                className="flex-1"
+              >
+                {saving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                {saving ? 'Saving...' : 'Save Load'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <NegotiationSheet
+          open={showNegotiationSheet}
+          onClose={() => setShowNegotiationSheet(false)}
+          load={{
+            origin,
+            destination,
+            miles: parseFloat(miles) || 0,
+            rate: parseFloat(rate) || 0,
+            fsc: parseFloat(fsc) || 0,
+            tolls: parseFloat(tolls) || 0,
+            weight: parseFloat(weight) || 0,
+            deadheadMiles: parseFloat(deadheadMiles) || 0,
+            notes
+          }}
+        />
+      </div>
     </div>
   );
 }
