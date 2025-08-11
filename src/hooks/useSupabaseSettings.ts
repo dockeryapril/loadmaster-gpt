@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserSettings, defaultUserSettings } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/errorLogger';
 
 export function useSupabaseSettings() {
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
@@ -57,7 +58,7 @@ export function useSupabaseSettings() {
         setSettings(defaultUserSettings);
       }
     } catch (error: any) {
-      console.error('Error fetching settings:', error);
+      logError('Error fetching settings:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",
@@ -128,7 +129,7 @@ export function useSupabaseSettings() {
         description: "Your settings have been updated successfully.",
       });
     } catch (error: any) {
-      console.error('Error updating settings:', error);
+      logError('Error updating settings:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",

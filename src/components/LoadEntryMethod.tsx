@@ -14,6 +14,7 @@ import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
+import { logError } from '@/utils/errorLogger';
 
 interface LoadEntryMethodProps {
   onFieldsDetected: (result: FieldDetectionResult) => void;
@@ -106,7 +107,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             settings.enableFuelCostTracking
           );
         } catch (err) {
-          console.error('Field detection error:', err);
+          logError('Field detection error:', err);
         }
 
         if (!detectionResult || detectionResult.detectedFields.length === 0) {
@@ -161,7 +162,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         logOCREnd('LoadEntryMethod', startTime, false, 'no_text');
       }
     } catch (error) {
-      console.error('OCR error:', error);
+      logError('OCR error:', error);
       toast({
         title: "OCR failed",
         description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
@@ -251,7 +252,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         cameraInputRef.current?.click();
       }
     } catch (error) {
-      console.error('Camera access failed:', error);
+      logError('Camera access failed:', error);
       toast({
         title: "Camera access failed",
         description: "Check browser permissions and try again, or upload a photo instead.",

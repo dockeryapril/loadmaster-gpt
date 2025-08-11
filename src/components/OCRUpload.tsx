@@ -9,6 +9,7 @@ import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
+import { logError } from '@/utils/errorLogger';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -106,7 +107,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             enableFuelCostTracking
           );
         } catch (err) {
-          console.error('Field detection error:', err);
+          logError('Field detection error:', err);
         }
 
         if (!detectionResult || detectionResult.detectedFields.length === 0) {
@@ -162,7 +163,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         logOCREnd('OCRUpload', startTime, false, 'no_text');
       }
     } catch (error) {
-      console.error('OCR error:', error);
+      logError('OCR error:', error);
       toast({
         title: "OCR failed",
         description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
@@ -224,7 +225,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           setPreviewSrc(canvas.toDataURL());
           bitmap.close();
         })
-        .catch(err => console.error('Preview generation error:', err));
+        .catch(err => logError('Preview generation error:', err));
 
       fullImagePromiseRef.current = new Promise(resolve => {
         const url = URL.createObjectURL(file);

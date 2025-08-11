@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/utils/errorLogger';
 
 interface AuthContextType {
   user: User | null;
@@ -57,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Force page reload for clean state
       window.location.href = '/auth';
     } catch (error) {
-      console.error('Error signing out:', error);
+      logError('Error signing out:', error);
       // Force redirect even if sign out fails
       window.location.href = '/auth';
     }

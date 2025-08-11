@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Load } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/errorLogger';
 
 export function useSupabaseLoads() {
   const [loads, setLoads] = useState<Load[]>([]);
@@ -32,7 +33,7 @@ export function useSupabaseLoads() {
         try {
           await fn();
         } catch (err) {
-          console.error('Retry failed:', err);
+          logError('Retry failed:', err);
         }
       }
     };
@@ -85,7 +86,7 @@ export function useSupabaseLoads() {
 
       setLoads(transformedLoads);
     } catch (error: any) {
-      console.error('Error fetching loads:', error);
+      logError('Error fetching loads:', error);
       if (isNetworkError(error)) {
         toast({
           title: "Connection lost",
@@ -197,7 +198,7 @@ export function useSupabaseLoads() {
 
       return newLoad;
     } catch (error: any) {
-      console.error('Error saving load:', error);
+      logError('Error saving load:', error);
       if (isNetworkError(error)) {
         handleOffline(() => saveLoad(loadData));
       } else {
@@ -237,7 +238,7 @@ export function useSupabaseLoads() {
         variant: "destructive",
       });
     } catch (error: any) {
-      console.error('Error deleting load:', error);
+      logError('Error deleting load:', error);
       if (isNetworkError(error)) {
         handleOffline(() => deleteLoad(id));
       } else {
@@ -314,7 +315,7 @@ export function useSupabaseLoads() {
 
       return updatedLoad;
     } catch (error: any) {
-      console.error('Error updating load:', error);
+      logError('Error updating load:', error);
       if (isNetworkError(error)) {
         handleOffline(() => updateLoad(id, loadData));
       } else {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/errorLogger';
 
 export function usePlan() {
   const [plan, setPlan] = useState<"free" | "pro">("free");
@@ -37,7 +38,7 @@ export function usePlan() {
           setPlan(data.plan as "free" | "pro");
         }
       } catch (error: any) {
-        console.error('Error fetching plan:', error);
+        logError('Error fetching plan:', error);
         if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
           toast({
             title: "Connection lost",

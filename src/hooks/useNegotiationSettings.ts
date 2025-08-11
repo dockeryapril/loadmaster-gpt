@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { NegotiationSettings, DEFAULT_NEGOTIATION_SETTINGS } from '@/types/negotiation';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/errorLogger';
 
 export function useNegotiationSettings() {
   const [settings, setSettings] = useState<NegotiationSettings | null>(null);
@@ -49,7 +50,7 @@ export function useNegotiationSettings() {
         setSettings(newSettings as NegotiationSettings);
       }
     } catch (error: any) {
-      console.error('Error fetching negotiation settings:', error);
+      logError('Error fetching negotiation settings:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",
@@ -95,7 +96,7 @@ export function useNegotiationSettings() {
         description: "Your negotiation settings have been updated.",
       });
     } catch (error: any) {
-      console.error('Error updating negotiation settings:', error);
+      logError('Error updating negotiation settings:', error);
       if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
         toast({
           title: "Connection lost",
