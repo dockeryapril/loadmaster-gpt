@@ -326,17 +326,10 @@ const Index = () => {
         );
       
       default:
-        if (loadsLoading) {
-          return (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-sm text-muted-foreground mt-4">Loading dashboard...</p>
-            </div>
-          );
-        }
         return (
           <Dashboard
             loads={loads}
+            loading={loadsLoading}
             onAddLoad={handleAddNewLoad}
             onEdit={handleEditLoad}
           />
