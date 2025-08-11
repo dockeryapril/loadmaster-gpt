@@ -26,9 +26,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const imageElementRef = useRef<HTMLImageElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
 
@@ -156,12 +159,49 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       setShowOCRFallback(true);
     } finally {
       setIsProcessing(false);
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+      if (imageElementRef.current) {
+        imageElementRef.current.src = '';
+        imageElementRef.current = null;
+      }
+      if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        canvasRef.current = null;
+      }
     }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+      if (imageElementRef.current) {
+        imageElementRef.current.src = '';
+        imageElementRef.current = null;
+      }
+      if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        canvasRef.current = null;
+      }
+      const url = URL.createObjectURL(file);
+      objectUrlRef.current = url;
+      imageElementRef.current = new Image();
+      imageElementRef.current.src = url;
+      canvasRef.current = document.createElement('canvas');
       handleOCR(file);
     } else {
       toast({

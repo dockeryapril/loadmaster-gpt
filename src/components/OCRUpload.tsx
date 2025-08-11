@@ -30,6 +30,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const fullImagePromiseRef = useRef<Promise<string> | null>(null);
   const fullImageUrlRef = useRef<string | null>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imageElementRef = useRef<HTMLImageElement | null>(null);
 
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
@@ -163,6 +165,19 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         URL.revokeObjectURL(fullImageUrlRef.current);
         fullImageUrlRef.current = null;
       }
+      fullImagePromiseRef.current = null;
+      if (imageElementRef.current) {
+        imageElementRef.current.src = '';
+        imageElementRef.current = null;
+      }
+      if (previewCanvasRef.current) {
+        const canvas = previewCanvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        previewCanvasRef.current = null;
+      }
       setPreviewSrc(null);
     }
   };
@@ -174,15 +189,29 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         URL.revokeObjectURL(fullImageUrlRef.current);
         fullImageUrlRef.current = null;
       }
+      if (previewCanvasRef.current) {
+        const canvas = previewCanvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        previewCanvasRef.current = null;
+      }
+      if (imageElementRef.current) {
+        imageElementRef.current.src = '';
+        imageElementRef.current = null;
+      }
 
       createImageBitmap(file, { resizeWidth: 200, resizeHeight: 200 })
         .then(bitmap => {
           const canvas = document.createElement('canvas');
+          previewCanvasRef.current = canvas;
           canvas.width = bitmap.width;
           canvas.height = bitmap.height;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(bitmap, 0, 0);
           setPreviewSrc(canvas.toDataURL());
+          bitmap.close();
         })
         .catch(err => console.error('Preview generation error:', err));
 
@@ -190,6 +219,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         const url = URL.createObjectURL(file);
         fullImageUrlRef.current = url;
         const img = new Image();
+        imageElementRef.current = img;
         img.onload = () => resolve(url);
         img.src = url;
       });
