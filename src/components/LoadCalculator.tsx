@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { Calculator, Save, X, Camera, TrendingUp, Loader2 } from 'lucide-react';
 import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, generateSmartTags, calculateProfit } from '@/types/load';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
@@ -21,23 +29,57 @@ interface LoadCalculatorProps {
   onClose?: () => void;
 }
 
+interface LoadFormValues {
+  origin: string;
+  destination: string;
+  miles: string;
+  rate: string;
+  fsc: string;
+  tolls: string;
+  weight: string;
+  deadheadMiles: string;
+  fuelCost: string;
+  notes: string;
+}
+
 export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalculatorProps) {
   const { settings, loading: settingsLoading } = useSupabaseSettings();
   const { toast } = useToast();
   const [showLoadEntry, setShowLoadEntry] = useState(false);
   const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
   const [saving, setSaving] = useState(false);
-  
-  const [origin, setOrigin] = useState(initialData?.origin || '');
-  const [destination, setDestination] = useState(initialData?.destination || '');
-  const [miles, setMiles] = useState(initialData?.miles?.toString() || '');
-  const [rate, setRate] = useState(initialData?.rate?.toString() || '');
-  const [fsc, setFsc] = useState(initialData?.fsc?.toString() || '');
-  const [tolls, setTolls] = useState(initialData?.tolls?.toString() || '');
-  const [weight, setWeight] = useState(initialData?.weight?.toString() || '');
-  const [deadheadMiles, setDeadheadMiles] = useState(initialData?.deadheadMiles?.toString() || '');
-  const [fuelCost, setFuelCost] = useState(initialData?.fuelCost?.toString() || '');
-  const [notes, setNotes] = useState(initialData?.notes || '');
+
+  const form = useForm<LoadFormValues>({
+    defaultValues: {
+      origin: initialData?.origin || '',
+      destination: initialData?.destination || '',
+      miles: initialData?.miles?.toString() || '',
+      rate: initialData?.rate?.toString() || '',
+      fsc: initialData?.fsc?.toString() || '',
+      tolls: initialData?.tolls?.toString() || '',
+      weight: initialData?.weight?.toString() || '',
+      deadheadMiles: initialData?.deadheadMiles?.toString() || '',
+      fuelCost: initialData?.fuelCost?.toString() || '',
+      notes: initialData?.notes || '',
+    },
+    mode: 'onChange',
+  });
+
+  const {
+    origin,
+    destination,
+    miles,
+    rate,
+    fsc,
+    tolls,
+    weight,
+    deadheadMiles,
+    fuelCost,
+    notes,
+  } = form.watch();
+
+  const hasErrors = Object.keys(form.formState.errors).length > 0;
+  const requiredFilled = origin && destination && miles && rate;
 
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
@@ -122,28 +164,28 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
     }
   };
 
-  const handleSave = async () => {
-    if (!origin || !destination || !miles || !rate) {
-      return;
-    }
-
+  const onSubmit = async (values: LoadFormValues) => {
     const calculation = calculateLoad();
 
     const loadData: Omit<Load, 'id' | 'createdAt'> = {
-      origin,
-      destination,
-      miles: parseFloat(miles),
-      rate: parseFloat(rate),
-      fsc: parseFloat(fsc) || undefined,
-      tolls: parseFloat(tolls) || undefined,
-      weight: parseFloat(weight) || undefined,
-      deadheadMiles: parseFloat(deadheadMiles) || undefined,
-      fuelCost: settings.enableFuelCostTracking ? (parseFloat(fuelCost) || undefined) : undefined,
+      origin: values.origin,
+      destination: values.destination,
+      miles: parseFloat(values.miles),
+      rate: parseFloat(values.rate),
+      fsc: values.fsc ? parseFloat(values.fsc) : undefined,
+      tolls: values.tolls ? parseFloat(values.tolls) : undefined,
+      weight: values.weight ? parseFloat(values.weight) : undefined,
+      deadheadMiles: values.deadheadMiles ? parseFloat(values.deadheadMiles) : undefined,
+      fuelCost: settings.enableFuelCostTracking
+        ? values.fuelCost
+          ? parseFloat(values.fuelCost)
+          : undefined
+        : undefined,
       rpm: calculation.rpm,
       profit: calculation.profit,
       quality: calculation.quality,
       tags: calculation.tags,
-      notes
+      notes: values.notes,
     };
 
     if (onSaveLoad) {
@@ -158,46 +200,46 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {
     // Auto-fill form fields based on AI detection
-    result.detectedFields.forEach(field => {
-      const value = field.value.replace(/[$,]/g, ''); // Clean currency/comma formatting
-      
+    result.detectedFields.forEach((field) => {
+      const value = field.value.replace(/[$,]/g, '');
+
       switch (field.field) {
         case 'miles':
-          setMiles(value);
+          form.setValue('miles', value, { shouldValidate: true });
           break;
         case 'rate':
-          setRate(value);
+          form.setValue('rate', value, { shouldValidate: true });
           break;
         case 'origin':
-          setOrigin(field.value);
+          form.setValue('origin', field.value, { shouldValidate: true });
           break;
         case 'destination':
-          setDestination(field.value);
+          form.setValue('destination', field.value, { shouldValidate: true });
           break;
         case 'deadhead':
-          setDeadheadMiles(value);
+          form.setValue('deadheadMiles', value, { shouldValidate: true });
           break;
         case 'weight':
-          setWeight(value);
+          form.setValue('weight', value, { shouldValidate: true });
           break;
         case 'fsc':
-          setFsc(value);
+          form.setValue('fsc', value, { shouldValidate: true });
           break;
         case 'tolls':
-          setTolls(value);
+          form.setValue('tolls', value, { shouldValidate: true });
           break;
         case 'fuelCost':
           if (settings.enableFuelCostTracking) {
-            setFuelCost(value);
+            form.setValue('fuelCost', value, { shouldValidate: true });
           }
           break;
       }
     });
-    
+
     setShowLoadEntry(false);
-    
+
     toast({
-      title: "Fields auto-filled!",
+      title: 'Fields auto-filled!',
       description: `${result.detectedFields.length} fields detected and filled automatically.`,
     });
   };
@@ -205,38 +247,39 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
   const calculation = calculateLoad();
 
   return (
-    <div className="space-y-6">
-      {showLoadEntry && (
-        <LoadEntryMethod
-          onFieldsDetected={handleFieldsDetected}
-          onManualEntry={() => setShowLoadEntry(false)}
-          onClose={() => setShowLoadEntry(false)}
-        />
-      )}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {showLoadEntry && (
+          <LoadEntryMethod
+            onFieldsDetected={handleFieldsDetected}
+            onManualEntry={() => setShowLoadEntry(false)}
+            onClose={() => setShowLoadEntry(false)}
+          />
+        )}
 
-      {showSkeleton && (
-        <Card
+        {showSkeleton && (
+          <Card
+            className={cn(
+              "p-6 transition-opacity duration-500",
+              settingsLoading ? "opacity-100" : "opacity-0"
+            )}
+          >
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-1/3" />
+              {[...Array(6)].map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          </Card>
+        )}
+
+        <div
           className={cn(
-            "p-6 transition-opacity duration-500",
-            settingsLoading ? "opacity-100" : "opacity-0"
+            "space-y-6 transition-opacity duration-500",
+            contentVisible ? "opacity-100" : "opacity-0"
           )}
         >
-          <div className="space-y-4">
-            <Skeleton className="h-6 w-1/3" />
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        </Card>
-      )}
-
-      <div
-        className={cn(
-          "space-y-6 transition-opacity duration-500",
-          contentVisible ? "opacity-100" : "opacity-0"
-        )}
-      >
-        <Card className="gradient-card border-0">
+          <Card className="gradient-card border-0">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center justify-between text-foreground">
               <div className="flex items-center gap-2">
@@ -256,129 +299,225 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="origin">Origin</Label>
-                  <Input
-                    id="origin"
-                    value={origin}
-                    onChange={(e) => setOrigin(e.target.value)}
-                    placeholder="City, State"
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="origin"
+                    rules={{ required: 'Origin is required' }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Origin</FormLabel>
+                        <FormControl>
+                          <Input placeholder="City, State" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="destination"
+                    rules={{ required: 'Destination is required' }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Destination</FormLabel>
+                        <FormControl>
+                          <Input placeholder="City, State" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="destination">Destination</Label>
-                  <Input
-                    id="destination"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                    placeholder="City, State"
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="miles"
+                    rules={{
+                      required: 'Miles are required',
+                      validate: (value) =>
+                        parseFloat(value) > 0 || 'Miles must be greater than 0',
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Miles</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="450" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="miles">Miles</Label>
-                  <Input
-                    id="miles"
-                    type="number"
-                    value={miles}
-                    onChange={(e) => setMiles(e.target.value)}
-                    placeholder="450"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="deadheadMiles">Deadhead Miles</Label>
-                  <Input
-                    id="deadheadMiles"
-                    type="number"
-                    value={deadheadMiles}
-                    onChange={(e) => setDeadheadMiles(e.target.value)}
-                    placeholder="50"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="rate">Rate ($)</Label>
-                  <Input
-                    id="rate"
-                    type="number"
-                    step="0.01"
-                    value={rate}
-                    onChange={(e) => setRate(e.target.value)}
-                    placeholder="2500.00"
+                  <FormField
+                    control={form.control}
+                    name="deadheadMiles"
+                    rules={{
+                      validate: (value) =>
+                        value === '' ||
+                        parseFloat(value) >= 0 ||
+                        'Deadhead miles must be 0 or more',
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Deadhead Miles</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="50" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="fsc">FSC ($)</Label>
-                  <Input
-                    id="fsc"
-                    type="number"
-                    step="0.01"
-                    value={fsc}
-                    onChange={(e) => setFsc(e.target.value)}
-                    placeholder="250.00"
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="rate"
+                    rules={{
+                      required: 'Rate is required',
+                      validate: (value) =>
+                        parseFloat(value) > 0 || 'Rate must be greater than 0',
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rate ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="2500.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="fsc"
+                    rules={{
+                      validate: (value) =>
+                        value === '' ||
+                        parseFloat(value) >= 0 ||
+                        'FSC must be 0 or more',
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>FSC ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="250.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="tolls">Tolls ($)</Label>
-                  <Input
-                    id="tolls"
-                    type="number"
-                    step="0.01"
-                    value={tolls}
-                    onChange={(e) => setTolls(e.target.value)}
-                    placeholder="85.00"
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="tolls"
+                    rules={{
+                      validate: (value) =>
+                        value === '' ||
+                        parseFloat(value) >= 0 ||
+                        'Tolls must be 0 or more',
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tolls ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="85.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="weight"
+                    rules={{
+                      validate: (value) =>
+                        value === '' ||
+                        parseFloat(value) >= 0 ||
+                        'Weight must be 0 or more',
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Weight (lbs)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="45000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (lbs)</Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    placeholder="45000"
+                {settings.enableFuelCostTracking && (
+                  <FormField
+                    control={form.control}
+                    name="fuelCost"
+                    rules={{
+                      validate: (value) =>
+                        value === '' ||
+                        parseFloat(value) >= 0 ||
+                        'Fuel cost must be 0 or more',
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fuel Cost ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="350.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </div>
+                )}
 
-              {settings.enableFuelCostTracking && (
-                <div className="space-y-2">
-                  <Label htmlFor="fuelCost">Fuel Cost ($)</Label>
-                  <Input
-                    id="fuelCost"
-                    type="number"
-                    step="0.01"
-                    value={fuelCost}
-                    onChange={(e) => setFuelCost(e.target.value)}
-                    placeholder="350.00"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional notes about this load..."
-                  rows={2}
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  rules={{
+                    maxLength: {
+                      value: 500,
+                      message: 'Notes must be at most 500 characters',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Additional notes about this load..."
+                          rows={2}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-            </div>
 
             <div className="bg-muted/50 rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between">
@@ -429,56 +568,57 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
               )}
             </div>
 
-            <div className="flex gap-3">
-              {onClose && (
-                <Button variant="outline" onClick={onClose} className="flex-1">
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                onClick={() => setShowNegotiationSheet(true)}
-                disabled={!origin || !destination || !miles || !rate}
-                className="flex-1"
-              >
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Negotiate
-              </Button>
-
-              <Button
-                onClick={handleSave}
-                disabled={saving || !origin || !destination || !miles || !rate}
-                className="flex-1"
-              >
-                {saving ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
+              <div className="flex gap-3">
+                {onClose && (
+                  <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                    <X className="mr-2 h-4 w-4" />
+                    Cancel
+                  </Button>
                 )}
-                {saving ? 'Saving...' : 'Save Load'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowNegotiationSheet(true)}
+                  disabled={!requiredFilled || hasErrors}
+                  className="flex-1"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Negotiate
+                </Button>
+
+                <Button
+                  type="submit"
+                  disabled={saving || !requiredFilled || hasErrors}
+                  className="flex-1"
+                >
+                  {saving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  {saving ? 'Saving...' : 'Save Load'}
+                </Button>
+              </div>
+            </CardContent>
+            </Card>
+          </div>
+        </form>
         <NegotiationSheet
           open={showNegotiationSheet}
           onClose={() => setShowNegotiationSheet(false)}
           load={{
             origin,
             destination,
-            miles: parseFloat(miles) || 0,
-            rate: parseFloat(rate) || 0,
-            fsc: parseFloat(fsc) || 0,
-            tolls: parseFloat(tolls) || 0,
-            weight: parseFloat(weight) || 0,
-            deadheadMiles: parseFloat(deadheadMiles) || 0,
-            notes
-          }}
-        />
-      </div>
-    </div>
-  );
-}
+          miles: parseFloat(miles) || 0,
+          rate: parseFloat(rate) || 0,
+          fsc: parseFloat(fsc) || 0,
+          tolls: parseFloat(tolls) || 0,
+          weight: parseFloat(weight) || 0,
+          deadheadMiles: parseFloat(deadheadMiles) || 0,
+          notes,
+        }}
+      />
+      </Form>
+    );
+  }
