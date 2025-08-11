@@ -110,7 +110,7 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center p-4 text-white">
+      <div className="flex justify-between items-center p-4 sm:p-6 text-white">
         <h2 className="text-lg font-semibold">Take Photo</h2>
         <Button
           variant="ghost"
@@ -148,8 +148,8 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
         {/* Overlay guide */}
         {!capturedImage && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="border-2 border-white/50 rounded-lg w-80 h-48 flex items-center justify-center">
-              <p className="text-white/70 text-sm text-center px-4">
+            <div className="border-2 border-white/50 rounded-lg w-[90%] max-w-xs sm:max-w-md md:max-w-lg aspect-[4/3] flex items-center justify-center">
+              <p className="text-white/70 text-xs sm:text-sm text-center px-2 sm:px-4">
                 Align your load document in the frame and ensure good lighting
               </p>
             </div>
@@ -158,30 +158,30 @@ export function CameraInterface({ stream, onCapture, onClose }: CameraInterfaceP
       </div>
 
       {/* Controls */}
-      <div className="p-6 bg-black">
+      <div className="p-4 sm:p-6 bg-black">
         {!capturedImage ? (
           <div className="flex justify-center">
             <Button
               onClick={capturePhoto}
               size="lg"
-              className="rounded-full w-16 h-16 bg-white hover:bg-white/90 text-black"
+              className="rounded-full w-14 h-14 sm:w-16 sm:h-16 bg-white hover:bg-white/90 text-black"
             >
               <Camera className="h-8 w-8" />
             </Button>
           </div>
         ) : (
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center gap-3 sm:gap-4">
             <Button
               onClick={retakePhoto}
               variant="outline"
-              className="flex-1 max-w-32 bg-white/10 border-white/30 text-white hover:bg-white/20"
+              className="flex-1 max-w-[9rem] sm:max-w-32 bg-white/10 border-white/30 text-white hover:bg-white/20"
             >
               <RotateCcw className="mr-2 h-4 w-4" />
               Retake
             </Button>
             <Button
               onClick={confirmCapture}
-              className="flex-1 max-w-32 bg-primary hover:bg-primary/90"
+              className="flex-1 max-w-[9rem] sm:max-w-32 bg-primary hover:bg-primary/90"
             >
               <Check className="mr-2 h-4 w-4" />
               Use Photo
