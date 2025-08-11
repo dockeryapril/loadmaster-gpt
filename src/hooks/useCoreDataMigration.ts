@@ -36,9 +36,19 @@ export function useCoreDataMigration() {
 
   const importCoreHistory = async (): Promise<{ imported: number }> => {
     if (isImporting) return { imported: 0 };
-    
+
     setIsImporting(true);
-    
+
+    if (!navigator.onLine) {
+      toast({
+        title: "Connection lost",
+        description: "Import will retry when online",
+        variant: "destructive",
+      });
+      setIsImporting(false);
+      return { imported: 0 };
+    }
+
     try {
       const coreItems = checkForCoreData();
       if (coreItems.length === 0) {
@@ -103,13 +113,21 @@ export function useCoreDataMigration() {
       });
 
       return { imported: count };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error importing Core data:', error);
-      toast({
-        title: "Import Failed",
-        description: "Failed to import Core data. Please try again.",
-        variant: "destructive",
-      });
+      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+        toast({
+          title: "Connection lost",
+          description: "Import failed due to network issues.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Import Failed",
+          description: "Failed to import Core data. Please try again.",
+          variant: "destructive",
+        });
+      }
       return { imported: 0 };
     } finally {
       setIsImporting(false);
