@@ -2,27 +2,31 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, DollarSign, Truck, BarChart3, Edit } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import {
+  TrendingUp,
+  DollarSign,
+  Truck,
+  BarChart3,
+  Edit,
+  Calculator,
+} from 'lucide-react';
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { LoadEntryMethod } from './LoadEntryMethod';
 
 interface DashboardProps {
   loads: Load[];
   onEdit?: (load: Load) => void;
   loading?: boolean;
-  onAddLoad: () => void;
 }
 
-export function Dashboard({
-  loads,
-  onEdit,
-  loading,
-  onAddLoad,
-}: DashboardProps) {
+export function Dashboard({ loads, onEdit, loading }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
+  const [showEntryMethod, setShowEntryMethod] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -74,9 +78,10 @@ export function Dashboard({
   };
 
   return (
-    <main className="space-y-6">
-      {/* Setup Banner */}
-      <SetupBanner />
+    <>
+      <main className="space-y-6">
+        {/* Setup Banner */}
+        <SetupBanner />
 
       {/* Header */}
       <header className="text-center space-y-2">
@@ -290,7 +295,7 @@ export function Dashboard({
                 <p className="text-sm text-muted-foreground mb-4">
                   Start by adding your first load to see RPM calculations and analytics
                 </p>
-                <Button variant="outline" onClick={onAddLoad}>
+                <Button variant="outline" onClick={() => setShowEntryMethod(true)}>
                   Get Started
                 </Button>
               </div>
@@ -298,6 +303,29 @@ export function Dashboard({
           </Card>
         </section>
       )}
-    </main>
+      </main>
+
+      {/* Add Load Button */}
+      <Button
+        className="fixed bottom-24 right-4 flex items-center gap-2 shadow-lg"
+        onClick={() => setShowEntryMethod(true)}
+      >
+        <div className="p-1 rounded bg-primary/20">
+          <Calculator className="h-5 w-5 text-primary" />
+        </div>
+        <span className="text-sm">Add Load</span>
+      </Button>
+
+      {/* Load Entry Method Modal */}
+      <Dialog open={showEntryMethod} onOpenChange={setShowEntryMethod}>
+        <DialogContent className="max-w-md p-0">
+          <LoadEntryMethod
+            onFieldsDetected={() => setShowEntryMethod(false)}
+            onManualEntry={() => setShowEntryMethod(false)}
+            onClose={() => setShowEntryMethod(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
