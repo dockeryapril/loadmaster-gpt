@@ -2,33 +2,27 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, DollarSign, Truck, BarChart3, Edit, X } from 'lucide-react';
+import { TrendingUp, DollarSign, Truck, BarChart3, Edit } from 'lucide-react';
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
-import { LoadCalculator } from './LoadCalculator';
-import { LoadEntryMethod } from './LoadEntryMethod';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 
 interface DashboardProps {
   loads: Load[];
   onEdit?: (load: Load) => void;
   loading?: boolean;
-  onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void>;
+  onAddLoad: () => void;
 }
 
 export function Dashboard({
   loads,
   onEdit,
   loading,
-  onSaveLoad,
+  onAddLoad,
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
-  const [showEntryMethod, setShowEntryMethod] = useState(false);
-  const [showCalculator, setShowCalculator] = useState(false);
-  const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -79,51 +73,6 @@ export function Dashboard({
     }
   };
 
-  const handleFieldsDetected = (result: FieldDetectionResult) => {
-    const fieldsMap = result.detectedFields.reduce((acc, field) => {
-      acc[field.field] = field.value;
-      return acc;
-    }, {} as Record<string, string>);
-
-    const detected: Partial<Load> = {
-      origin: fieldsMap.origin || '',
-      destination: fieldsMap.destination || '',
-      miles: fieldsMap.miles ? parseFloat(fieldsMap.miles) : undefined,
-      rate: fieldsMap.rate ? parseFloat(fieldsMap.rate) : undefined,
-      fsc: fieldsMap.fsc ? parseFloat(fieldsMap.fsc) : undefined,
-      weight: fieldsMap.weight ? parseFloat(fieldsMap.weight) : undefined,
-      deadheadMiles: fieldsMap.deadhead ? parseFloat(fieldsMap.deadhead) : undefined,
-      fuelCost: fieldsMap.fuelCost ? parseFloat(fieldsMap.fuelCost) : undefined,
-      tolls: fieldsMap.tolls ? parseFloat(fieldsMap.tolls) : undefined,
-      notes: '',
-    };
-
-    setOcrData(detected);
-    setShowEntryMethod(false);
-    setShowCalculator(true);
-  };
-
-  const handleManualEntry = () => {
-    setOcrData(null);
-    setShowEntryMethod(false);
-    setShowCalculator(true);
-  };
-
-  const handleSaveLoadInternal = async (loadData: Omit<Load, 'id' | 'createdAt'>) => {
-    if (onSaveLoad) {
-      await onSaveLoad(loadData);
-      setShowCalculator(false);
-      setShowEntryMethod(false);
-      setOcrData(null);
-    }
-  };
-
-  const handleCalculatorClose = () => {
-    setShowCalculator(false);
-    setShowEntryMethod(false);
-    setOcrData(null);
-  };
-
   return (
     <main className="space-y-6">
       {/* Setup Banner */}
@@ -141,58 +90,6 @@ export function Dashboard({
         </h1>
         <p className="text-muted-foreground">Smart Load Analysis for Owner-Operators</p>
       </header>
-
-      {/* Load Entry Method Modal */}
-      {showEntryMethod && (
-        <section className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md animate-scale-in">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Add New Load</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowEntryMethod(false)}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <LoadEntryMethod
-                onFieldsDetected={handleFieldsDetected}
-                onManualEntry={handleManualEntry}
-                onClose={() => setShowEntryMethod(false)}
-              />
-            </div>
-          </Card>
-        </section>
-      )}
-
-      {/* Load Calculator Modal */}
-      {showCalculator && (
-        <section className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md animate-scale-in">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">New Load</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCalculatorClose}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <LoadCalculator
-                onSaveLoad={handleSaveLoadInternal}
-                onClose={handleCalculatorClose}
-                ocrData={ocrData || undefined}
-              />
-            </div>
-          </Card>
-        </section>
-      )}
 
       {/* Stats Grid */}
       <section aria-labelledby="stats-heading" className="relative">
@@ -393,7 +290,7 @@ export function Dashboard({
                 <p className="text-sm text-muted-foreground mb-4">
                   Start by adding your first load to see RPM calculations and analytics
                 </p>
-                <Button variant="outline" onClick={() => setShowEntryMethod(true)}>
+                <Button variant="outline" onClick={onAddLoad}>
                   Get Started
                 </Button>
               </div>

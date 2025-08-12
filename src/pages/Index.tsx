@@ -339,7 +339,7 @@ const Index = () => {
             loads={loads}
             loading={loadsLoading}
             onEdit={handleEditLoad}
-            onSaveLoad={handleSaveLoad}
+            onAddLoad={handleAddNewLoad}
           />
         );
     }
