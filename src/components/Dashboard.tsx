@@ -34,7 +34,6 @@ export function Dashboard({
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [entryCollapsed, setEntryCollapsed] = useState(false);
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
 
   useEffect(() => {
@@ -127,31 +126,19 @@ export function Dashboard({
   return (
     <>
       <main className="space-y-6">
-        {!showCalculator && (
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setEntryCollapsed(!entryCollapsed)}
-            >
-              {entryCollapsed ? 'Show entry options' : 'Hide entry options'}
-            </Button>
-          </div>
-        )}
-        {!entryCollapsed && !showCalculator && (
+        {showCalculator ? (
+          <LoadCalculator
+            onSaveLoad={handleSaveLoad}
+            ocrData={ocrData || undefined}
+            onClose={handleCloseCalculator}
+          />
+        ) : (
           <div id="entry-section">
             <LoadEntryMethod
               onFieldsDetected={handleFieldsDetected}
               onManualEntry={handleManualEntry}
             />
           </div>
-        )}
-        {showCalculator && (
-          <LoadCalculator
-            onSaveLoad={handleSaveLoad}
-            ocrData={ocrData || undefined}
-            onClose={handleCloseCalculator}
-          />
         )}
         {/* Setup Banner */}
         <SetupBanner />
@@ -300,8 +287,8 @@ export function Dashboard({
               Use the entry options above to add your first load.
             </p>
             <Button
+              className="w-full sm:w-auto mx-auto"
               onClick={() => {
-                setEntryCollapsed(false);
                 document
                   .getElementById('entry-section')
                   ?.scrollIntoView({ behavior: 'smooth' });

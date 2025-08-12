@@ -14,12 +14,14 @@ export async function logEvent(event: string, data: Record<string, unknown> = {}
   };
 
   try {
-    const { error } = await (supabase as any).from('log_events').insert(payload as any);
+    const { error } = await supabase
+      .from<EventPayload>('log_events')
+      .insert(payload);
     if (error) {
       console.error('Supabase log error:', error);
       console.log('log_event', payload);
     }
-  } catch (err) {
+  } catch {
     console.log('log_event', payload);
   }
 }
