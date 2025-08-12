@@ -339,8 +339,7 @@ const Index = () => {
             loads={loads}
             loading={loadsLoading}
             onEdit={handleEditLoad}
-            handleFieldsDetected={handleFieldsDetected}
-            handleManualEntry={handleManualEntry}
+            onSaveLoad={handleSaveLoad}
           />
         );
     }
