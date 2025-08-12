@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 interface LoadCalculatorProps {
   onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => void;
   initialData?: Load;
+  ocrData?: Partial<Load>;
   onClose?: () => void;
 }
 
@@ -42,7 +43,7 @@ interface LoadFormValues {
   notes: string;
 }
 
-export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalculatorProps) {
+export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: LoadCalculatorProps) {
   const { settings, loading: settingsLoading } = useSupabaseSettings();
   const { toast } = useToast();
   const [showLoadEntry, setShowLoadEntry] = useState(false);
@@ -51,16 +52,16 @@ export function LoadCalculator({ onSaveLoad, initialData, onClose }: LoadCalcula
 
   const form = useForm<LoadFormValues>({
     defaultValues: {
-      origin: initialData?.origin || '',
-      destination: initialData?.destination || '',
-      miles: initialData?.miles?.toString() || '',
-      rate: initialData?.rate?.toString() || '',
-      fsc: initialData?.fsc?.toString() || '',
-      tolls: initialData?.tolls?.toString() || '',
-      weight: initialData?.weight?.toString() || '',
-      deadheadMiles: initialData?.deadheadMiles?.toString() || '',
-      fuelCost: initialData?.fuelCost?.toString() || '',
-      notes: initialData?.notes || '',
+      origin: initialData?.origin || ocrData?.origin || '',
+      destination: initialData?.destination || ocrData?.destination || '',
+      miles: initialData?.miles?.toString() || ocrData?.miles?.toString() || '',
+      rate: initialData?.rate?.toString() || ocrData?.rate?.toString() || '',
+      fsc: initialData?.fsc?.toString() || ocrData?.fsc?.toString() || '',
+      tolls: initialData?.tolls?.toString() || ocrData?.tolls?.toString() || '',
+      weight: initialData?.weight?.toString() || ocrData?.weight?.toString() || '',
+      deadheadMiles: initialData?.deadheadMiles?.toString() || ocrData?.deadheadMiles?.toString() || '',
+      fuelCost: initialData?.fuelCost?.toString() || ocrData?.fuelCost?.toString() || '',
+      notes: initialData?.notes || ocrData?.notes || '',
     },
     mode: 'onChange',
   });

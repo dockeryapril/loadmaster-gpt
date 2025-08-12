@@ -21,6 +21,7 @@ type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method'
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [editingLoad, setEditingLoad] = useState<Load | null>(null);
+  const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
   const [showMigrationModal, setShowMigrationModal] = useState(false);
   const { toast } = useToast();
   const { signOut } = useAuth();
@@ -66,11 +67,13 @@ const Index = () => {
 
   const handleAddNewLoad = () => {
     setEditingLoad(null);
+    setOcrData(null);
     setCurrentView('entry-method');
   };
 
   const handleManualEntry = () => {
     setEditingLoad(null);
+    setOcrData(null);
     setCurrentView('calculator');
   };
 
@@ -82,7 +85,7 @@ const Index = () => {
     }, {} as Record<string, string>);
 
     // Create a partial Load object from the OCR result
-    const ocrLoad: Partial<Load> = {
+    const ocrDetectedData: Partial<Load> = {
       origin: fieldsMap.origin || '',
       destination: fieldsMap.destination || '',
       miles: fieldsMap.miles ? parseFloat(fieldsMap.miles) : undefined,
@@ -95,8 +98,9 @@ const Index = () => {
       notes: '',
     };
     
-    // Set as editing load to pre-populate the calculator
-    setEditingLoad(ocrLoad as Load);
+    // Store OCR data separately, don't treat as existing load
+    setOcrData(ocrDetectedData);
+    setEditingLoad(null); // Make sure we're not editing an existing load
     setCurrentView('calculator');
   };
 
@@ -227,9 +231,11 @@ const Index = () => {
           <LoadCalculator
             onSaveLoad={handleSaveLoad}
             initialData={editingLoad || undefined}
+            ocrData={ocrData || undefined}
             onClose={() => {
               setCurrentView('dashboard');
               setEditingLoad(null);
+              setOcrData(null);
             }}
           />
         );

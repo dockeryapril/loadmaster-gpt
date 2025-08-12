@@ -255,6 +255,16 @@ export function useSupabaseLoads() {
   const updateLoad = async (id: string, loadData: Omit<Load, 'id' | 'createdAt'>) => {
     if (!user) return;
 
+    // Validate that id is a valid UUID
+    if (!id || typeof id !== 'string' || id === 'undefined' || id.trim() === '') {
+      toast({
+        title: "Invalid load ID",
+        description: "Cannot update load: invalid ID provided.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!navigator.onLine) {
       handleOffline(() => updateLoad(id, loadData));
       return;
