@@ -6,36 +6,25 @@ import { Plus, TrendingUp, DollarSign, Truck, BarChart3, Edit, X } from 'lucide-
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
 import { LoadCalculator } from './LoadCalculator';
-import { LoadEntryMethod } from './LoadEntryMethod';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 
 interface DashboardProps {
   loads: Load[];
-  onAddLoad: () => void;
   onEdit?: (load: Load) => void;
   loading?: boolean;
-  onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => void;
-  showCalculator?: boolean;
-  onCloseCalculator?: () => void;
-  ocrData?: Partial<Load> | null;
+  onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void>;
 }
 
-export function Dashboard({ 
-  loads, 
-  onAddLoad, 
-  onEdit, 
-  loading, 
+export function Dashboard({
+  loads,
+  onEdit,
+  loading,
   onSaveLoad,
-  showCalculator = false,
-  onCloseCalculator,
-  ocrData 
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
-  const [showEntryMethod, setShowEntryMethod] = useState(false);
-  const [calculatorOcrData, setCalculatorOcrData] = useState<Partial<Load> | null>(null);
+  const [showCalculator, setShowCalculator] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -86,46 +75,15 @@ export function Dashboard({
     }
   };
 
-  const handleOCRFieldsDetected = (result: FieldDetectionResult) => {
-    const fieldsMap = result.detectedFields.reduce((acc, field) => {
-      acc[field.field] = field.value;
-      return acc;
-    }, {} as Record<string, string>);
-
-    const ocrDetectedData: Partial<Load> = {
-      origin: fieldsMap.origin || '',
-      destination: fieldsMap.destination || '',
-      miles: fieldsMap.miles ? parseFloat(fieldsMap.miles) : undefined,
-      rate: fieldsMap.rate ? parseFloat(fieldsMap.rate) : undefined,
-      fsc: fieldsMap.fsc ? parseFloat(fieldsMap.fsc) : undefined,
-      weight: fieldsMap.weight ? parseFloat(fieldsMap.weight) : undefined,
-      deadheadMiles: fieldsMap.deadhead ? parseFloat(fieldsMap.deadhead) : undefined,
-      fuelCost: fieldsMap.fuelCost ? parseFloat(fieldsMap.fuelCost) : undefined,
-      tolls: fieldsMap.tolls ? parseFloat(fieldsMap.tolls) : undefined,
-      notes: '',
-    };
-    
-    setCalculatorOcrData(ocrDetectedData);
-    setShowEntryMethod(false);
-  };
-
-  const handleManualEntry = () => {
-    setCalculatorOcrData(null);
-    setShowEntryMethod(false);
-  };
-
   const handleSaveLoadInternal = async (loadData: Omit<Load, 'id' | 'createdAt'>) => {
     if (onSaveLoad) {
       await onSaveLoad(loadData);
-      onCloseCalculator?.();
-      setCalculatorOcrData(null);
+      setShowCalculator(false);
     }
   };
 
   const handleCalculatorClose = () => {
-    onCloseCalculator?.();
-    setShowEntryMethod(false);
-    setCalculatorOcrData(null);
+    setShowCalculator(false);
   };
 
   return (
@@ -159,7 +117,7 @@ export function Dashboard({
                 Calculate RPM, evaluate weight impact, and make smart decisions in seconds
               </p>
               <Button
-                onClick={() => setShowEntryMethod(true)}
+                onClick={() => setShowCalculator(true)}
                 className="h-12 px-8 text-lg font-semibold"
               >
                 <Plus className="mr-2 h-5 w-5" />
@@ -170,52 +128,27 @@ export function Dashboard({
         </Card>
       </section>
 
-      {/* Load Entry Method Modal */}
-      {showEntryMethod && (
+      {/* Load Calculator Modal */}
+      {showCalculator && (
         <section className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scale-in">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Add New Load</h3>
+                <h3 className="text-lg font-semibold">New Load</h3>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowEntryMethod(false)}
+                  onClick={handleCalculatorClose}
                   className="h-8 w-8 p-0"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <LoadEntryMethod
-                onFieldsDetected={handleOCRFieldsDetected}
-                onManualEntry={handleManualEntry}
-                onClose={() => setShowEntryMethod(false)}
+              <LoadCalculator
+                onSaveLoad={handleSaveLoadInternal}
+                onClose={handleCalculatorClose}
               />
             </div>
-          </Card>
-        </section>
-      )}
-
-      {/* Load Calculator */}
-      {showCalculator && (
-        <section className="space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Calculate New Load</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCalculatorClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <Card className="p-4">
-            <LoadCalculator
-              onSaveLoad={handleSaveLoadInternal}
-              ocrData={ocrData || calculatorOcrData || undefined}
-              onClose={handleCalculatorClose}
-            />
           </Card>
         </section>
       )}
@@ -419,7 +352,7 @@ export function Dashboard({
                 <p className="text-sm text-muted-foreground mb-4">
                   Start by adding your first load to see RPM calculations and analytics
                 </p>
-                <Button variant="outline" onClick={onAddLoad}>
+                <Button variant="outline" onClick={() => setShowCalculator(true)}>
                   Get Started
                 </Button>
               </div>
