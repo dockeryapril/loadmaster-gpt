@@ -14,6 +14,11 @@ type MetricMap = Record<string, number>;
 
 const metrics: MetricMap = {};
 
+interface PerfMetricsPayload {
+  metrics: MetricMap;
+  timestamp: string;
+}
+
 function captureMemory(): void {
   const memory = (performance as ExtendedPerformance).memory;
   if (memory) {
@@ -24,19 +29,23 @@ function captureMemory(): void {
 }
 
 function sendMetrics(): void {
-  const payload = {
+  const payload: PerfMetricsPayload = {
     metrics,
     timestamp: new Date().toISOString()
   };
 
-  (supabase as any).from('perf_metrics').insert(payload as any).then(({ error }) => {
-    if (error) {
-      console.error('Supabase perf metrics error:', error);
+  supabase
+    .from<PerfMetricsPayload>('perf_metrics')
+    .insert(payload)
+    .then(({ error }) => {
+      if (error) {
+        console.error('Supabase perf metrics error:', error);
+        console.log('perf_metrics', payload);
+      }
+    })
+    .catch(() => {
       console.log('perf_metrics', payload);
-    }
-  }).catch(() => {
-    console.log('perf_metrics', payload);
-  });
+    });
 }
 
 export function initPerfMetrics(): void {

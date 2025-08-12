@@ -22,9 +22,9 @@ export async function logError(
   };
 
   try {
-    const { error: supabaseError } = await (supabase as any)
-      .from('error_logs')
-      .insert(payload as any);
+    const { error: supabaseError } = await supabase
+      .from<ErrorLogPayload>('error_logs')
+      .insert(payload);
     if (supabaseError) {
       console.error('Supabase error log insert failed:', supabaseError);
       console.log('error_log', payload);
