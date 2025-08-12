@@ -139,10 +139,12 @@ export function Dashboard({
           </div>
         )}
         {!entryCollapsed && !showCalculator && (
-          <LoadEntryMethod
-            onFieldsDetected={handleFieldsDetected}
-            onManualEntry={handleManualEntry}
-          />
+          <div id="entry-section">
+            <LoadEntryMethod
+              onFieldsDetected={handleFieldsDetected}
+              onManualEntry={handleManualEntry}
+            />
+          </div>
         )}
         {showCalculator && (
           <LoadCalculator
@@ -284,6 +286,32 @@ export function Dashboard({
           </Card>
         )}
       </section>
+      {/* Get Started Banner when no loads */}
+      {!loading && loads.length === 0 && (
+        <Card
+          className={cn(
+            "p-8 text-center transition-opacity duration-500",
+            contentVisible ? "opacity-100" : "opacity-0"
+          )}
+        >
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Get Started</h2>
+            <p className="text-sm text-muted-foreground">
+              Use the entry options above to add your first load.
+            </p>
+            <Button
+              onClick={() => {
+                setEntryCollapsed(false);
+                document
+                  .getElementById('entry-section')
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Get Started
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* Recent Loads */}
       <section aria-labelledby="recent-loads-heading" className="relative">
@@ -348,32 +376,6 @@ export function Dashboard({
         )}
       </section>
 
-      {/* Empty State */}
-      {!loading && loads.length === 0 && (
-        <section aria-labelledby="empty-state-heading">
-          <Card
-            className={cn(
-              "p-8 text-center transition-opacity duration-500",
-              contentVisible ? "opacity-100" : "opacity-0"
-            )}
-          >
-            <div className="space-y-4">
-              <div className="p-4 rounded-full bg-muted w-fit mx-auto">
-                <Truck className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div>
-                <h2 id="empty-state-heading" className="text-lg font-semibold mb-2">No loads analyzed yet</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Start by adding your first load to see RPM calculations and analytics
-                </p>
-                <Button variant="outline" onClick={handleManualEntry}>
-                  Get Started
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </section>
-      )}
       </main>
 
       {/* Add Load Button */}
