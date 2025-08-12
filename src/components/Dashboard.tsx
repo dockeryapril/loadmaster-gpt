@@ -379,7 +379,7 @@ export function Dashboard({
       </main>
 
       {/* Add Load Button */}
-      <Button
+      {/*<Button
         className="fixed bottom-24 right-4 flex items-center gap-2 shadow-lg"
         onClick={handleManualEntry}
       >
@@ -387,7 +387,7 @@ export function Dashboard({
           <Calculator className="h-5 w-5 text-primary" />
         </div>
         <span className="text-sm">Add Load</span>
-      </Button>
+      </Button>*/}
     </>
   );
 }
