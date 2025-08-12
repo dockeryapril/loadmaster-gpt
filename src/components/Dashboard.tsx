@@ -15,25 +15,26 @@ import { SetupBanner } from './SetupBanner';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { LoadEntryMethod } from './LoadEntryMethod';
+import { LoadCalculator } from './LoadCalculator';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 
 interface DashboardProps {
   loads: Load[];
   onEdit?: (load: Load) => void;
   loading?: boolean;
-  handleFieldsDetected: (result: FieldDetectionResult) => void;
-  handleManualEntry: () => void;
+  onSaveLoad: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void> | void;
 }
 
 export function Dashboard({
   loads,
   onEdit,
   loading,
-  handleFieldsDetected,
-  handleManualEntry,
+  onSaveLoad,
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -84,13 +85,60 @@ export function Dashboard({
     }
   };
 
+  const handleManualEntry = () => {
+    setOcrData(null);
+    setShowCalculator(true);
+  };
+
+  const handleFieldsDetected = (result: FieldDetectionResult) => {
+    const fieldsMap = result.detectedFields.reduce((acc, field) => {
+      acc[field.field] = field.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    const data: Partial<Load> = {
+      origin: fieldsMap.origin || '',
+      destination: fieldsMap.destination || '',
+      miles: fieldsMap.miles ? parseFloat(fieldsMap.miles) : undefined,
+      rate: fieldsMap.rate ? parseFloat(fieldsMap.rate) : undefined,
+      fsc: fieldsMap.fsc ? parseFloat(fieldsMap.fsc) : undefined,
+      weight: fieldsMap.weight ? parseFloat(fieldsMap.weight) : undefined,
+      deadheadMiles: fieldsMap.deadhead ? parseFloat(fieldsMap.deadhead) : undefined,
+      fuelCost: fieldsMap.fuelCost ? parseFloat(fieldsMap.fuelCost) : undefined,
+      tolls: fieldsMap.tolls ? parseFloat(fieldsMap.tolls) : undefined,
+      notes: '',
+    };
+
+    setOcrData(data);
+    setShowCalculator(true);
+  };
+
+  const handleCloseCalculator = () => {
+    setShowCalculator(false);
+    setOcrData(null);
+  };
+
+  const handleSaveLoad = async (loadData: Omit<Load, 'id' | 'createdAt'>) => {
+    await onSaveLoad(loadData);
+    handleCloseCalculator();
+  };
+
   return (
     <>
       <main className="space-y-6">
-        <LoadEntryMethod
-          onFieldsDetected={handleFieldsDetected}
-          onManualEntry={handleManualEntry}
-        />
+        {!showCalculator && (
+          <LoadEntryMethod
+            onFieldsDetected={handleFieldsDetected}
+            onManualEntry={handleManualEntry}
+          />
+        )}
+        {showCalculator && (
+          <LoadCalculator
+            onSaveLoad={handleSaveLoad}
+            ocrData={ocrData || undefined}
+            onClose={handleCloseCalculator}
+          />
+        )}
         {/* Setup Banner */}
         <SetupBanner />
 
