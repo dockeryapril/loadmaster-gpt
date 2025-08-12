@@ -34,6 +34,7 @@ export function Dashboard({
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
   const [showCalculator, setShowCalculator] = useState(false);
+  const [entryCollapsed, setEntryCollapsed] = useState(false);
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
 
   useEffect(() => {
@@ -127,6 +128,17 @@ export function Dashboard({
     <>
       <main className="space-y-6">
         {!showCalculator && (
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEntryCollapsed(!entryCollapsed)}
+            >
+              {entryCollapsed ? 'Show entry options' : 'Hide entry options'}
+            </Button>
+          </div>
+        )}
+        {!entryCollapsed && !showCalculator && (
           <LoadEntryMethod
             onFieldsDetected={handleFieldsDetected}
             onManualEntry={handleManualEntry}
