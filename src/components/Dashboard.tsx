@@ -287,6 +287,7 @@ export function Dashboard({
               Use the entry options above to add your first load.
             </p>
             <Button
+              className="w-full sm:w-auto mx-auto"
               onClick={() => {
                 document
                   .getElementById('entry-section')
