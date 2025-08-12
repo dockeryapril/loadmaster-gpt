@@ -126,20 +126,19 @@ export function Dashboard({
   return (
     <>
       <main className="space-y-6">
-        {!showCalculator && (
+        {showCalculator ? (
+          <LoadCalculator
+            onSaveLoad={handleSaveLoad}
+            ocrData={ocrData || undefined}
+            onClose={handleCloseCalculator}
+          />
+        ) : (
           <div id="entry-section">
             <LoadEntryMethod
               onFieldsDetected={handleFieldsDetected}
               onManualEntry={handleManualEntry}
             />
           </div>
-        )}
-        {showCalculator && (
-          <LoadCalculator
-            onSaveLoad={handleSaveLoad}
-            ocrData={ocrData || undefined}
-            onClose={handleCloseCalculator}
-          />
         )}
         {/* Setup Banner */}
         <SetupBanner />
@@ -366,15 +365,17 @@ export function Dashboard({
       </main>
 
       {/* Add Load Button */}
-      <Button
-        className="fixed bottom-24 right-4 flex items-center gap-2 shadow-lg"
-        onClick={handleManualEntry}
-      >
-        <div className="p-1 rounded bg-primary/20">
-          <Calculator className="h-5 w-5 text-primary" />
-        </div>
-        <span className="text-sm">Add Load</span>
-      </Button>
+      {!showCalculator && (
+        <Button
+          className="fixed bottom-24 right-4 flex items-center gap-2 shadow-lg"
+          onClick={handleManualEntry}
+        >
+          <div className="p-1 rounded bg-primary/20">
+            <Calculator className="h-5 w-5 text-primary" />
+          </div>
+          <span className="text-sm">Add Load</span>
+        </Button>
+      )}
     </>
   );
 }
