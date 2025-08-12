@@ -178,19 +178,21 @@ const Index = () => {
               </div>
               <span className="text-xs">Dashboard</span>
             </Button>
-            
-            {/*
+
             <Button
               variant={currentView === 'calculator' || currentView === 'entry-method' ? 'default' : 'ghost'}
               className="flex flex-col h-16 gap-1"
-              onClick={handleAddNewLoad}
+              onClick={() =>
+                document
+                  .getElementById('entry-section')
+                  ?.scrollIntoView({ behavior: 'smooth' })
+              }
             >
               <div className="p-1 rounded bg-primary/20">
                 <Calculator className="h-5 w-5 text-primary" />
               </div>
               <span className="text-xs">Calculate</span>
             </Button>
-            */}
 
             <Button
               variant={currentView === 'history' ? 'default' : 'ghost'}
@@ -349,7 +351,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-4 py-6 pb-36">
+      <div id="entry-section" className="max-w-md mx-auto px-4 py-6 pb-36">
         {renderHeader()}
         {renderContent()}
       </div>
