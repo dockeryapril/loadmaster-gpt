@@ -2,7 +2,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
   TrendingUp,
   DollarSign,
@@ -16,17 +15,25 @@ import { SetupBanner } from './SetupBanner';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { LoadEntryMethod } from './LoadEntryMethod';
+import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 
 interface DashboardProps {
   loads: Load[];
   onEdit?: (load: Load) => void;
   loading?: boolean;
+  handleFieldsDetected: (result: FieldDetectionResult) => void;
+  handleManualEntry: () => void;
 }
 
-export function Dashboard({ loads, onEdit, loading }: DashboardProps) {
+export function Dashboard({
+  loads,
+  onEdit,
+  loading,
+  handleFieldsDetected,
+  handleManualEntry,
+}: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
-  const [showEntryMethod, setShowEntryMethod] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -80,6 +87,10 @@ export function Dashboard({ loads, onEdit, loading }: DashboardProps) {
   return (
     <>
       <main className="space-y-6">
+        <LoadEntryMethod
+          onFieldsDetected={handleFieldsDetected}
+          onManualEntry={handleManualEntry}
+        />
         {/* Setup Banner */}
         <SetupBanner />
 
@@ -295,7 +306,7 @@ export function Dashboard({ loads, onEdit, loading }: DashboardProps) {
                 <p className="text-sm text-muted-foreground mb-4">
                   Start by adding your first load to see RPM calculations and analytics
                 </p>
-                <Button variant="outline" onClick={() => setShowEntryMethod(true)}>
+                <Button variant="outline" onClick={handleManualEntry}>
                   Get Started
                 </Button>
               </div>
@@ -308,24 +319,13 @@ export function Dashboard({ loads, onEdit, loading }: DashboardProps) {
       {/* Add Load Button */}
       <Button
         className="fixed bottom-24 right-4 flex items-center gap-2 shadow-lg"
-        onClick={() => setShowEntryMethod(true)}
+        onClick={handleManualEntry}
       >
         <div className="p-1 rounded bg-primary/20">
           <Calculator className="h-5 w-5 text-primary" />
         </div>
         <span className="text-sm">Add Load</span>
       </Button>
-
-      {/* Load Entry Method Modal */}
-      <Dialog open={showEntryMethod} onOpenChange={setShowEntryMethod}>
-        <DialogContent className="max-w-md p-0">
-          <LoadEntryMethod
-            onFieldsDetected={() => setShowEntryMethod(false)}
-            onManualEntry={() => setShowEntryMethod(false)}
-            onClose={() => setShowEntryMethod(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

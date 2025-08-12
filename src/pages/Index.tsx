@@ -78,7 +78,7 @@ const Index = () => {
     setCurrentView('calculator');
   };
 
-  const handleOCRFieldsDetected = (result: FieldDetectionResult) => {
+  const handleFieldsDetected = (result: FieldDetectionResult) => {
     // Convert detectedFields array to an object for easier access
     const fieldsMap = result.detectedFields.reduce((acc, field) => {
       acc[field.field] = field.value;
@@ -222,7 +222,7 @@ const Index = () => {
       case 'entry-method':
         return (
           <LoadEntryMethod
-            onFieldsDetected={handleOCRFieldsDetected}
+            onFieldsDetected={handleFieldsDetected}
             onManualEntry={handleManualEntry}
             onClose={() => setCurrentView('dashboard')}
           />
@@ -339,6 +339,8 @@ const Index = () => {
             loads={loads}
             loading={loadsLoading}
             onEdit={handleEditLoad}
+            handleFieldsDetected={handleFieldsDetected}
+            handleManualEntry={handleManualEntry}
           />
         );
     }
