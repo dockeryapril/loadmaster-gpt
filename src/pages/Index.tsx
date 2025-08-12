@@ -23,6 +23,7 @@ const Index = () => {
   const [editingLoad, setEditingLoad] = useState<Load | null>(null);
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
   const [showMigrationModal, setShowMigrationModal] = useState(false);
+  const [showDashboardCalculator, setShowDashboardCalculator] = useState(false);
   const { toast } = useToast();
   const { signOut } = useAuth();
   const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad } = useSupabaseLoads();
@@ -68,7 +69,11 @@ const Index = () => {
   const handleAddNewLoad = () => {
     setEditingLoad(null);
     setOcrData(null);
-    setCurrentView('entry-method');
+    if (currentView === 'dashboard') {
+      setShowDashboardCalculator(true);
+    } else {
+      setCurrentView('entry-method');
+    }
   };
 
   const handleManualEntry = () => {
@@ -102,6 +107,11 @@ const Index = () => {
     setOcrData(ocrDetectedData);
     setEditingLoad(null); // Make sure we're not editing an existing load
     setCurrentView('calculator');
+  };
+
+  const handleCloseDashboardCalculator = () => {
+    setShowDashboardCalculator(false);
+    setOcrData(null);
   };
 
   const renderHeader = () => {
@@ -338,6 +348,10 @@ const Index = () => {
             loading={loadsLoading}
             onAddLoad={handleAddNewLoad}
             onEdit={handleEditLoad}
+            onSaveLoad={handleSaveLoad}
+            showCalculator={showDashboardCalculator}
+            onCloseCalculator={handleCloseDashboardCalculator}
+            ocrData={ocrData}
           />
         );
     }
