@@ -179,6 +179,7 @@ const Index = () => {
               <span className="text-xs">Dashboard</span>
             </Button>
             
+            /*
             <Button
               variant={currentView === 'calculator' || currentView === 'entry-method' ? 'default' : 'ghost'}
               className="flex flex-col h-16 gap-1"
@@ -189,7 +190,8 @@ const Index = () => {
               </div>
               <span className="text-xs">Calculate</span>
             </Button>
-            
+            */
+
             <Button
               variant={currentView === 'history' ? 'default' : 'ghost'}
               className="flex flex-col h-16 gap-1"
