@@ -34,18 +34,8 @@ function sendMetrics(): void {
     timestamp: new Date().toISOString()
   };
 
-  supabase
-    .from<PerfMetricsPayload>('perf_metrics')
-    .insert(payload)
-    .then(({ error }) => {
-      if (error) {
-        console.error('Supabase perf metrics error:', error);
-        console.log('perf_metrics', payload);
-      }
-    })
-    .catch(() => {
-      console.log('perf_metrics', payload);
-    });
+  // Log to console instead since perf_metrics table doesn't exist
+  console.log('perf_metrics', payload);
 }
 
 export function initPerfMetrics(): void {

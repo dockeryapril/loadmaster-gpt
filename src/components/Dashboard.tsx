@@ -123,6 +123,8 @@ export function Dashboard({
     handleCloseCalculator();
   };
 
+  return (
+    <>
       {/* Header */}
       <header className="text-center space-y-2">
         <div className="flex justify-center mb-4">
@@ -136,8 +138,6 @@ export function Dashboard({
         <p className="text-muted-foreground">Smart Load Analysis for Owner-Operators</p>
       </header>
 
-  return (
-    <>
       <main className="space-y-6">
         {showCalculator ? (
           <LoadCalculator
