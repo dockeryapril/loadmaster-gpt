@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserSettings, defaultUserSettings } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';

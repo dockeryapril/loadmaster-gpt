@@ -8,7 +8,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { HistoryItem } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
 
 const DEFAULT_USER_SETTINGS = {
