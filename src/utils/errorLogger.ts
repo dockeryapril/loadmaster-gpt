@@ -8,6 +8,8 @@ interface ErrorLogPayload {
   timestamp: string;
 }
 
+const LOGGING_ENABLED = process.env.NODE_ENV === 'production';
+
 export async function logError(
   message: string,
   error: unknown,
@@ -21,6 +23,15 @@ export async function logError(
     timestamp: new Date().toISOString()
   };
 
-  // Log to console instead since error_logs table doesn't exist
-  console.log('error_log', payload);
+  if (!LOGGING_ENABLED) {
+    console.log('error_log', payload);
+    return;
+  }
+
+  try {
+    await supabase.from('error_logs').insert(payload);
+  } catch (err) {
+    console.error('failed to record error log', err, payload);
+  }
 }
+

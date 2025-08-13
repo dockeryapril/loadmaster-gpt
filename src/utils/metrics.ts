@@ -6,6 +6,8 @@ interface EventPayload {
   timestamp: string;
 }
 
+const LOGGING_ENABLED = process.env.NODE_ENV === 'production';
+
 export async function logEvent(event: string, data: Record<string, unknown> = {}): Promise<void> {
   const payload: EventPayload = {
     event,
@@ -13,8 +15,16 @@ export async function logEvent(event: string, data: Record<string, unknown> = {}
     timestamp: new Date().toISOString()
   };
 
-  // Log to console instead since log_events table doesn't exist
-  console.log('log_event', payload);
+  if (!LOGGING_ENABLED) {
+    console.log('log_event', payload);
+    return;
+  }
+
+  try {
+    await supabase.from('log_events').insert(payload);
+  } catch (err) {
+    console.error('failed to record event log', err, payload);
+  }
 }
 
 export function logOCRStart(source: string): number {
