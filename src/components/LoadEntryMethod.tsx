@@ -437,7 +437,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                     <Upload className="h-6 w-6 text-primary" />
                   </div>
                   <div className="text-left">
-                    <div className="font-medium">Upload Image</div>
+                    <div className="font-medium">Upload Image/Screenshot</div>
                     <div className="text-sm text-muted-foreground">
                       Select photos from your device
                     </div>
