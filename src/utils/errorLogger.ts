@@ -1,12 +1,14 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 
 interface ErrorLogPayload {
   message: string;
   error: string;
   stack?: string;
-  context?: Record<string, unknown>;
+  context?: any;
   timestamp: string;
 }
+
+const LOGGING_ENABLED = import.meta.env.MODE === 'production';
 
 export async function logError(
   message: string,
@@ -21,6 +23,15 @@ export async function logError(
     timestamp: new Date().toISOString()
   };
 
-  // Log to console instead since error_logs table doesn't exist
-  console.log('error_log', payload);
+  if (!LOGGING_ENABLED) {
+    console.log('error_log', payload);
+    return;
+  }
+
+  try {
+    await supabase.from('error_logs').insert(payload);
+  } catch (err) {
+    console.error('failed to record error log', err, payload);
+  }
 }
+

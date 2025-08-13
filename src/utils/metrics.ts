@@ -1,10 +1,12 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 
 interface EventPayload {
   event: string;
-  data?: Record<string, unknown>;
+  data?: any;
   timestamp: string;
 }
+
+const LOGGING_ENABLED = import.meta.env.MODE === 'production';
 
 export async function logEvent(event: string, data: Record<string, unknown> = {}): Promise<void> {
   const payload: EventPayload = {
@@ -13,8 +15,16 @@ export async function logEvent(event: string, data: Record<string, unknown> = {}
     timestamp: new Date().toISOString()
   };
 
-  // Log to console instead since log_events table doesn't exist
-  console.log('log_event', payload);
+  if (!LOGGING_ENABLED) {
+    console.log('log_event', payload);
+    return;
+  }
+
+  try {
+    await supabase.from('log_events').insert(payload);
+  } catch (err) {
+    console.error('failed to record event log', err, payload);
+  }
 }
 
 export function logOCRStart(source: string): number {
