@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 import { useToast } from '@/hooks/use-toast';
 import { logError } from '@/utils/errorLogger';
 import { logEvent } from '@/utils/metrics';

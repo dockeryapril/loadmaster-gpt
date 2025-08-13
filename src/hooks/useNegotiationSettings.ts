@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { NegotiationSettings, DEFAULT_NEGOTIATION_SETTINGS } from '@/types/negotiation';
 import { useToast } from '@/hooks/use-toast';

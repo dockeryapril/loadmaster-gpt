@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 
 interface EventPayload {
   event: string;

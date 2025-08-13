@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@loadmaster/api';
 import { logError } from '@/utils/errorLogger';
 
 export interface DetectedField {
