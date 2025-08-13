@@ -443,7 +443,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                       Select photos from your device
                     </div>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
                 </div>
               </Button>
             </CardContent>
