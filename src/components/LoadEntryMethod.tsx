@@ -420,7 +420,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       <div className="space-y-4">
         <div className="text-center">
           <p className="text-xs text-muted-foreground mb-4">
-            We recommend uploading an image or taking a photo to automatically and quickly extract information from images
+            We recommend uploading an image or taking a photo to automatically and quickly extract and analyze information about the load
           </p>
         </div>
 
