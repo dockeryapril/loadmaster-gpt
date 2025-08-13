@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard, TrendingUp } from 'lucide-react';
 import { Load } from '@/types/load';
@@ -30,11 +30,12 @@ const Index = () => {
   const { hasCoreData } = useCoreDataMigration();
 
   // Check for Core data on mount
-  useState(() => {
+  useEffect(() => {
     if (hasCoreData()) {
       setTimeout(() => setShowMigrationModal(true), 1000);
     }
-  });
+    // No state value needed
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
