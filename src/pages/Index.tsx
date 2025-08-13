@@ -115,7 +115,7 @@ const Index = () => {
               <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">LoadMaster Pro</h1>
+              <h1 className="text-xl font-bold">LoadMasterPro</h1>
               <p className="text-sm text-muted-foreground">Full Load Management</p>
             </div>
           </div>
