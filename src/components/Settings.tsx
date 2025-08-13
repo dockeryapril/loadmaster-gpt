@@ -102,7 +102,7 @@ export function Settings({ onClose }: SettingsProps) {
           <div className="space-y-3">
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="excellentRpm">Excellent ($/mile)</Label>
+                <Label htmlFor="excellentRpm">Great ($/mile)</Label>
                 <Input
                   id="excellentRpm"
                   type="number"
