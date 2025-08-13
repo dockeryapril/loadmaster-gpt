@@ -2,11 +2,11 @@ import { supabase } from '@loadmaster/api';
 
 interface EventPayload {
   event: string;
-  data?: Record<string, unknown>;
+  data?: any;
   timestamp: string;
 }
 
-const LOGGING_ENABLED = process.env.NODE_ENV === 'production';
+const LOGGING_ENABLED = import.meta.env.MODE === 'production';
 
 export async function logEvent(event: string, data: Record<string, unknown> = {}): Promise<void> {
   const payload: EventPayload = {

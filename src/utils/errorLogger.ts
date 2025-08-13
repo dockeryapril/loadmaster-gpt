@@ -4,11 +4,11 @@ interface ErrorLogPayload {
   message: string;
   error: string;
   stack?: string;
-  context?: Record<string, unknown>;
+  context?: any;
   timestamp: string;
 }
 
-const LOGGING_ENABLED = process.env.NODE_ENV === 'production';
+const LOGGING_ENABLED = import.meta.env.MODE === 'production';
 
 export async function logError(
   message: string,
