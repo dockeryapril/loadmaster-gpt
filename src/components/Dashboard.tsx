@@ -123,6 +123,19 @@ export function Dashboard({
     handleCloseCalculator();
   };
 
+      {/* Header */}
+      <header className="text-center space-y-2">
+        <div className="flex justify-center mb-4">
+          <div className="icon-badge bg-primary/10">
+            <Truck className="h-12 w-12 text-primary" />
+          </div>
+        </div>
+        <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
+          LoadMaster GPT
+        </h1>
+        <p className="text-muted-foreground">Smart Load Analysis for Owner-Operators</p>
+      </header>
+
   return (
     <>
       <main className="space-y-6">
@@ -142,19 +155,6 @@ export function Dashboard({
         )}
         {/* Setup Banner */}
         <SetupBanner />
-
-      {/* Header */}
-      <header className="text-center space-y-2">
-        <div className="flex justify-center mb-4">
-          <div className="icon-badge bg-primary/10">
-            <Truck className="h-12 w-12 text-primary" />
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
-          LoadMaster GPT
-        </h1>
-        <p className="text-muted-foreground">Smart Load Analysis for Owner-Operators</p>
-      </header>
 
       {/* Stats Grid */}
       <section aria-labelledby="stats-heading" className="relative">
