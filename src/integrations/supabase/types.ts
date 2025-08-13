@@ -445,6 +445,54 @@ export type Database = {
         }
         Relationships: []
       }
+      error_logs: {
+        Row: {
+          id: string
+          message: string
+          error: string
+          stack: string | null
+          context: Json | null
+          timestamp: string
+        }
+        Insert: {
+          id?: string
+          message: string
+          error: string
+          stack?: string | null
+          context?: Json | null
+          timestamp?: string
+        }
+        Update: {
+          id?: string
+          message?: string
+          error?: string
+          stack?: string | null
+          context?: Json | null
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      log_events: {
+        Row: {
+          id: string
+          event: string
+          data: Json | null
+          timestamp: string
+        }
+        Insert: {
+          id?: string
+          event: string
+          data?: Json | null
+          timestamp?: string
+        }
+        Update: {
+          id?: string
+          event?: string
+          data?: Json | null
+          timestamp?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
