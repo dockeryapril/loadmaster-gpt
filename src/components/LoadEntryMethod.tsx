@@ -419,7 +419,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       {/* OCR Options */}
       <div className="space-y-4">
         <div className="text-center">
-          <h3 className="text-lg font-medium mb-4">Scan Load Document</h3>
           <p className="text-xs text-muted-foreground mb-4">
             Recommended: Automatically extract information from images
           </p>
