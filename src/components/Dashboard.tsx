@@ -135,7 +135,6 @@ export function Dashboard({
         <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
           LoadMasterPRO
         </h1>
-        <p className="text-muted-foreground">Smart Load Analysis for Owner-Operators</p>
       </header>
 
       <main className="space-y-6">
