@@ -21,16 +21,6 @@ export async function logError(
     timestamp: new Date().toISOString()
   };
 
-  try {
-    const { error: supabaseError } = await supabase
-      .from<ErrorLogPayload>('error_logs')
-      .insert(payload);
-    if (supabaseError) {
-      console.error('Supabase error log insert failed:', supabaseError);
-      console.log('error_log', payload);
-    }
-  } catch (err) {
-    console.error('Error logging to Supabase:', err);
-    console.log('error_log', payload);
-  }
+  // Log to console instead since error_logs table doesn't exist
+  console.log('error_log', payload);
 }

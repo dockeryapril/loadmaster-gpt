@@ -13,17 +13,8 @@ export async function logEvent(event: string, data: Record<string, unknown> = {}
     timestamp: new Date().toISOString()
   };
 
-  try {
-    const { error } = await supabase
-      .from<EventPayload>('log_events')
-      .insert(payload);
-    if (error) {
-      console.error('Supabase log error:', error);
-      console.log('log_event', payload);
-    }
-  } catch {
-    console.log('log_event', payload);
-  }
+  // Log to console instead since log_events table doesn't exist
+  console.log('log_event', payload);
 }
 
 export function logOCRStart(source: string): number {
