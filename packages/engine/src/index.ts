@@ -1,4 +1,4 @@
-export { computeCalc } from './computeNegotiation.js';
-export { suggestTemplates } from './generateMessages.js';
-export { selectProfile } from './equipmentProfiles.js';
-export * from './types.js';
+export { computeCalc } from './computeNegotiation';
+export { suggestTemplates } from './generateMessages';
+export { selectProfile } from './equipmentProfiles';
+export * from './types';

@@ -1,21 +1,17 @@
-import { selectProfile, EquipmentProfile } from './equipmentProfiles.js';
-import type { LoadFields, CalcResult, NegotiationMargins } from './types.js';
+import { selectProfile, EquipmentProfile } from './equipmentProfiles';
+import type { LoadFields, CalcResult, NegotiationMargins } from './types';
 
 function round2(n: number): number { return Math.round((n + Number.EPSILON) * 100) / 100; }
-
 function isRush(pickupAt?: string, now = new Date()): boolean {
   if (!pickupAt) return false;
-  const pickup = new Date(pickupAt);
-  const diffHrs = (pickup.getTime() - now.getTime()) / (1000 * 60 * 60);
+  const diffHrs = (new Date(pickupAt).getTime() - now.getTime()) / 36e5;
   return diffHrs <= 6;
 }
-
 function isSecurementIntensive(itemType?: string): boolean {
   if (!itemType) return false;
   const s = itemType.toLowerCase();
-  return ['coil','coils','steel coil','machinery','pipe','pipes','rebar','equipment'].some(k => s.includes(k));
+  return ['coil','coils','steel coil','machinery','pipe','pipes','rebar','equipment','palletized steel'].some(k => s.includes(k));
 }
-
 function colorFromRpm(rpm: number, profile: EquipmentProfile): 'red' | 'yellow' | 'green' {
   const { red, yellow, green } = profile.rpmTargets;
   if (rpm < red) return 'red';
@@ -49,10 +45,5 @@ export function computeCalc(fields: LoadFields, margins: NegotiationMargins, pro
   const target = Math.round(targetTotal * (1 + margins.targetPct));
   const floor  = Math.round(targetTotal * (1 + margins.floorPct));
 
-  return {
-    baseRpm,
-    surcharges: sur,
-    negotiation: { anchor, target, floor },
-    resultColor: colorFromRpm(baseRpm, p)
-  };
+  return { baseRpm, surcharges: sur, negotiation: { anchor, target, floor }, resultColor: colorFromRpm(baseRpm, p) };
 }

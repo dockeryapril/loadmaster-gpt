@@ -1,11 +1,8 @@
 import { useMemo } from 'react';
-import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
-import { useBusinessSetup } from '@/hooks/useBusinessSetup';
-import { useNegotiationSettings } from '@/hooks/useNegotiationSettings';
+import { computeCalc } from 'packages/engine/src/computeNegotiation';
+import { suggestTemplates, NoteSuggestion } from 'packages/engine/src/generateMessages';
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
-// Temporarily inline the computation until workspace is set up
-// import { computeNegotiation } from '@loadmaster/engine';
 
 interface UseNegotiationEngineProps {
   load: Partial<Load>;
@@ -13,56 +10,35 @@ interface UseNegotiationEngineProps {
 }
 
 export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEngineProps) {
-  const { settings: userSettings } = useSupabaseSettings();
-  const { setup: businessSetup } = useBusinessSetup();
-  const { settings: negotiationSettings } = useNegotiationSettings();
-
-  const calculation = useMemo((): NegotiationCalculation | null => {
-    if (!userSettings || !negotiationSettings || !load.miles || !load.rate) {
-      return null;
-    }
-
-    const loadData = {
-      miles: load.miles,
-      rate: load.rate,
-      weight: load.weight,
-      notes: load.notes
+  const result = useMemo(() => {
+    if (!load.miles || !load.rate) return null;
+    const fields = {
+      distanceMi: load.miles,
+      offerFlat: load.rate,
+      weightLbs: load.weight,
+      widthFt: load.widthFt,
+      heightFt: load.heightFt,
+      stops: load.stops,
+      tarp: load.accessorials?.tarp,
+      jobsite: load.accessorials?.jobsite,
+      itemType: load.accessorials?.itemType,
+      pickupAt: load.pickupAt,
+      equipment: load.equipment ?? 'flatbed',
+      equipmentSubtype: load.equipmentSubtype ?? 'class8_flatbed'
     };
-
-    // Temporarily use existing logic until workspace is configured
-    let baseRpm = userSettings.rpmThresholds.excellent;
-    if (laneBaselineRpm && laneBaselineRpm > baseRpm) {
-      baseRpm = laneBaselineRpm;
-    }
-    let targetRate = baseRpm * load.miles;
-    const premiumsApplied: string[] = [];
-
-    // Apply premiums (simplified for now)
-    if (negotiationSettings.rush_enabled) {
-      if (negotiationSettings.rush_method === 'percentage') {
-        targetRate *= 1 + (negotiationSettings.rush_value / 100);
-      } else {
-        targetRate += negotiationSettings.rush_value * load.miles;
-      }
-      premiumsApplied.push(`Rush (+${negotiationSettings.rush_value}${negotiationSettings.rush_method === 'percentage' ? '%' : '/mile'})`);
-    }
-
-    const anchorRate = targetRate * (1 + negotiationSettings.anchor_offset);
-    const floorRate = targetRate * (1 - negotiationSettings.floor_offset);
-
-    return {
-      anchor_rate: Math.round(anchorRate),
-      target_rate: Math.round(targetRate),
-      floor_rate: Math.round(floorRate),
-      base_rpm: baseRpm,
-      premiums_applied: premiumsApplied,
+    const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
+    const calc = computeCalc(fields as any, margins);
+    const notes: NoteSuggestion[] = suggestTemplates(fields as any, calc, 3);
+    const calculation: NegotiationCalculation = {
+      anchor_rate: calc.negotiation.anchor,
+      target_rate: calc.negotiation.target,
+      floor_rate: calc.negotiation.floor,
+      base_rpm: calc.baseRpm,
+      premiums_applied: notes.map(n => n.templateId),
       lane_baseline_rpm: laneBaselineRpm,
       suggested_strategy: 'standard',
     };
-  }, [userSettings, negotiationSettings, businessSetup, load, laneBaselineRpm]);
-
-  return {
-    calculation,
-    isReady: !!calculation,
-  };
+    return { calculation, notes, resultColor: calc.resultColor };
+  }, [load, laneBaselineRpm]);
+  return { ...(result ?? {}), isReady: !!result };
 }

@@ -21,7 +21,7 @@ interface NegotiationSheetProps {
 }
 
 export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: NegotiationSheetProps) {
-  const { calculation } = useNegotiationEngine({ load });
+  const { calculation, notes, resultColor } = useNegotiationEngine({ load });
   const { toast } = useToast();
   
   const [selectedStrategy, setSelectedStrategy] = useState<string>(calculation?.suggested_strategy || 'standard');
@@ -29,6 +29,7 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
   const [outcome, setOutcome] = useState<Negotiation['outcome']>('pending');
 
   const selectedTemplate = MESSAGE_TEMPLATES.find(t => t.strategy === selectedStrategy);
+  const rpmColorClass = resultColor === 'green' ? 'text-green-600' : resultColor === 'red' ? 'text-red-600' : 'text-yellow-600';
 
   const generateMessage = () => {
     if (!selectedTemplate || !calculation || !load) return '';
@@ -125,6 +126,10 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
                   <Label className="text-muted-foreground">Total Miles</Label>
                   <p className="font-medium">{((load.miles || 0) + (load.deadheadMiles || 0)).toLocaleString()}</p>
                 </div>
+                <div>
+                  <Label className="text-muted-foreground">Base RPM</Label>
+                  <p className={`font-medium ${rpmColorClass}`}>{calculation.base_rpm.toFixed(2)}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -177,6 +182,21 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
               )}
             </CardContent>
           </Card>
+
+          {notes && notes.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc pl-4 text-sm space-y-1">
+                {notes.map(n => (
+                  <li key={n.templateId}>{n.message}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
           {/* Message Templates */}
           <Card>
