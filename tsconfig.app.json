@@ -25,7 +25,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@loadmaster/api": ["./packages/api/src"]
-    }
+    },
+    "types": ["node"]
   },
   "include": ["src"]
 }

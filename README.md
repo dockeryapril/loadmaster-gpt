@@ -75,7 +75,9 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 
 ## Environment Variables
 
-The `openai-chat` Supabase function requires the following environment variables:
+The project requires the following environment variables:
 
+- `SUPABASE_URL` – URL of your Supabase project.
+- `SUPABASE_ANON_KEY` – anonymous key for your Supabase project.
 - `OPENAI_API_KEY` – your OpenAI API key.
 - `ALLOWED_ORIGINS` – comma-separated list of allowed origins for CORS. Requests from origins outside this list will receive a `403` response.
