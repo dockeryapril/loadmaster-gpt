@@ -3,6 +3,7 @@ import { computeCalc } from '../../packages/engine/src/computeNegotiation';
 import { suggestTemplates, NoteSuggestion } from '../../packages/engine/src/generateMessages';
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
+import { useEquipment } from '@/hooks/useEquipment';
 
 interface UseNegotiationEngineProps {
   load: Partial<Load>;
@@ -10,6 +11,7 @@ interface UseNegotiationEngineProps {
 }
 
 export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEngineProps) {
+  const { equipment, equipmentSubtype } = useEquipment();
   const result = useMemo(() => {
     if (!load.miles || !load.rate) return null;
     const fields = {
@@ -23,8 +25,8 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
       jobsite: load.accessorials?.jobsite,
       itemType: load.accessorials?.itemType,
       pickupAt: load.pickupAt,
-      equipment: load.equipment ?? 'flatbed',
-      equipmentSubtype: load.equipmentSubtype ?? 'class8_flatbed'
+      equipment: load.equipment ?? equipment,
+      equipmentSubtype: load.equipmentSubtype ?? equipmentSubtype,
     };
     const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
     const calc = computeCalc(fields as any, margins);
@@ -39,6 +41,6 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
       suggested_strategy: 'standard',
     };
     return { calculation, notes, resultColor: calc.resultColor };
-  }, [load, laneBaselineRpm]);
+  }, [load, laneBaselineRpm, equipment, equipmentSubtype]);
   return { ...(result ?? {}), isReady: !!result };
 }
