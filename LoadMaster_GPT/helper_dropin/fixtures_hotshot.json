@@ -1,0 +1,26 @@
+{ "seedUserHotshot": {
+  "id": "u_demo_flatbed", "equipment": "flatbed", "equipmentSubtype": "hotshot",
+  "rpmTargets": {"green": 2.75, "yellow": 2.40, "red": 2.10},
+  "surchargePrefs": {"tarp":{"mid":60},"heavyPerMile":{"mid":0.06,"thresholdLbs":18000},"oversizeWidth":{"mid":200,"thresholdFt":8.5},"oversizeHeight":{"mid":150,"thresholdFt":13.5},"multiStop":{"mid":60},"rush":{"mid":175},"access":{"mid":0},"securement":{"mid":60}},
+  "negotiationMargins": {"anchorPct":0.18,"targetPct":0.10,"floorPct":0.00}
+},
+"scenarios": [
+  {
+    "id":"HS1","name":"Hotshot Rush + Multistop",
+    "steps":[
+      {"endpoint":"/ocr","method":"POST","request":{"imageBase64":"FAKE==","userId":"u_demo_flatbed","equipment":"flatbed","equipmentSubtype":"hotshot"},"response":{"fields":{"brokerName":"Swift Expedite","pickup":"Lexington, KY","delivery":"Charlotte, NC","distanceMi":350,"deadheadMi":20,"pickupAt":"2025-08-13T15:00:00-04:00","weightLbs":16000,"widthFt":8.5,"heightFt":8.0,"stops":2,"tarp":false,"jobsite":false,"itemType":"palletized boxes","offerFlat":950},"confidence":0.91,"warnings":[]}},
+      {"endpoint":"/calc","method":"POST","request":{"userId":"u_demo_flatbed","fields":{"distanceMi":350,"offerFlat":950,"weightLbs":16000,"widthFt":8.5,"heightFt":8.0,"stops":2,"tarp":false,"jobsite":false,"itemType":"palletized boxes","pickupAt":"2025-08-13T15:00:00-04:00","equipment":"flatbed","equipmentSubtype":"hotshot"}},"response":{"baseRpm":2.71,"surcharges":{"tarp":0,"heavyPerMile":0,"oversizeWidth":0,"oversizeHeight":0,"multiStop":60,"rush":175,"access":0,"secUREMENT":0},"negotiation":{"anchor":1369,"target":1277,"floor":1185},"resultColor":"yellow"}},
+      {"endpoint":"/templates","method":"POST","request":{"userId":"u_demo_flatbed","fields":{"distanceMi":350,"offerFlat":950},"calc":{"negotiation":{"anchor":1369,"target":1277},"surcharges":{"multiStop":60,"rush":175}},"max":3},"response":{"suggestions":[{"templateId":"t_rush","message":"..."},{"templateId":"t_multistop","message":"..."},{"templateId":"t_anchor","message":"..."}]}},
+      {"endpoint":"/loads","method":"POST","request":{"id":"l_HS1","userId":"u_demo_flatbed","source":"ocr","broker":{"name":"Swift Expedite"},"route":{"pickup":"Lexington, KY","delivery":"Charlotte, NC","distanceMi":350,"deadheadMi":20},"timing":{"pickupAt":"2025-08-13T15:00:00-04:00"},"equipment":"flatbed","equipmentSubtype":"hotshot","weightLbs":16000,"dims":{"widthFt":8.5,"heightFt":8.0},"stops":2,"accessorials":{"tarp":false,"jobsite":false,"itemType":"palletized boxes"},"offer":{"flat":950,"rpm":2.71},"calc":{"baseRpm":2.71,"surcharges":{"multiStop":60,"rush":175},"negotiation":{"anchor":1369,"target":1277,"floor":1185},"resultColor":"yellow"},"notesSent":[]},"response":{"ok":true}}
+    ]
+  },
+  {
+    "id":"HS2","name":"Hotshot Heavy 19k + Tarp",
+    "steps":[
+      {"endpoint":"/ocr","method":"POST","request":{"imageBase64":"FAKE==","userId":"u_demo_flatbed","equipment":"flatbed","equipmentSubtype":"hotshot"},"response":{"fields":{"brokerName":"Bluegrass Logistics","pickup":"Bowling Green, KY","delivery":"Greenville, SC","distanceMi":420,"deadheadMi":35,"pickupAt":"2025-08-14T14:00:00-04:00","weightLbs":19000,"widthFt":8.5,"heightFt":8.0,"stops":1,"tarp":true,"jobsite":false,"itemType":"boxed pallets","offerFlat":1100},"confidence":0.90,"warnings":[]}},
+      {"endpoint":"/calc","method":"POST","request":{"userId":"u_demo_flatbed","fields":{"distanceMi":420,"offerFlat":1100,"weightLbs":19000,"tarp":true,"pickupAt":"2025-08-14T14:00:00-04:00","equipment":"flatbed","equipmentSubtype":"hotshot"}},"response":{"baseRpm":2.62,"surcharges":{"tarp":60,"heavyPerMile":0.06,"oversizeWidth":0,"oversizeHeight":0,"multiStop":0,"rush":0,"access":0,"secUREMENT":0},"negotiation":{"anchor":1390,"target":1314,"floor":1190},"resultColor":"yellow"}},
+      {"endpoint":"/templates","method":"POST","request":{"userId":"u_demo_flatbed","fields":{"distanceMi":420,"offerFlat":1100},"calc":{"negotiation":{"anchor":1390,"target":1314},"surcharges":{"tarp":60,"heavyPerMile":0.06}},"max":3},"response":{"suggestions":[{"templateId":"t_heavy","message":"..."},{"templateId":"t_tarp","message":"..."},{"templateId":"t_anchor","message":"..."}]}},
+      {"endpoint":"/loads","method":"POST","request":{"id":"l_HS2","userId":"u_demo_flatbed","source":"ocr","broker":{"name":"Bluegrass Logistics"},"route":{"pickup":"Bowling Green, KY","delivery":"Greenville, SC","distanceMi":420,"deadheadMi":35},"timing":{"pickupAt":"2025-08-14T14:00:00-04:00"},"equipment":"flatbed","equipmentSubtype":"hotshot","weightLbs":19000,"dims":{"widthFt":8.5,"heightFt":8.0},"stops":1,"accessorials":{"tarp":true,"jobsite":false,"itemType":"boxed pallets"},"offer":{"flat":1100,"rpm":2.62},"calc":{"baseRpm":2.62,"surcharges":{"tarp":60,"heavyPerMile":0.06},"negotiation":{"anchor":1390,"target":1314,"floor":1190},"resultColor":"yellow"},"notesSent":[]},"response":{"ok":true}}
+    ]
+  }
+]}
