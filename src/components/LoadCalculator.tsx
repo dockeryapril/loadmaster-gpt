@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,8 @@ import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { computeCalc, suggestTemplates } from '@loadmaster/engine';
+import { useEquipment } from '@/hooks/useEquipment';
 
 interface LoadCalculatorProps {
   onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => void;
@@ -81,6 +83,23 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
 
   const hasErrors = Object.keys(form.formState.errors).length > 0;
   const requiredFilled = origin && destination && miles && rate;
+
+  const { equipment, equipmentSubtype } = useEquipment();
+
+  const negotiation = useMemo(() => {
+    if (!requiredFilled || hasErrors) return null;
+    const fields = {
+      distanceMi: parseFloat(miles) || 0,
+      offerFlat: parseFloat(rate) || 0,
+      weightLbs: weight ? parseFloat(weight) : undefined,
+      equipment,
+      equipmentSubtype,
+    } as const;
+    const margins = { anchorPct: 0.18, targetPct: 0.1, floorPct: 0.0 } as const;
+    const calc = computeCalc(fields as any, margins);
+    const notes = suggestTemplates(fields as any, calc, 3);
+    return { calc, notes };
+  }, [requiredFilled, hasErrors, miles, rate, weight, equipment, equipmentSubtype]);
 
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
@@ -626,19 +645,60 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                 </div>
               </div>
 
-              {calculation.tags.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Smart Tags</div>
-                  <div className="flex flex-wrap gap-1">
-                    {calculation.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
+                {calculation.tags.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Smart Tags</div>
+                    <div className="flex flex-wrap gap-1">
+                      {calculation.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+
+                {negotiation && (
+                  <div className="space-y-3 pt-3 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Base RPM</span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn('h-2 w-2 rounded-full', {
+                            'bg-green-500': negotiation.calc.resultColor === 'green',
+                            'bg-yellow-500': negotiation.calc.resultColor === 'yellow',
+                            'bg-red-500': negotiation.calc.resultColor === 'red',
+                          })}
+                        />
+                        <span className="font-medium">{negotiation.calc.baseRpm.toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <div className="text-muted-foreground">Anchor</div>
+                        <div className="font-medium">${negotiation.calc.negotiation.anchor}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Target</div>
+                        <div className="font-medium">${negotiation.calc.negotiation.target}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Floor</div>
+                        <div className="font-medium">${negotiation.calc.negotiation.floor}</div>
+                      </div>
+                    </div>
+
+                    {negotiation.notes.length > 0 && (
+                      <div className="space-y-1 text-sm">
+                        {negotiation.notes.map((note, index) => (
+                          <div key={index}>• {note.message}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <div className="flex gap-3">
                 {onClose && (
