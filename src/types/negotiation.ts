@@ -1,3 +1,12 @@
+export type FlatbedTemplateId =
+  | 't_tarp'
+  | 't_heavy'
+  | 't_oversize'
+  | 't_multistop'
+  | 't_rush'
+  | 't_securement'
+  | 't_anchor';
+
 export interface NegotiationSettings {
   id: string;
   user_id: string;
