@@ -1,0 +1,88 @@
+{
+  "scenarios": [
+    {
+      "id": "HS1",
+      "name": "rush multistop",
+      "steps": [
+        {
+          "endpoint": "/ocr",
+          "response": {
+            "fields": {
+              "distanceMi": 300,
+              "offerFlat": 675,
+              "weightLbs": 15000,
+              "stops": 2,
+              "tarp": false,
+              "jobsite": false,
+              "itemType": "widgets",
+              "pickupAt": "now+3h"
+            }
+          }
+        },
+        {
+          "endpoint": "/calc",
+          "response": {
+            "baseRpm": 2.25,
+            "resultColor": "yellow",
+            "surcharges": {
+              "rush": 175,
+              "multiStop": 60
+            }
+          }
+        },
+        {
+          "endpoint": "/templates",
+          "response": {
+            "suggestions": [
+              { "templateId": "t_rush" },
+              { "templateId": "t_multistop" },
+              { "templateId": "t_anchor" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "HS2",
+      "name": "heavy 19k tarp",
+      "steps": [
+        {
+          "endpoint": "/ocr",
+          "response": {
+            "fields": {
+              "distanceMi": 400,
+              "offerFlat": 960,
+              "weightLbs": 19000,
+              "tarp": true,
+              "stops": 1,
+              "jobsite": false,
+              "itemType": "widgets",
+              "pickupAt": "2099-01-01T00:00:00Z"
+            }
+          }
+        },
+        {
+          "endpoint": "/calc",
+          "response": {
+            "baseRpm": 2.4,
+            "resultColor": "yellow",
+            "surcharges": {
+              "tarp": 60,
+              "heavyPerMile": 0.06
+            }
+          }
+        },
+        {
+          "endpoint": "/templates",
+          "response": {
+            "suggestions": [
+              { "templateId": "t_heavy" },
+              { "templateId": "t_tarp" },
+              { "templateId": "t_anchor" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
