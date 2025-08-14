@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { computeCalc } from '../../packages/engine/src/computeNegotiation';
-import { suggestTemplates, NoteSuggestion } from '../../packages/engine/src/generateMessages';
+import { computeCalc, suggestTemplates } from '@loadmaster/engine';
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
 import { useEquipment } from '@/hooks/useEquipment';
@@ -30,7 +29,7 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
     };
     const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
     const calc = computeCalc(fields as any, margins);
-    const notes: NoteSuggestion[] = suggestTemplates(fields as any, calc, 3);
+    const notes = suggestTemplates(fields as any, calc, 3);
     const calculation: NegotiationCalculation = {
       anchor_rate: calc.negotiation.anchor,
       target_rate: calc.negotiation.target,
