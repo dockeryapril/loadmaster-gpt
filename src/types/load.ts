@@ -1,3 +1,5 @@
+import type { Equipment, FlatbedSubtype } from './equipment';
+
 export interface Load {
   id: string;
   origin: string;
@@ -7,6 +9,16 @@ export interface Load {
   fsc?: number; // Fuel Surcharge
   tolls?: number;
   weight?: number;
+  widthFt?: number;
+  heightFt?: number;
+  stops?: number;
+  equipment?: Equipment;
+  equipmentSubtype?: FlatbedSubtype;
+  accessorials?: {
+    tarp?: boolean;
+    jobsite?: boolean;
+    itemType?: string;
+  };
   deadheadMiles?: number;
   fuelCost?: number;
   rpm: number;
