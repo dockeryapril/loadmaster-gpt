@@ -15,6 +15,7 @@ import { SmartFieldDetector } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { logError } from '@/utils/errorLogger';
+import { ensureMiles } from '@/utils/ensureMiles';
 
 interface LoadEntryMethodProps {
   onFieldsDetected: (result: FieldDetectionResult) => void;
@@ -130,6 +131,19 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         detectionResult.detectedFields = SmartFieldDetector.applyLearnedCorrections(
           detectionResult.detectedFields
         );
+
+        // Ensure miles field is present
+        const ensuredFields = ensureMiles(detectionResult.detectedFields);
+        if (!ensuredFields) {
+          toast({
+            title: 'Miles required',
+            description: 'Miles are required to proceed.',
+            variant: 'destructive',
+          });
+          logOCREnd('LoadEntryMethod', startTime, false, 'missing_miles');
+          return;
+        }
+        detectionResult.detectedFields = ensuredFields;
 
         // Auto-fill high confidence fields immediately
         const autoFillFields = detectionResult.detectedFields.filter(

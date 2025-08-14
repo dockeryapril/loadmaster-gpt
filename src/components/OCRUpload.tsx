@@ -10,6 +10,7 @@ import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDete
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { logError } from '@/utils/errorLogger';
+import { ensureMiles } from '@/utils/ensureMiles';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -129,6 +130,19 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         detectionResult.detectedFields = SmartFieldDetector.applyLearnedCorrections(
           detectionResult.detectedFields
         );
+
+        // Ensure miles field is present
+        const ensuredFields = ensureMiles(detectionResult.detectedFields);
+        if (!ensuredFields) {
+          toast({
+            title: 'Miles required',
+            description: 'Miles are required to proceed.',
+            variant: 'destructive',
+          });
+          logOCREnd('OCRUpload', startTime, false, 'missing_miles');
+          return;
+        }
+        detectionResult.detectedFields = ensuredFields;
 
         // Auto-fill high confidence fields immediately
         const autoFillFields = detectionResult.detectedFields.filter(
