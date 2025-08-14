@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { computeCalc, suggestTemplates } from '@loadmaster/engine';
+import { computeCalc, suggestTemplates } from '../../packages/engine/src/index';
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
 import { useEquipment } from '@/hooks/useEquipment';

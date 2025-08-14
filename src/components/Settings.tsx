@@ -104,7 +104,7 @@ export function Settings({ onClose }: SettingsProps) {
           <h3 className="text-lg font-semibold">Equipment</h3>
           <div className="space-y-2">
             <Label htmlFor="equipmentSubtype">Flatbed Subtype</Label>
-            <Select value={equipmentSubtype} onValueChange={setEquipmentSubtype}>
+            <Select value={equipmentSubtype} onValueChange={(value) => setEquipmentSubtype(value as any)}>
               <SelectTrigger id="equipmentSubtype">
                 <SelectValue />
               </SelectTrigger>

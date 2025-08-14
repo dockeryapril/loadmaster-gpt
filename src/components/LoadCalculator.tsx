@@ -22,7 +22,7 @@ import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { computeCalc, suggestTemplates } from '@loadmaster/engine';
+import { computeCalc, suggestTemplates } from '../../packages/engine/src/index';
 import { useEquipment } from '@/hooks/useEquipment';
 
 interface LoadCalculatorProps {
