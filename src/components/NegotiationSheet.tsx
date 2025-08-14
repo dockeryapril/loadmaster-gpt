@@ -57,6 +57,14 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
     });
   };
 
+  const handleCopyNote = (note: string) => {
+    navigator.clipboard.writeText(note);
+    toast({
+      title: "Note copied",
+      description: "Template note copied to clipboard",
+    });
+  };
+
   const handleTrackOutcome = (newOutcome: Negotiation['outcome']) => {
     setOutcome(newOutcome);
     
@@ -190,8 +198,18 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
             </CardHeader>
             <CardContent>
               <ul className="list-disc pl-4 text-sm space-y-1">
-                {notes.map(n => (
-                  <li key={n.templateId}>{n.message}</li>
+                {notes.slice(0, 3).map(n => (
+                  <li key={n.templateId} className="flex items-start gap-2">
+                    <span className="flex-1">{n.message}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyNote(n.message)}
+                      aria-label="Copy note"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </li>
                 ))}
               </ul>
             </CardContent>

@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings as SettingsIcon, Save, RotateCcw } from 'lucide-react';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { defaultUserSettings } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
+import { useEquipment } from '@/hooks/useEquipment';
 
 interface SettingsProps {
   onClose?: () => void;
@@ -16,6 +18,7 @@ interface SettingsProps {
 export function Settings({ onClose }: SettingsProps) {
   const { settings, updateSettings } = useSupabaseSettings();
   const { toast } = useToast();
+  const { equipmentSubtype, setEquipmentSubtype } = useEquipment();
   
   const [fuelPrice, setFuelPrice] = useState(settings.fuelPrice.toString());
   const [mpg, setMpg] = useState(settings.mpg.toString());
@@ -93,6 +96,23 @@ export function Settings({ onClose }: SettingsProps) {
                 placeholder="6.5"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Equipment Subtype */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Equipment</h3>
+          <div className="space-y-2">
+            <Label htmlFor="equipmentSubtype">Flatbed Subtype</Label>
+            <Select value={equipmentSubtype} onValueChange={setEquipmentSubtype}>
+              <SelectTrigger id="equipmentSubtype">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="class8_flatbed">Class 8 Flatbed</SelectItem>
+                <SelectItem value="hotshot">Hotshot</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
