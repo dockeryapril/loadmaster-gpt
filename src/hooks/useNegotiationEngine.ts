@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { computeCalc } from 'packages/engine/src/computeNegotiation';
-import { suggestTemplates, NoteSuggestion } from 'packages/engine/src/generateMessages';
+import { computeCalc } from '../../packages/engine/src/computeNegotiation';
+import { suggestTemplates, NoteSuggestion } from '../../packages/engine/src/generateMessages';
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
 
