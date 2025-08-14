@@ -19,6 +19,7 @@ export interface Load {
     jobsite?: boolean;
     itemType?: string;
   };
+  pickupAt?: string;
   deadheadMiles?: number;
   fuelCost?: number;
   rpm: number;
