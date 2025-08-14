@@ -65,6 +65,22 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
     });
   };
 
+  const handleCopyAllNotes = () => {
+    if (!notes || notes.length === 0) return;
+
+    const anchorNote = notes.find(n => n.templateId === 't_anchor')?.message || '';
+    const surchargeNotes = notes.filter(n => n.templateId !== 't_anchor').map(n => n.message);
+    const etiquetteLine = 'Thanks!';
+    const fullMessage = [anchorNote, ...surchargeNotes, etiquetteLine].join(' ');
+
+    navigator.clipboard.writeText(fullMessage).then(() => {
+      toast({
+        title: 'Notes copied',
+        description: 'All notes copied to clipboard',
+      });
+    });
+  };
+
   const handleTrackOutcome = (newOutcome: Negotiation['outcome']) => {
     setOutcome(newOutcome);
     
@@ -197,6 +213,15 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
               <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyAllNotes}
+                className="mb-2"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copy All
+              </Button>
               <ul className="list-disc pl-4 text-sm space-y-1">
                 {notes.slice(0, 3).map(n => (
                   <li key={n.templateId} className="flex items-start gap-2">
