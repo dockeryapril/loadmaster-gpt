@@ -115,7 +115,7 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'What percentage do you keep?',
         description: 'Enter the percentage you keep (e.g., 75 for 75%)',
-        placeholder: '75',
+        placeholder: '0',
         required: true,
         validation: { min: 1, max: 100, step: 0.1 }
       },
@@ -150,7 +150,7 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'Reimbursement rate',
         description: 'Per gallon amount or percentage',
-        placeholder: '0.50',
+         placeholder: '0',
         dependsOn: { field: 'fuel_responsibility', value: 'reimbursed' },
         validation: { min: 0, step: 0.01 }
       },
@@ -183,7 +183,7 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'Maintenance deductible',
         description: 'Amount you pay before coverage kicks in',
-        placeholder: '500',
+        placeholder: '0',
         dependsOn: { field: 'maintenance_coverage', value: 'up_to_amount' },
         validation: { min: 0, step: 1 }
       },
@@ -210,14 +210,14 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'Weekly truck payment',
         description: 'Lease or loan payment per week',
-        placeholder: '800',
+        placeholder: '0',
         validation: { min: 0, step: 1 }
       },
       {
         id: 'weekly_insurance_payment',
         type: 'number',
         label: 'Weekly insurance payment',
-        placeholder: '200',
+        placeholder: '0',
         dependsOn: { field: 'insurance_responsibility', value: 'driver_pays' },
         validation: { min: 0, step: 1 }
       },
@@ -226,7 +226,7 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'Weekly escrow/deductions',
         description: 'Other regular deductions from settlements',
-        placeholder: '100',
+        placeholder: '0',
         validation: { min: 0, step: 1 }
       }
     ]
@@ -254,7 +254,7 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'Deadhead rate',
         description: 'Rate per mile, percentage, or flat amount',
-        placeholder: '0.50',
+        placeholder: '0',
         dependsOn: { field: 'deadhead_compensation_type', value: 'per_mile' },
         validation: { min: 0, step: 0.01 }
       },
@@ -291,14 +291,14 @@ export const businessSetupSections: QuestionSection[] = [
         id: 'detention_pay_rate',
         type: 'number',
         label: 'Detention pay rate (per hour)',
-        placeholder: '25',
+        placeholder: '0',
         validation: { min: 0, step: 1 }
       },
       {
         id: 'detention_minimum_hours',
         type: 'number',
         label: 'Minimum hours before detention pay',
-        placeholder: '2',
+        placeholder: '0',
         validation: { min: 0, step: 0.25 }
       },
       {
@@ -306,7 +306,7 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'Admin fee percentage',
         description: 'Percentage deducted for administration',
-        placeholder: '3',
+        placeholder: '0',
         validation: { min: 0, max: 20, step: 0.1 }
       }
     ]

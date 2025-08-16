@@ -81,7 +81,7 @@ export function Settings({ onClose }: SettingsProps) {
                 step="0.01"
                 value={fuelPrice}
                 onChange={(e) => setFuelPrice(e.target.value)}
-                placeholder="3.50"
+                placeholder="0"
               />
             </div>
             
@@ -93,7 +93,7 @@ export function Settings({ onClose }: SettingsProps) {
                 step="0.1"
                 value={mpg}
                 onChange={(e) => setMpg(e.target.value)}
-                placeholder="6.5"
+                placeholder="0"
               />
             </div>
           </div>
@@ -129,7 +129,7 @@ export function Settings({ onClose }: SettingsProps) {
                   step="0.1"
                   value={excellentRpm}
                   onChange={(e) => setExcellentRpm(e.target.value)}
-                  placeholder="2.5"
+                  placeholder="0"
                   className="h-10"
                 />
               </div>
@@ -142,7 +142,7 @@ export function Settings({ onClose }: SettingsProps) {
                   step="0.1"
                   value={goodRpm}
                   onChange={(e) => setGoodRpm(e.target.value)}
-                  placeholder="2.0"
+                  placeholder="0"
                   className="h-10"
                 />
               </div>
@@ -155,7 +155,7 @@ export function Settings({ onClose }: SettingsProps) {
                   step="0.1"
                   value={fairRpm}
                   onChange={(e) => setFairRpm(e.target.value)}
-                  placeholder="1.5"
+                  placeholder="0"
                   className="h-10"
                 />
               </div>
@@ -176,7 +176,7 @@ export function Settings({ onClose }: SettingsProps) {
               type="number"
               value={weightLimit}
               onChange={(e) => setWeightLimit(e.target.value)}
-              placeholder="80000"
+              placeholder="0"
             />
             <div className="text-sm text-muted-foreground">
               Loads above this weight will be flagged as overweight.

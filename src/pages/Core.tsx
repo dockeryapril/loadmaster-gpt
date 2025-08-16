@@ -340,7 +340,7 @@ const Core = () => {
                   <label className="text-sm font-medium mb-1 block">Miles</label>
                   <Input
                     type="number"
-                    placeholder="500"
+                    placeholder="0"
                     value={miles}
                     onChange={(e) => setMiles(e.target.value)}
                   />
@@ -349,7 +349,7 @@ const Core = () => {
                   <label className="text-sm font-medium mb-1 block">Offer (All-in)</label>
                   <Input
                     type="number"
-                    placeholder="1250"
+                    placeholder="0"
                     value={offerAllIn}
                     onChange={(e) => setOfferAllIn(e.target.value)}
                   />
@@ -361,7 +361,7 @@ const Core = () => {
                   <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
                   <Input
                     type="number"
-                    placeholder="40000"
+                    placeholder="0"
                     value={weightLbs}
                     onChange={(e) => setWeightLbs(e.target.value)}
                   />
@@ -370,7 +370,7 @@ const Core = () => {
                   <label className="text-sm font-medium mb-1 block">Pickup (hours)</label>
                   <Input
                     type="number"
-                    placeholder="24"
+                    placeholder="0"
                     value={pickupInHours}
                     onChange={(e) => setPickupInHours(e.target.value)}
                   />

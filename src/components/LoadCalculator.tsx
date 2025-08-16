@@ -384,7 +384,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       <FormItem>
                         <FormLabel>Miles</FormLabel>
                         <FormControl>
-                          <Input type="number" min={0} max={3000} placeholder="450" {...field} />
+                          <Input type="number" min={0} max={3000} placeholder="0" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -410,7 +410,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       <FormItem>
                         <FormLabel>Deadhead Miles</FormLabel>
                         <FormControl>
-                          <Input type="number" min={0} max={3000} placeholder="50" {...field} />
+                          <Input type="number" min={0} max={3000} placeholder="0" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -444,7 +444,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                             step="0.01"
                             min={0}
                             max={10000}
-                            placeholder="2500.00"
+                            placeholder="0"
                             {...field}
                           />
                         </FormControl>
@@ -477,7 +477,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                             step="0.01"
                             min={0}
                             max={10000}
-                            placeholder="250.00"
+                            placeholder="0"
                             {...field}
                           />
                         </FormControl>
@@ -513,7 +513,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                             step="0.01"
                             min={0}
                             max={10000}
-                            placeholder="85.00"
+                            placeholder="0"
                             {...field}
                           />
                         </FormControl>
@@ -541,7 +541,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       <FormItem>
                         <FormLabel>Weight (lbs)</FormLabel>
                         <FormControl>
-                          <Input type="number" min={0} max={100000} placeholder="45000" {...field} />
+                          <Input type="number" min={0} max={100000} placeholder="0" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -575,7 +575,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                             step="0.01"
                             min={0}
                             max={10000}
-                            placeholder="350.00"
+                            placeholder="0"
                             {...field}
                           />
                         </FormControl>
