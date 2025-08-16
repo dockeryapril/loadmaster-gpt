@@ -6,7 +6,7 @@ import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, Bar
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/hooks/usePlan';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
 
@@ -402,7 +402,13 @@ const Core = () => {
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
           <p>LoadMaster - Free Forever</p>
-          <p>Want more? Unlock AI-powered negotiations and smarter load insights with LoadMaster Pro</p>
+          <p className="mt-2">
+            Want more?{' '}
+            <Link to="/upgrade" className="underline">
+              Unlock AI-powered negotiations
+            </Link>{' '}
+            and smarter load insights with LoadMaster Pro.
+          </p>
           {!user && (
             <p className="mt-2">
               <Button variant="link" onClick={handleSignIn} className="text-xs">
