@@ -402,6 +402,7 @@ const Core = () => {
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
           <p>LoadMaster - Free Forever</p>
+          <p>Want more? Unlock AI-powered negotiations and smarter load insights with LoadMaster Pro</p>
           {!user && (
             <p className="mt-2">
               <Button variant="link" onClick={handleSignIn} className="text-xs">
