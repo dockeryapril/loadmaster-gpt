@@ -173,8 +173,8 @@ const Core = () => {
               <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">LoadMaster Core</h1>
-              <p className="text-sm text-muted-foreground">Free Rate Calculator</p>
+              <h1 className="text-xl font-bold">LoadMaster</h1>
+              <p className="text-sm text-muted-foreground">Your Smart Load Rate Calculator</p>
             </div>
           </div>
           
@@ -401,7 +401,7 @@ const Core = () => {
         
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
-          <p>LoadMaster Core - Free Forever</p>
+          <p>LoadMaster - Free Forever</p>
           {!user && (
             <p className="mt-2">
               <Button variant="link" onClick={handleSignIn} className="text-xs">
