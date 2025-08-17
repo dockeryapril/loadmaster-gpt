@@ -15,6 +15,13 @@ export interface SurchargePrefs {
   oversizeHeight: number;
   multiStop: number; // per extra stop
   rush: number;
+  weekend: number;
+  afterHours: number;
+  inside: number;
+  residential: number;
+  liftgate: number;
+  palletJack: number;
+  detentionPerHour: number;
   access: number;
   securement: number;
 }

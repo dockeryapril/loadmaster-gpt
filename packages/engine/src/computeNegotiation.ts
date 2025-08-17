@@ -5,7 +5,7 @@ function round2(n: number): number { return Math.round((n + Number.EPSILON) * 10
 function isRush(pickupAt?: string, now = new Date()): boolean {
   if (!pickupAt) return false;
   const diffHrs = (new Date(pickupAt).getTime() - now.getTime()) / 36e5;
-  return diffHrs <= 6;
+  return diffHrs >= 0 && diffHrs <= 6;
 }
 function isSecurementIntensive(itemType?: string): boolean {
   if (!itemType) return false;
@@ -33,11 +33,32 @@ export function computeCalc(fields: LoadFields, margins: NegotiationMargins, pro
     oversizeHeight: fields.heightFt && fields.heightFt > 13.5 ? p.surcharges.oversizeHeight : 0,
     multiStop: fields.stops && fields.stops > 1 ? (fields.stops - 1) * p.surcharges.multiStop : 0,
     rush: isRush(fields.pickupAt) ? p.surcharges.rush : 0,
+    weekend: fields.weekend ? p.surcharges.weekend : 0,
+    afterHours: fields.afterHours ? p.surcharges.afterHours : 0,
+    inside: fields.inside ? p.surcharges.inside : 0,
+    residential: fields.residential ? p.surcharges.residential : 0,
+    liftgate: fields.liftgate ? p.surcharges.liftgate : 0,
+    palletJack: fields.palletJack ? p.surcharges.palletJack : 0,
+    detentionPerHour: fields.detentionHours ? fields.detentionHours * p.surcharges.detentionPerHour : 0,
     access: fields.jobsite ? p.surcharges.access : 0,
     securement: isSecurementIntensive(fields.itemType) ? p.surcharges.securement : 0
   };
 
-  const flatAdder = sur.tarp + sur.oversizeWidth + sur.oversizeHeight + sur.multiStop + sur.rush + sur.access + sur.securement;
+  const flatAdder =
+    sur.tarp +
+    sur.oversizeWidth +
+    sur.oversizeHeight +
+    sur.multiStop +
+    sur.rush +
+    sur.weekend +
+    sur.afterHours +
+    sur.inside +
+    sur.residential +
+    sur.liftgate +
+    sur.palletJack +
+    sur.detentionPerHour +
+    sur.access +
+    sur.securement;
   const heavyAdder = sur.heavyPerMile * miles;
   const targetTotal = baseFlat + flatAdder + heavyAdder;
 

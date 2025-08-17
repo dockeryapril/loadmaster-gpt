@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fixtures from '../../../LoadMaster_GPT/helper_dropin/fixtures_hotshot.json';
 import { computeCalc } from '../src/computeNegotiation';
 import { suggestTemplates } from '../src/generateMessages';
@@ -7,6 +7,7 @@ import { selectProfile } from '../src/equipmentProfiles';
 
 const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
 function pickStep(scn: any, endpoint: string) { return scn.steps.find((s: any) => s.endpoint === endpoint); }
+vi.setSystemTime(new Date('2025-08-13T09:00:00-04:00'));
 
 describe('Hotshot fixtures', () => {
   for (const scn of (fixtures as any).scenarios) {
