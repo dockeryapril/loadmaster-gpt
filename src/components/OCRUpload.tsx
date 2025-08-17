@@ -15,20 +15,6 @@ import { fuse } from '@/ai/fuse';
 import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { logError } from '@/utils/errorLogger';
-import { extractVision } from '@/ai/extractVision';
-import { extractText as extractLLMText } from '@/ai/extractText';
-
-const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1] || result;
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -182,23 +168,6 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         }
         detectionResult.detectedFields = ensuredFields;
 
-        let extractionConfidence = 1;
-        try {
-          const base64 = await fileToBase64(file);
-          let rawExtraction: string | null = null;
-          try {
-            rawExtraction = await extractVision(base64, text);
-          } catch {
-            rawExtraction = await extractLLMText(text);
-          }
-          if (rawExtraction) {
-            const parsed = JSON.parse(rawExtraction);
-            extractionConfidence = parsed.confidence ?? extractionConfidence;
-          }
-        } catch (err) {
-          recordError(err, { source: 'OCRUpload', stage: 'llm_extraction' }).catch(() => {});
-        }
-
         // Fuse fields and check for warnings
         const numericFields = detectionResult.detectedFields.reduce(
           (acc, field) => {
@@ -223,8 +192,6 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         );
         const fused = fuse({}, numericFields) as any;
         fused.warnings = findWarnings(fused as any);
-        if (extractionConfidence < 0.8)
-          fused.warnings.push('Low confidence extraction');
         const normalized = validateAndNormalize(fused);
         if (normalized.issues) {
           normalized.issues.forEach(issue => {
@@ -237,7 +204,10 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         }
         extractionSchema.safeParse({
           fields: fused,
-          confidence: extractionConfidence,
+          confidence:
+            { high: 0.9, medium: 0.6, low: 0.3 }[
+              detectionResult.confidence
+            ] ?? 0,
         });
         if (fused.warnings.length > 0) {
           fused.warnings.forEach(warning =>
@@ -261,7 +231,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         const uncertainFields = detectionResult.detectedFields.filter(
           f => f.confidence === 'medium' || f.confidence === 'low'
         );
-        if (uncertainFields.length > 0 || extractionConfidence < 0.8) {
+
+        if (uncertainFields.length > 0) {
           setCurrentDetectionResult(detectionResult);
           setShowCorrection(true);
         }
