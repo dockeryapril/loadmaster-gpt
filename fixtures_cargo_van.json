@@ -1,0 +1,52 @@
+{
+  "scenarios": [
+    {
+      "id": "CV1",
+      "name": "weekend afterhours inside residential multistop",
+      "steps": [
+        {
+          "endpoint": "/ocr",
+          "response": {
+            "fields": {
+              "distanceMi": 120,
+              "offerFlat": 300,
+              "weekend": true,
+              "afterHours": true,
+              "inside": true,
+              "residential": true,
+              "stops": 2,
+              "pickupAt": "2099-01-01T00:00:00Z"
+            }
+          }
+        },
+        {
+          "endpoint": "/calc",
+          "response": {
+            "baseRpm": 2.5,
+            "resultColor": "green",
+            "surcharges": {
+              "weekend": 50,
+              "afterHours": 50,
+              "inside": 50,
+              "residential": 50,
+              "multiStop": 30
+            }
+          }
+        },
+        {
+          "endpoint": "/templates",
+          "response": {
+            "suggestions": [
+              { "templateId": "t_weekend" },
+              { "templateId": "t_afterhours" },
+              { "templateId": "t_inside_van" },
+              { "templateId": "t_residential_van" },
+              { "templateId": "t_multistop_van" },
+              { "templateId": "t_anchor" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
