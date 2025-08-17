@@ -13,6 +13,7 @@ import { ensureMiles } from '@/utils/ensureMiles';
 import { recordExtractionEvent, recordError } from '@/ai/telemetry';
 import { fuse } from '@/ai/fuse';
 import { findWarnings } from '@/lib/normalize';
+import { extractionResponseSchema } from '@/ai/extractText';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -105,10 +106,24 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
 
         let detectionResult: FieldDetectionResult | null = null;
         try {
-          detectionResult = await SmartFieldDetector.detectFields(
+          const llmPromise = SmartFieldDetector.detectFields(
             text,
             enableFuelCostTracking
           );
+          const rawDetection = await llmPromise;
+          const schemaPayload = {
+            fields: Object.fromEntries(
+              rawDetection.detectedFields.map(f => [f.field, f.value])
+            ),
+            confidence:
+              rawDetection.confidence === 'high'
+                ? 0.9
+                : rawDetection.confidence === 'medium'
+                ? 0.6
+                : 0.3,
+          };
+          extractionResponseSchema.parse(schemaPayload);
+          detectionResult = rawDetection;
         } catch (err) {
           recordError(err, { source: 'OCRUpload', stage: 'field_detection' }).catch(() => {});
         }
