@@ -10,6 +10,7 @@ import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { defaultUserSettings } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
 import { useEquipment } from '@/hooks/useEquipment';
+import type { Equipment, FlatbedSubtype } from '@/types/equipment';
 
 interface SettingsProps {
   onClose?: () => void;
@@ -18,7 +19,7 @@ interface SettingsProps {
 export function Settings({ onClose }: SettingsProps) {
   const { settings, updateSettings } = useSupabaseSettings();
   const { toast } = useToast();
-  const { equipmentSubtype, setEquipmentSubtype } = useEquipment();
+  const { equipment, setEquipment, equipmentSubtype, setEquipmentSubtype } = useEquipment();
   
   const [fuelPrice, setFuelPrice] = useState(settings.fuelPrice.toString());
   const [mpg, setMpg] = useState(settings.mpg.toString());
@@ -99,21 +100,50 @@ export function Settings({ onClose }: SettingsProps) {
           </div>
         </div>
 
-        {/* Equipment Subtype */}
+        {/* Equipment */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Equipment</h3>
           <div className="space-y-2">
-            <Label htmlFor="equipmentSubtype">Flatbed Subtype</Label>
-            <Select value={equipmentSubtype} onValueChange={(value) => setEquipmentSubtype(value as any)}>
-              <SelectTrigger id="equipmentSubtype">
+            <Label htmlFor="equipment">Equipment Type</Label>
+            <Select
+              value={equipment}
+              onValueChange={(value) => {
+                setEquipment(value as Equipment);
+                if (value !== 'flatbed') {
+                  setEquipmentSubtype(null);
+                } else if (!equipmentSubtype) {
+                  setEquipmentSubtype('class8_flatbed');
+                }
+              }}
+            >
+              <SelectTrigger id="equipment">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="class8_flatbed">Class 8 Flatbed</SelectItem>
-                <SelectItem value="hotshot">Hotshot</SelectItem>
+                <SelectItem value="flatbed">Flatbed</SelectItem>
+                <SelectItem value="cargo_van">Cargo Van</SelectItem>
+                <SelectItem value="straight_truck">Straight Truck</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {equipment === 'flatbed' && (
+            <div className="space-y-2">
+              <Label htmlFor="equipmentSubtype">Flatbed Subtype</Label>
+              <Select
+                value={equipmentSubtype ?? undefined}
+                onValueChange={(value) => setEquipmentSubtype(value as FlatbedSubtype)}
+              >
+                <SelectTrigger id="equipmentSubtype">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="class8_flatbed">Class 8 Flatbed</SelectItem>
+                  <SelectItem value="hotshot">Hotshot</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         {/* RPM Thresholds */}
