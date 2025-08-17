@@ -14,8 +14,8 @@ import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
-import { logError } from '@/utils/errorLogger';
 import { ensureMiles } from '@/utils/ensureMiles';
+import { recordExtractionEvent, recordError } from '@/ai/telemetry';
 
 interface LoadEntryMethodProps {
   onFieldsDetected: (result: FieldDetectionResult) => void;
@@ -109,7 +109,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             settings.enableFuelCostTracking
           );
         } catch (err) {
-          logError('Field detection error:', err);
+          recordError(err, { source: 'LoadEntryMethod', stage: 'field_detection' }).catch(() => {});
         }
 
         if (!detectionResult || detectionResult.detectedFields.length === 0) {
@@ -123,6 +123,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             variant: 'destructive',
           });
           logOCREnd('LoadEntryMethod', startTime, false, 'field_detection_failed');
+          recordExtractionEvent({
+            source: 'LoadEntryMethod',
+            success: false,
+            duration: Date.now() - startTime,
+            error: 'field_detection_failed'
+          }).catch(() => {});
           onManualEntry();
           return;
         }
@@ -141,6 +147,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             variant: 'destructive',
           });
           logOCREnd('LoadEntryMethod', startTime, false, 'missing_miles');
+          recordExtractionEvent({
+            source: 'LoadEntryMethod',
+            success: false,
+            duration: Date.now() - startTime,
+            error: 'missing_miles'
+          }).catch(() => {});
           return;
         }
         detectionResult.detectedFields = ensuredFields;
@@ -168,6 +180,11 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           description: `Found ${detectionResult.detectedFields.length} load fields. ${autoFillFields.length} auto-filled.`,
         });
         logOCREnd('LoadEntryMethod', startTime, true);
+        recordExtractionEvent({
+          source: 'LoadEntryMethod',
+          success: true,
+          duration: Date.now() - startTime
+        }).catch(() => {});
       } else {
         toast({
           title: "No text detected",
@@ -175,9 +192,15 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           variant: "destructive",
         });
         logOCREnd('LoadEntryMethod', startTime, false, 'no_text');
+        recordExtractionEvent({
+          source: 'LoadEntryMethod',
+          success: false,
+          duration: Date.now() - startTime,
+          error: 'no_text'
+        }).catch(() => {});
       }
     } catch (error) {
-      logError('OCR error:', error);
+      recordError(error, { source: 'LoadEntryMethod' }).catch(() => {});
       toast({
         title: "OCR failed",
         description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
@@ -185,6 +208,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       });
       setShowOCRFallback(true);
       logOCREnd('LoadEntryMethod', startTime, false, error);
+      recordExtractionEvent({
+        source: 'LoadEntryMethod',
+        success: false,
+        duration: Date.now() - startTime,
+        error: error instanceof Error ? error.message : String(error)
+      }).catch(() => {});
     } finally {
       setIsProcessing(false);
       setOcrProgress(0);
@@ -267,7 +296,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         cameraInputRef.current?.click();
       }
     } catch (error) {
-      logError('Camera access failed:', error);
+      recordError(error, { source: 'LoadEntryMethod', stage: 'camera_access' }).catch(() => {});
       toast({
         title: "Camera access failed",
         description: "Check browser permissions and try again, or upload a photo instead.",
