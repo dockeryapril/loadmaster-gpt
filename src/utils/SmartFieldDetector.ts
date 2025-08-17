@@ -1,5 +1,11 @@
 import { supabase } from '@loadmaster/api';
 import { logError } from '@/utils/errorLogger';
+import lexicon from '@/ai/lexicon.json';
+
+const HINT_WORDS = Object.values(lexicon as Record<string, Record<string, string[]>>)
+  .flatMap(section => Object.values(section))
+  .flat()
+  .join(', ');
 
 export interface DetectedField {
   field: 'miles' | 'rate' | 'origin' | 'destination' | 'deadhead' | 'weight' | 'fsc' | 'tolls' | 'fuelCost';
@@ -25,12 +31,13 @@ export class SmartFieldDetector {
     
     try {
       // Create AI prompt for field detection
-      const systemMessage = `You are an expert at extracting trucking load information from OCR text. 
+      const systemMessage = `You are an expert at extracting trucking load information from OCR text.
+      Use these hint words to recognize field variations: ${HINT_WORDS}.
       Extract the following fields with confidence levels:
       - miles (trip distance)
       - rate (total pay amount, may include $ symbol)
       - origin (pickup city/state)
-      - destination (delivery city/state)  
+      - destination (delivery city/state)
       - deadhead (deadhead miles if mentioned)
       - weight (cargo weight in lbs)
       - fsc (fuel surcharge)
