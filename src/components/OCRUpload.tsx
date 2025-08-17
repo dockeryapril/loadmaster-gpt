@@ -14,6 +14,7 @@ import { recordExtractionEvent, recordError } from '@/ai/telemetry';
 import { fuse } from '@/ai/fuse';
 import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
+import { logError } from '@/utils/errorLogger';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -36,7 +37,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [ocrProgress, setOcrProgress] = useState(0);
-  const fullImagePromiseRef = useRef<Promise<string> | null>(null);
+  const fullImagePromiseRef = useRef<Promise<string | null> | null>(null);
   const fullImageUrlRef = useRef<string | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const imageElementRef = useRef<HTMLImageElement | null>(null);
@@ -74,7 +75,15 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
               }
             );
 
-            fullImagePromiseRef.current?.then(url => setPreviewSrc(url));
+            fullImagePromiseRef.current
+              ?.then(url => {
+                if (url) {
+                  setPreviewSrc(url);
+                } else {
+                  setPreviewSrc(null);
+                }
+              })
+              .catch(() => setPreviewSrc(null));
 
             const result = await recognizePromise;
             text = result.data.text;
@@ -330,6 +339,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         const img = new Image();
         imageElementRef.current = img;
         img.onload = () => resolve(url);
+        img.onerror = () => resolve(null);
         img.src = url;
       });
 
