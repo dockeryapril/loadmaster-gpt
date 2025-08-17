@@ -10,9 +10,11 @@ import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDete
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { ensureMiles } from '@/utils/ensureMiles';
+import { logError } from '@/utils/errorLogger';
 import { recordExtractionEvent, recordError } from '@/ai/telemetry';
+import { extractVision, extractText } from '@/ai';
 import { fuse } from '@/ai/fuse';
-import { findWarnings } from '@/lib/normalize';
+import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -44,6 +46,17 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
     setIsProcessing(true);
     setOcrProgress(0);
     const startTime = logOCRStart('OCRUpload');
+    const fileToBase64 = (f: File) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1] || '');
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(f);
+      });
+    const imageBase64Promise = fileToBase64(file).catch(() => null);
     try {
       toast({
         title: "Processing image...",
@@ -97,20 +110,72 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
       }
 
       if (text.trim()) {
-        // Step 3: AI-powered field detection
+        // Step 3: AI-powered field detection and LLM extraction
         toast({
           title: "Analyzing text...",
           description: "Using AI to detect load information.",
         });
 
+        const detectionPromise = SmartFieldDetector.detectFields(
+          text,
+          enableFuelCostTracking
+        );
+
+        const llmPromise = (async () => {
+          const outputs: string[] = [];
+          try {
+            const [imageBase64, textResp] = await Promise.all([
+              imageBase64Promise,
+              extractText(text).catch(() => null)
+            ]);
+            if (imageBase64) {
+              const visionResp = await extractVision(imageBase64, text).catch(
+                () => null
+              );
+              if (visionResp) outputs.push(visionResp);
+            }
+            if (textResp) outputs.push(textResp);
+          } catch (err) {
+            recordError(err, {
+              source: 'OCRUpload',
+              stage: 'llm_extraction'
+            }).catch(() => {});
+          }
+
+          let fields: Record<string, any> = {};
+          let confidence = 1;
+          for (const raw of outputs) {
+            try {
+              const parsed = JSON.parse(raw);
+              const normalized = validateAndNormalize(parsed.fields);
+              if (normalized.data) {
+                fields = fuse(fields, normalized.data);
+              }
+              if (typeof parsed.confidence === 'number') {
+                confidence = Math.min(confidence, parsed.confidence);
+              }
+            } catch (err) {
+              recordError(err, {
+                source: 'OCRUpload',
+                stage: 'llm_parse'
+              }).catch(() => {});
+            }
+          }
+          return { fields, confidence, used: outputs.length > 0 };
+        })();
+
         let detectionResult: FieldDetectionResult | null = null;
+        let llmData: { fields: Record<string, any>; confidence: number; used: boolean } | null = null;
         try {
-          detectionResult = await SmartFieldDetector.detectFields(
-            text,
-            enableFuelCostTracking
-          );
+          [detectionResult, llmData] = await Promise.all([
+            detectionPromise,
+            llmPromise
+          ]);
         } catch (err) {
-          recordError(err, { source: 'OCRUpload', stage: 'field_detection' }).catch(() => {});
+          recordError(err, {
+            source: 'OCRUpload',
+            stage: 'concurrent_extraction'
+          }).catch(() => {});
         }
 
         if (!detectionResult || detectionResult.detectedFields.length === 0) {
@@ -139,26 +204,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           detectionResult.detectedFields
         );
 
-        // Ensure miles field is present
-        const ensuredFields = ensureMiles(detectionResult.detectedFields);
-        if (!ensuredFields) {
-          toast({
-            title: 'Miles required',
-            description: 'Miles are required to proceed.',
-            variant: 'destructive',
-          });
-          logOCREnd('OCRUpload', startTime, false, 'missing_miles');
-          recordExtractionEvent({
-            source: 'OCRUpload',
-            success: false,
-            duration: Date.now() - startTime,
-            error: 'missing_miles'
-          }).catch(() => {});
-          return;
-        }
-        detectionResult.detectedFields = ensuredFields;
-
-        // Fuse fields and check for warnings
+        // Merge LLM fields with detected numeric fields
         const numericFields = detectionResult.detectedFields.reduce(
           (acc, field) => {
             const parsed = parseFloat(field.value.replace(/[^0-9.]/g, ''));
@@ -180,16 +226,88 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           },
           {} as Record<string, number>
         );
-        const fused = fuse({}, numericFields) as any;
-        fused.warnings = findWarnings(fused as any);
-        if (fused.warnings.length > 0) {
-          fused.warnings.forEach(warning =>
+
+        const fused = fuse(numericFields, llmData?.fields ?? {}) as any;
+
+        const upsertField = (
+          field: 'miles' | 'rate' | 'weight',
+          value: number
+        ) => {
+          const existing = detectionResult!.detectedFields.find(
+            f => f.field === field
+          );
+          const str = String(value);
+          if (existing) {
+            existing.value = str;
+            existing.confidence = 'high';
+          } else {
+            detectionResult!.detectedFields.push({
+              field,
+              value: str,
+              confidence: 'high'
+            });
+          }
+        };
+
+        if (fused.distanceMi !== undefined) upsertField('miles', fused.distanceMi);
+        if (fused.offerFlat !== undefined) upsertField('rate', fused.offerFlat);
+        if (fused.weightLbs !== undefined) upsertField('weight', fused.weightLbs);
+
+        // Ensure miles field is present
+        const ensuredFields = ensureMiles(detectionResult.detectedFields);
+        if (!ensuredFields) {
+          toast({
+            title: 'Miles required',
+            description: 'Miles are required to proceed.',
+            variant: 'destructive',
+          });
+          logOCREnd('OCRUpload', startTime, false, 'missing_miles');
+          recordExtractionEvent({
+            source: 'OCRUpload',
+            success: false,
+            duration: Date.now() - startTime,
+            error: 'missing_miles'
+          }).catch(() => {});
+          return;
+        }
+        detectionResult.detectedFields = ensuredFields;
+
+        // Recompute numeric fields and check for warnings
+        const finalNumeric = detectionResult.detectedFields.reduce(
+          (acc, field) => {
+            const parsed = parseFloat(field.value.replace(/[^0-9.]/g, ''));
+            if (Number.isNaN(parsed)) return acc;
+            switch (field.field) {
+              case 'weight':
+                acc.weightLbs = parsed;
+                break;
+              case 'miles':
+                acc.distanceMi = parsed;
+                break;
+              case 'rate':
+                acc.offerFlat = parsed;
+                break;
+              default:
+                break;
+            }
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+
+        const finalFused = fuse(fused, finalNumeric) as any;
+        const warnings = findWarnings(finalFused as any);
+        if (llmData?.used && llmData.confidence < 0.8) {
+          warnings.push('Low confidence extraction');
+        }
+        if (warnings.length > 0) {
+          warnings.forEach(warning =>
             toast({
               title: 'Warning',
               description: warning,
             })
           );
-          detectionResult.warnings = fused.warnings;
+          detectionResult.warnings = warnings;
         }
 
         // Auto-fill high confidence fields immediately
