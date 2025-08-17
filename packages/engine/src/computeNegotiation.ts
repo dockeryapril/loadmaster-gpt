@@ -26,40 +26,74 @@ export function computeCalc(fields: LoadFields, margins: NegotiationMargins, pro
   const baseFlat = Number(fields.offerFlat || 0);
   const baseRpm = round2(baseFlat / miles);
 
+  // Shared adders across all equipment types
+  const rush = isRush(fields.pickupAt) ? p.surcharges.rush : 0;
+  const multiStop = fields.stops && fields.stops > 1 ? (fields.stops - 1) * p.surcharges.multiStop : 0;
+  const access = fields.jobsite ? p.surcharges.access : 0;
+  const detentionPerHour = fields.detentionHours ? fields.detentionHours * p.surcharges.detentionPerHour : 0;
+
+  // Flatbed / Hotshot specific adders
+  const isFlatbed = p.equipment === 'flatbed';
+  const tarp = isFlatbed && fields.tarp ? p.surcharges.tarp : 0;
+  const oversizeWidth =
+    isFlatbed && fields.widthFt && fields.widthFt > 8.5 ? p.surcharges.oversizeWidth : 0;
+  const oversizeHeight =
+    isFlatbed && fields.heightFt && fields.heightFt > 13.5 ? p.surcharges.oversizeHeight : 0;
+  const securement = isFlatbed && isSecurementIntensive(fields.itemType) ? p.surcharges.securement : 0;
+  const heavyPerMile =
+    isFlatbed && fields.weightLbs && fields.weightLbs >= p.surcharges.heavyThresholdLbs
+      ? p.surcharges.heavyPerMile
+      : 0;
+
+  // Cargo van specific adders
+  const isCargoVan = p.equipment === 'cargo_van';
+  const weekend = isCargoVan && fields.weekend ? p.surcharges.weekend : 0;
+  const afterHours = isCargoVan && fields.afterHours ? p.surcharges.afterHours : 0;
+
+  // Straight truck specific adders
+  const isStraight = p.equipment === 'straight_truck';
+  const liftgate = isStraight && fields.liftgate ? p.surcharges.liftgate : 0;
+  const palletJack = isStraight && fields.palletJack ? p.surcharges.palletJack : 0;
+
+  // Inside/residential apply to cargo van & straight truck
+  const inside = (isCargoVan || isStraight) && fields.inside ? p.surcharges.inside : 0;
+  const residential = (isCargoVan || isStraight) && fields.residential ? p.surcharges.residential : 0;
+
   const sur = {
-    tarp: fields.tarp ? p.surcharges.tarp : 0,
-    heavyPerMile: fields.weightLbs && fields.weightLbs >= p.surcharges.heavyThresholdLbs ? p.surcharges.heavyPerMile : 0,
-    oversizeWidth: fields.widthFt && fields.widthFt > 8.5 ? p.surcharges.oversizeWidth : 0,
-    oversizeHeight: fields.heightFt && fields.heightFt > 13.5 ? p.surcharges.oversizeHeight : 0,
-    multiStop: fields.stops && fields.stops > 1 ? (fields.stops - 1) * p.surcharges.multiStop : 0,
-    rush: isRush(fields.pickupAt) ? p.surcharges.rush : 0,
-    weekend: fields.weekend ? p.surcharges.weekend : 0,
-    afterHours: fields.afterHours ? p.surcharges.afterHours : 0,
-    inside: fields.inside ? p.surcharges.inside : 0,
-    residential: fields.residential ? p.surcharges.residential : 0,
-    liftgate: fields.liftgate ? p.surcharges.liftgate : 0,
-    palletJack: fields.palletJack ? p.surcharges.palletJack : 0,
-    detentionPerHour: fields.detentionHours ? fields.detentionHours * p.surcharges.detentionPerHour : 0,
-    access: fields.jobsite ? p.surcharges.access : 0,
-    securement: isSecurementIntensive(fields.itemType) ? p.surcharges.securement : 0
-  };
+    tarp,
+    heavyPerMile,
+    oversizeWidth,
+    oversizeHeight,
+    multiStop,
+    rush,
+    weekend,
+    afterHours,
+    inside,
+    residential,
+    liftgate,
+    palletJack,
+    detentionPerHour,
+    access,
+    securement
+  } as const;
 
   const flatAdder =
-    sur.tarp +
-    sur.oversizeWidth +
-    sur.oversizeHeight +
-    sur.multiStop +
-    sur.rush +
-    sur.weekend +
-    sur.afterHours +
-    sur.inside +
-    sur.residential +
-    sur.liftgate +
-    sur.palletJack +
-    sur.detentionPerHour +
-    sur.access +
-    sur.securement;
-  const heavyAdder = sur.heavyPerMile * miles;
+    rush +
+    multiStop +
+    access +
+    detentionPerHour +
+    tarp +
+    oversizeWidth +
+    oversizeHeight +
+    securement +
+    weekend +
+    afterHours +
+    inside +
+    residential +
+    liftgate +
+    palletJack;
+
+  const heavyAdder = heavyPerMile * miles;
   const targetTotal = baseFlat + flatAdder + heavyAdder;
 
   const anchor = Math.round(targetTotal * (1 + margins.anchorPct));
