@@ -1,6 +1,7 @@
 import { makeOpenAI, DEFAULT_OPENAI_MODEL } from "./openaiClient";
 import { FIELD_EXTRACTION_FEWSHOTS } from "./fewshot";
 import { recordExtractionEvent, recordError } from "./telemetry";
+import { extractionSchema } from "./extractionSchema";
 
 export async function extractText(prompt: string): Promise<string> {
   const start = Date.now();
@@ -14,7 +15,14 @@ export async function extractText(prompt: string): Promise<string> {
       model: DEFAULT_OPENAI_MODEL,
       messages,
     });
-    const text = response.choices[0]?.message?.content ?? "";
+    const raw = response.choices[0]?.message?.content ?? "";
+    let text = raw;
+    try {
+      const parsed = extractionSchema.parse(JSON.parse(raw));
+      text = JSON.stringify(parsed);
+    } catch {
+      // Ignore JSON parse or validation errors and return raw text
+    }
     recordExtractionEvent({
       source: "extractText",
       success: true,

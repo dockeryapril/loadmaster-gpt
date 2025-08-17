@@ -13,6 +13,7 @@ import { ensureMiles } from '@/utils/ensureMiles';
 import { recordExtractionEvent, recordError } from '@/ai/telemetry';
 import { fuse } from '@/ai/fuse';
 import { findWarnings } from '@/lib/normalize';
+import { extractionSchema } from '@/ai/extractionSchema';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -182,6 +183,13 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         );
         const fused = fuse({}, numericFields) as any;
         fused.warnings = findWarnings(fused as any);
+        extractionSchema.safeParse({
+          fields: fused,
+          confidence:
+            { high: 0.9, medium: 0.6, low: 0.3 }[
+              detectionResult.confidence
+            ] ?? 0,
+        });
         if (fused.warnings.length > 0) {
           fused.warnings.forEach(warning =>
             toast({

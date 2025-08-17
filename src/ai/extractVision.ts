@@ -1,6 +1,7 @@
 import { makeOpenAI, DEFAULT_OPENAI_MODEL } from "./openaiClient";
 import { FIELD_EXTRACTION_FEWSHOTS } from "./fewshot";
 import { recordExtractionEvent, recordError } from "./telemetry";
+import { extractionSchema } from "./extractionSchema";
 
 const FEWSHOT_VISION_INPUT = FIELD_EXTRACTION_FEWSHOTS.map((m) => ({
   role: m.role,
@@ -29,7 +30,14 @@ export async function extractVision(imageBase64: string, prompt: string): Promis
         },
       ],
     });
-    const text = response.output_text ?? "";
+    const raw = response.output_text ?? "";
+    let text = raw;
+    try {
+      const parsed = extractionSchema.parse(JSON.parse(raw));
+      text = JSON.stringify(parsed);
+    } catch {
+      // Ignore JSON parse or validation errors and return raw text
+    }
     recordExtractionEvent({
       source: "extractVision",
       success: true,
