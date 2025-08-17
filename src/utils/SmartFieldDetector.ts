@@ -13,6 +13,7 @@ export interface FieldDetectionResult {
   processingTime: number;
   rawText: string;
   confidence: 'high' | 'medium' | 'low';
+  warnings?: string[];
 }
 
 export class SmartFieldDetector {

@@ -15,6 +15,7 @@ interface OCRCorrectionInterfaceProps {
   onConfirm: () => void;
   onCancel: () => void;
   overallConfidence: 'high' | 'medium' | 'low';
+  warnings?: string[];
 }
 
 export function OCRCorrectionInterface({
@@ -23,7 +24,8 @@ export function OCRCorrectionInterface({
   onFieldCorrection,
   onConfirm,
   onCancel,
-  overallConfidence
+  overallConfidence,
+  warnings
 }: OCRCorrectionInterfaceProps) {
   const getConfidenceBadge = (confidence: 'high' | 'medium' | 'low') => {
     const variants = {
@@ -74,11 +76,22 @@ export function OCRCorrectionInterface({
         </div>
       </div>
 
+      {warnings && warnings.length > 0 && (
+        <Card className="p-4 bg-yellow-50 border-yellow-200">
+          <h4 className="text-sm font-medium text-yellow-800 mb-2">Warnings</h4>
+          <ul className="list-disc list-inside text-sm text-yellow-700">
+            {warnings.map((warning, i) => (
+              <li key={i}>{warning}</li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left side: Original text */}
         <Card className="p-4">
           <Label className="text-sm font-medium">Original OCR Text</Label>
-          <Textarea 
+          <Textarea
             value={rawText}
             readOnly
             className="mt-2 h-64 resize-none bg-muted"

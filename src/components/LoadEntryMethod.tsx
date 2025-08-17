@@ -354,6 +354,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         onConfirm={handleConfirmCorrections}
         onCancel={handleCancelCorrections}
         overallConfidence={currentDetectionResult.confidence}
+        warnings={currentDetectionResult.warnings}
       />
       </div>
     );
