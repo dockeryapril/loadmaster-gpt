@@ -9,8 +9,8 @@ import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
-import { logError } from '@/utils/errorLogger';
 import { ensureMiles } from '@/utils/ensureMiles';
+import { recordExtractionEvent, recordError } from '@/ai/telemetry';
 import { fuse } from '@/ai/fuse';
 import { findWarnings } from '@/lib/normalize';
 
@@ -110,7 +110,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             enableFuelCostTracking
           );
         } catch (err) {
-          logError('Field detection error:', err);
+          recordError(err, { source: 'OCRUpload', stage: 'field_detection' }).catch(() => {});
         }
 
         if (!detectionResult || detectionResult.detectedFields.length === 0) {
@@ -124,6 +124,12 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             variant: 'destructive',
           });
           logOCREnd('OCRUpload', startTime, false, 'field_detection_failed');
+          recordExtractionEvent({
+            source: 'OCRUpload',
+            success: false,
+            duration: Date.now() - startTime,
+            error: 'field_detection_failed'
+          }).catch(() => {});
           onManualEntry();
           return;
         }
@@ -142,6 +148,12 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             variant: 'destructive',
           });
           logOCREnd('OCRUpload', startTime, false, 'missing_miles');
+          recordExtractionEvent({
+            source: 'OCRUpload',
+            success: false,
+            duration: Date.now() - startTime,
+            error: 'missing_miles'
+          }).catch(() => {});
           return;
         }
         detectionResult.detectedFields = ensuredFields;
@@ -204,6 +216,11 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           description: `Found ${detectionResult.detectedFields.length} load fields. ${autoFillFields.length} auto-filled.`,
         });
         logOCREnd('OCRUpload', startTime, true);
+        recordExtractionEvent({
+          source: 'OCRUpload',
+          success: true,
+          duration: Date.now() - startTime
+        }).catch(() => {});
       } else {
         toast({
           title: "No text detected",
@@ -211,15 +228,27 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           variant: "destructive",
         });
         logOCREnd('OCRUpload', startTime, false, 'no_text');
+        recordExtractionEvent({
+          source: 'OCRUpload',
+          success: false,
+          duration: Date.now() - startTime,
+          error: 'no_text'
+        }).catch(() => {});
       }
     } catch (error) {
-      logError('OCR error:', error);
+      recordError(error, { source: 'OCRUpload' }).catch(() => {});
       toast({
         title: "OCR failed",
         description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
         variant: "destructive",
       });
       logOCREnd('OCRUpload', startTime, false, error);
+      recordExtractionEvent({
+        source: 'OCRUpload',
+        success: false,
+        duration: Date.now() - startTime,
+        error: error instanceof Error ? error.message : String(error)
+      }).catch(() => {});
     } finally {
       setIsProcessing(false);
       setOcrProgress(0);
