@@ -219,13 +219,13 @@ function App() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Target</p>
+                          <p className="text-sm text-muted-foreground">Settle For</p>
                           <p className="font-semibold text-primary">${item.targetAllIn}</p>
                         </div>
                       </div>
                       <div className="flex gap-4 text-xs text-muted-foreground">
-                        <span>Anchor: ${item.anchorAllIn}</span>
-                        <span>Floor: ${item.floorAllIn}</span>
+                        <span>Ask: ${item.anchorAllIn}</span>
+                        <span>Bottom Line: ${item.floorAllIn}</span>
                       </div>
                       {item.premiums.length > 0 && (
                         <div className="mt-2">
@@ -256,15 +256,15 @@ function App() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-sm text-muted-foreground">Anchor</p>
+                    <p className="text-sm text-muted-foreground">Ask</p>
                     <p className="text-xl font-bold text-primary">${result.calculation.anchor_rate}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Target</p>
+                    <p className="text-sm text-muted-foreground">Settle For</p>
                     <p className="text-xl font-bold">${result.calculation.target_rate}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Floor</p>
+                    <p className="text-sm text-muted-foreground">Bottom Line</p>
                     <p className="text-xl font-bold text-muted-foreground">${result.calculation.floor_rate}</p>
                   </div>
                 </div>
