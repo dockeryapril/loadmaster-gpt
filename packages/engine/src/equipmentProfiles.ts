@@ -5,7 +5,9 @@ export interface RpmTargets { green: number; yellow: number; red: number; }
 export interface SurchargePrefs {
   tarp: number; heavyPerMile: number; heavyThresholdLbs: number;
   oversizeWidth: number; oversizeHeight: number; multiStop: number;
-  rush: number; access: number; securement: number;
+  rush: number; weekend: number; afterHours: number; inside: number;
+  residential: number; liftgate: number; palletJack: number;
+  detentionPerHour: number; access: number; securement: number;
 }
 export interface EquipmentProfile {
   equipment: Equipment; subtype?: FlatbedSubtype;
@@ -19,7 +21,9 @@ export const class8FlatbedProfile: EquipmentProfile = {
   surcharges: {
     tarp: 75, heavyPerMile: 0.08, heavyThresholdLbs: 48000,
     oversizeWidth: 225, oversizeHeight: 225, multiStop: 60,
-    rush: 150, access: 0, securement: 75
+    rush: 150, weekend: 0, afterHours: 0, inside: 0,
+    residential: 0, liftgate: 0, palletJack: 0,
+    detentionPerHour: 0, access: 0, securement: 75
   }
 };
 
@@ -30,7 +34,9 @@ export const hotshotProfile: EquipmentProfile = {
   surcharges: {
     tarp: 60, heavyPerMile: 0.06, heavyThresholdLbs: 18000,
     oversizeWidth: 200, oversizeHeight: 150, multiStop: 60,
-    rush: 175, access: 0, securement: 60
+    rush: 175, weekend: 0, afterHours: 0, inside: 0,
+    residential: 0, liftgate: 0, palletJack: 0,
+    detentionPerHour: 0, access: 0, securement: 60
   }
 };
 
@@ -40,7 +46,9 @@ export const cargoVanProfile: EquipmentProfile = {
   surcharges: {
     tarp: 0, heavyPerMile: 0.05, heavyThresholdLbs: 2500,
     oversizeWidth: 0, oversizeHeight: 0, multiStop: 30,
-    rush: 50, access: 0, securement: 0
+    rush: 50, weekend: 0, afterHours: 0, inside: 0,
+    residential: 0, liftgate: 0, palletJack: 0,
+    detentionPerHour: 0, access: 0, securement: 0
   }
 };
 
@@ -50,7 +58,9 @@ export const straightTruckProfile: EquipmentProfile = {
   surcharges: {
     tarp: 0, heavyPerMile: 0.07, heavyThresholdLbs: 20000,
     oversizeWidth: 0, oversizeHeight: 0, multiStop: 50,
-    rush: 125, access: 0, securement: 0
+    rush: 125, weekend: 0, afterHours: 0, inside: 0,
+    residential: 0, liftgate: 0, palletJack: 0,
+    detentionPerHour: 0, access: 0, securement: 0
   }
 };
 
