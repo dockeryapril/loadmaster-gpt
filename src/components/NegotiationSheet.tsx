@@ -170,17 +170,17 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">${calculation.anchor_rate.toLocaleString()}</div>
-                  <Label className="text-muted-foreground">Anchor (Opening)</Label>
+                  <Label className="text-muted-foreground">Ask (Opening)</Label>
                   <p className="text-xs">${(calculation.anchor_rate / (load.miles || 1)).toFixed(2)}/mile</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">${calculation.target_rate.toLocaleString()}</div>
-                  <Label className="text-muted-foreground">Target</Label>
+                  <Label className="text-muted-foreground">Settle For</Label>
                   <p className="text-xs">${(calculation.target_rate / (load.miles || 1)).toFixed(2)}/mile</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600">${calculation.floor_rate.toLocaleString()}</div>
-                  <Label className="text-muted-foreground">Floor (Minimum)</Label>
+                  <Label className="text-muted-foreground">Bottom Line (Minimum)</Label>
                   <p className="text-xs">${(calculation.floor_rate / (load.miles || 1)).toFixed(2)}/mile</p>
                 </div>
               </div>
