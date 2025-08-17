@@ -11,6 +11,8 @@ import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { logError } from '@/utils/errorLogger';
 import { ensureMiles } from '@/utils/ensureMiles';
+import { fuse } from '@/ai/fuse';
+import { findWarnings } from '@/lib/normalize';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -143,6 +145,40 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           return;
         }
         detectionResult.detectedFields = ensuredFields;
+
+        // Fuse fields and check for warnings
+        const numericFields = detectionResult.detectedFields.reduce(
+          (acc, field) => {
+            const parsed = parseFloat(field.value.replace(/[^0-9.]/g, ''));
+            if (Number.isNaN(parsed)) return acc;
+            switch (field.field) {
+              case 'weight':
+                acc.weightLbs = parsed;
+                break;
+              case 'miles':
+                acc.distanceMi = parsed;
+                break;
+              case 'rate':
+                acc.offerFlat = parsed;
+                break;
+              default:
+                break;
+            }
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+        const fused = fuse({}, numericFields) as any;
+        fused.warnings = findWarnings(fused as any);
+        if (fused.warnings.length > 0) {
+          fused.warnings.forEach(warning =>
+            toast({
+              title: 'Warning',
+              description: warning,
+            })
+          );
+          detectionResult.warnings = fused.warnings;
+        }
 
         // Auto-fill high confidence fields immediately
         const autoFillFields = detectionResult.detectedFields.filter(
@@ -311,6 +347,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         onConfirm={handleConfirmCorrections}
         onCancel={handleCancelCorrections}
         overallConfidence={currentDetectionResult.confidence}
+        warnings={currentDetectionResult.warnings}
       />
     );
   }
