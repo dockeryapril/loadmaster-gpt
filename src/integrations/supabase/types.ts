@@ -47,14 +47,17 @@ export type Database = {
           revenue_split_percentage: number | null
           safety_bonus_amount: number | null
           setup_completed_at: string | null
-          special_arrangements: string | null
-          tarping_pay: number | null
-          toll_responsibility: string | null
-          updated_at: string
-          user_id: string
-          weekly_escrow_payment: number | null
-          weekly_insurance_payment: number | null
-          weekly_truck_payment: number | null
+            special_arrangements: string | null
+            tarping_pay: number | null
+            detention_per_hour: number | null
+            cargo_van_extras: Json | null
+            straight_truck_extras: Json | null
+            toll_responsibility: string | null
+            updated_at: string
+            user_id: string
+            weekly_escrow_payment: number | null
+            weekly_insurance_payment: number | null
+            weekly_truck_payment: number | null
         }
         Insert: {
           admin_fee_flat?: number | null
@@ -87,15 +90,18 @@ export type Database = {
           performance_bonus_criteria?: string | null
           revenue_split_percentage?: number | null
           safety_bonus_amount?: number | null
-          setup_completed_at?: string | null
-          special_arrangements?: string | null
-          tarping_pay?: number | null
-          toll_responsibility?: string | null
-          updated_at?: string
-          user_id: string
-          weekly_escrow_payment?: number | null
-          weekly_insurance_payment?: number | null
-          weekly_truck_payment?: number | null
+            setup_completed_at?: string | null
+            special_arrangements?: string | null
+            tarping_pay?: number | null
+            detention_per_hour?: number | null
+            cargo_van_extras?: Json | null
+            straight_truck_extras?: Json | null
+            toll_responsibility?: string | null
+            updated_at?: string
+            user_id: string
+            weekly_escrow_payment?: number | null
+            weekly_insurance_payment?: number | null
+            weekly_truck_payment?: number | null
         }
         Update: {
           admin_fee_flat?: number | null
@@ -128,15 +134,18 @@ export type Database = {
           performance_bonus_criteria?: string | null
           revenue_split_percentage?: number | null
           safety_bonus_amount?: number | null
-          setup_completed_at?: string | null
-          special_arrangements?: string | null
-          tarping_pay?: number | null
-          toll_responsibility?: string | null
-          updated_at?: string
-          user_id?: string
-          weekly_escrow_payment?: number | null
-          weekly_insurance_payment?: number | null
-          weekly_truck_payment?: number | null
+            setup_completed_at?: string | null
+            special_arrangements?: string | null
+            tarping_pay?: number | null
+            detention_per_hour?: number | null
+            cargo_van_extras?: Json | null
+            straight_truck_extras?: Json | null
+            toll_responsibility?: string | null
+            updated_at?: string
+            user_id?: string
+            weekly_escrow_payment?: number | null
+            weekly_insurance_payment?: number | null
+            weekly_truck_payment?: number | null
         }
         Relationships: []
       }

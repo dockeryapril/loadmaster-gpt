@@ -1,3 +1,13 @@
+export interface EquipmentExtras {
+  weekend?: number;
+  after_hours?: number;
+  inside?: number;
+  residential?: number;
+  liftgate?: number;
+  pallet_jack?: number;
+  multi_stop?: number; // per extra stop
+}
+
 export interface BusinessSetup {
   id: string;
   user_id: string;
@@ -42,7 +52,12 @@ export interface BusinessSetup {
   extra_stop_rate?: number;
   loading_unloading_pay?: number;
   tarping_pay?: number;
-  
+
+  // Surcharge Defaults
+  detention_per_hour?: number;
+  cargo_van_extras?: EquipmentExtras;
+  straight_truck_extras?: EquipmentExtras;
+
   // Deductions and Fees
   admin_fee_percentage?: number;
   admin_fee_flat?: number;

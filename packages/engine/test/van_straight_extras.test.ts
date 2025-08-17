@@ -19,13 +19,13 @@ describe('Cargo van and straight truck extra surcharges', () => {
     } as const;
 
     const calc = computeCalc(fields as any, margins, selectProfile('cargo_van'));
-    expect(calc.surcharges.weekend).toBe(0);
-    expect(calc.surcharges.afterHours).toBe(0);
-    expect(calc.surcharges.inside).toBe(0);
-    expect(calc.surcharges.residential).toBe(0);
+    expect(calc.surcharges.weekend).toBe(50);
+    expect(calc.surcharges.afterHours).toBe(50);
+    expect(calc.surcharges.inside).toBe(50);
+    expect(calc.surcharges.residential).toBe(50);
     expect(calc.surcharges.multiStop).toBe(30);
     const total = Object.values(calc.surcharges).reduce((a, b) => a + b, 0);
-    expect(total).toBe(30);
+    expect(total).toBe(230);
   });
 
   it('adds straight truck multi-stop surcharge with other extras', () => {
@@ -41,12 +41,12 @@ describe('Cargo van and straight truck extra surcharges', () => {
     } as const;
 
     const calc = computeCalc(fields as any, margins, selectProfile('straight_truck'));
-    expect(calc.surcharges.liftgate).toBe(0);
-    expect(calc.surcharges.inside).toBe(0);
-    expect(calc.surcharges.residential).toBe(0);
-    expect(calc.surcharges.palletJack).toBe(0);
+    expect(calc.surcharges.liftgate).toBe(75);
+    expect(calc.surcharges.inside).toBe(50);
+    expect(calc.surcharges.residential).toBe(75);
+    expect(calc.surcharges.palletJack).toBe(50);
     expect(calc.surcharges.multiStop).toBe(100);
     const total = Object.values(calc.surcharges).reduce((a, b) => a + b, 0);
-    expect(total).toBe(100);
+    expect(total).toBe(350);
   });
 });
