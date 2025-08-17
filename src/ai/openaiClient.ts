@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 
+export const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
+
 export function makeOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
