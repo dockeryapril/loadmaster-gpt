@@ -112,6 +112,6 @@ The calculator supports cargo vans and straight trucks with built-in surcharges 
 1. Choose **Cargo Van** or **Straight Truck** in the equipment dropdown.
 2. Open the **Extras** section.
 3. Toggle options like **Weekend**, **After Hours**, **Inside**, **Residential**, **Liftgate**, **Pallet Jack**, or set the number of **Stops**.
-4. The calculator adds the corresponding surcharge to the target rate and negotiation guidance.
+4. The calculator adds the corresponding surcharge to the settle‑for rate and negotiation guidance.
 
 These default surcharge values are defined in [`packages/engine/src/equipmentProfiles.ts`](packages/engine/src/equipmentProfiles.ts).
