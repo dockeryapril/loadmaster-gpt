@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Form,
   FormField,
@@ -86,6 +89,20 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
 
   const { equipment, equipmentSubtype } = useEquipment();
 
+  const [extras, setExtras] = useState({
+    tarp: false,
+    stops: 1,
+    widthFt: '',
+    heightFt: '',
+    itemType: '',
+    weekend: false,
+    afterHours: false,
+    inside: false,
+    residential: false,
+    liftgate: false,
+    palletJack: false,
+  });
+
   const negotiation = useMemo(() => {
     if (!requiredFilled || hasErrors) return null;
     const fields = {
@@ -94,12 +111,23 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
       weightLbs: weight ? parseFloat(weight) : undefined,
       equipment,
       equipmentSubtype,
+      tarp: extras.tarp || undefined,
+      stops: extras.stops ? Number(extras.stops) : undefined,
+      widthFt: extras.widthFt ? parseFloat(extras.widthFt) : undefined,
+      heightFt: extras.heightFt ? parseFloat(extras.heightFt) : undefined,
+      itemType: extras.itemType || undefined,
+      weekend: extras.weekend || undefined,
+      afterHours: extras.afterHours || undefined,
+      inside: extras.inside || undefined,
+      residential: extras.residential || undefined,
+      liftgate: extras.liftgate || undefined,
+      palletJack: extras.palletJack || undefined,
     } as const;
     const margins = { anchorPct: 0.18, targetPct: 0.1, floorPct: 0.0 } as const;
     const calc = computeCalc(fields as any, margins);
     const notes = suggestTemplates(fields as any, calc, 3);
     return { calc, notes };
-  }, [requiredFilled, hasErrors, miles, rate, weight, equipment, equipmentSubtype]);
+  }, [requiredFilled, hasErrors, miles, rate, weight, equipment, equipmentSubtype, extras]);
 
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
@@ -195,6 +223,21 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
       fsc: values.fsc ? parseFloat(values.fsc) : undefined,
       tolls: values.tolls ? parseFloat(values.tolls) : undefined,
       weight: values.weight ? parseFloat(values.weight) : undefined,
+      widthFt: extras.widthFt ? parseFloat(extras.widthFt) : undefined,
+      heightFt: extras.heightFt ? parseFloat(extras.heightFt) : undefined,
+      stops: extras.stops ? extras.stops : undefined,
+      equipment,
+      equipmentSubtype,
+      accessorials: {
+        tarp: extras.tarp || undefined,
+        weekend: extras.weekend || undefined,
+        afterHours: extras.afterHours || undefined,
+        inside: extras.inside || undefined,
+        residential: extras.residential || undefined,
+        liftgate: extras.liftgate || undefined,
+        palletJack: extras.palletJack || undefined,
+        itemType: extras.itemType || undefined,
+      },
       deadheadMiles: values.deadheadMiles ? parseFloat(values.deadheadMiles) : undefined,
       fuelCost: settings.enableFuelCostTracking
         ? values.fuelCost
@@ -521,33 +564,218 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="weight"
-                    rules={{
-                      validate: (value) => {
-                        if (value === '') return true;
-                        const num = parseFloat(value);
-                        if (num < 0) {
-                          return 'Weight cannot be negative';
-                        }
-                        if (num > 100000) {
-                          return 'Weight cannot exceed 100000';
-                        }
-                        return true;
-                      },
-                    }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Weight (lbs)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} max={100000} placeholder="0" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
+
+                {equipment === 'flatbed' && equipmentSubtype === 'hotshot' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="tarp"
+                        checked={extras.tarp}
+                        onCheckedChange={(c) =>
+                          setExtras((f) => ({ ...f, tarp: c === true }))
+                        }
+                      />
+                      <Label htmlFor="tarp">Tarp</Label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="stops">Stops</Label>
+                        <Input
+                          id="stops"
+                          type="number"
+                          min={1}
+                          value={extras.stops}
+                          onChange={(e) =>
+                            setExtras((f) => ({ ...f, stops: Number(e.target.value) }))
+                          }
+                        />
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="weight"
+                        rules={{
+                          validate: (value) => {
+                            if (value === '') return true;
+                            const num = parseFloat(value);
+                            if (num < 0) {
+                              return 'Weight cannot be negative';
+                            }
+                            if (num > 100000) {
+                              return 'Weight cannot exceed 100000';
+                            }
+                            return true;
+                          },
+                        }}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Weight (lbs)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min={0}
+                                max={100000}
+                                placeholder="0"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div>
+                        <Label htmlFor="widthFt">Width (ft)</Label>
+                        <Input
+                          id="widthFt"
+                          type="number"
+                          value={extras.widthFt}
+                          onChange={(e) =>
+                            setExtras((f) => ({ ...f, widthFt: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="heightFt">Height (ft)</Label>
+                        <Input
+                          id="heightFt"
+                          type="number"
+                          value={extras.heightFt}
+                          onChange={(e) =>
+                            setExtras((f) => ({ ...f, heightFt: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label htmlFor="itemType">Item Type</Label>
+                        <Input
+                          id="itemType"
+                          value={extras.itemType}
+                          onChange={(e) =>
+                            setExtras((f) => ({ ...f, itemType: e.target.value }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {equipment === 'cargo_van' && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="weekend">Weekend</Label>
+                        <Switch
+                          id="weekend"
+                          checked={extras.weekend}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, weekend: c }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="afterHours">After Hours</Label>
+                        <Switch
+                          id="afterHours"
+                          checked={extras.afterHours}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, afterHours: c }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="inside">Inside</Label>
+                        <Switch
+                          id="inside"
+                          checked={extras.inside}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, inside: c }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="residential">Residential</Label>
+                        <Switch
+                          id="residential"
+                          checked={extras.residential}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, residential: c }))
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="stopsVan">Stops</Label>
+                      <Input
+                        id="stopsVan"
+                        type="number"
+                        min={1}
+                        value={extras.stops}
+                        onChange={(e) =>
+                          setExtras((f) => ({ ...f, stops: Number(e.target.value) }))
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {equipment === 'straight_truck' && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="liftgate">Liftgate</Label>
+                        <Switch
+                          id="liftgate"
+                          checked={extras.liftgate}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, liftgate: c }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="insideSt">Inside</Label>
+                        <Switch
+                          id="insideSt"
+                          checked={extras.inside}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, inside: c }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="residentialSt">Residential</Label>
+                        <Switch
+                          id="residentialSt"
+                          checked={extras.residential}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, residential: c }))
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="palletJack">Pallet Jack</Label>
+                        <Switch
+                          id="palletJack"
+                          checked={extras.palletJack}
+                          onCheckedChange={(c) =>
+                            setExtras((f) => ({ ...f, palletJack: c }))
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="stopsSt">Stops</Label>
+                      <Input
+                        id="stopsSt"
+                        type="number"
+                        min={1}
+                        value={extras.stops}
+                        onChange={(e) =>
+                          setExtras((f) => ({ ...f, stops: Number(e.target.value) }))
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {settings.enableFuelCostTracking && (
                   <FormField
