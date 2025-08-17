@@ -7,13 +7,85 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
+      archived_loads: {
+        Row: {
+          archived_at: string
+          archived_reason: string | null
+          created_at: string
+          deadhead_miles: number | null
+          destination: string
+          fsc: number | null
+          fuel_cost: number | null
+          id: string
+          miles: number
+          notes: string | null
+          origin: string
+          original_created_at: string
+          original_load_id: string
+          profit: number
+          quality: string
+          rate: number
+          rpm: number
+          tags: string[] | null
+          tolls: number | null
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          archived_at?: string
+          archived_reason?: string | null
+          created_at?: string
+          deadhead_miles?: number | null
+          destination: string
+          fsc?: number | null
+          fuel_cost?: number | null
+          id?: string
+          miles: number
+          notes?: string | null
+          origin: string
+          original_created_at: string
+          original_load_id: string
+          profit: number
+          quality: string
+          rate: number
+          rpm: number
+          tags?: string[] | null
+          tolls?: number | null
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          archived_at?: string
+          archived_reason?: string | null
+          created_at?: string
+          deadhead_miles?: number | null
+          destination?: string
+          fsc?: number | null
+          fuel_cost?: number | null
+          id?: string
+          miles?: number
+          notes?: string | null
+          origin?: string
+          original_created_at?: string
+          original_load_id?: string
+          profit?: number
+          quality?: string
+          rate?: number
+          rpm?: number
+          tags?: string[] | null
+          tolls?: number | null
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
       business_setup: {
         Row: {
           admin_fee_flat: number | null
@@ -47,17 +119,14 @@ export type Database = {
           revenue_split_percentage: number | null
           safety_bonus_amount: number | null
           setup_completed_at: string | null
-            special_arrangements: string | null
-            tarping_pay: number | null
-            detention_per_hour: number | null
-            cargo_van_extras: Json | null
-            straight_truck_extras: Json | null
-            toll_responsibility: string | null
-            updated_at: string
-            user_id: string
-            weekly_escrow_payment: number | null
-            weekly_insurance_payment: number | null
-            weekly_truck_payment: number | null
+          special_arrangements: string | null
+          tarping_pay: number | null
+          toll_responsibility: string | null
+          updated_at: string
+          user_id: string
+          weekly_escrow_payment: number | null
+          weekly_insurance_payment: number | null
+          weekly_truck_payment: number | null
         }
         Insert: {
           admin_fee_flat?: number | null
@@ -90,18 +159,15 @@ export type Database = {
           performance_bonus_criteria?: string | null
           revenue_split_percentage?: number | null
           safety_bonus_amount?: number | null
-            setup_completed_at?: string | null
-            special_arrangements?: string | null
-            tarping_pay?: number | null
-            detention_per_hour?: number | null
-            cargo_van_extras?: Json | null
-            straight_truck_extras?: Json | null
-            toll_responsibility?: string | null
-            updated_at?: string
-            user_id: string
-            weekly_escrow_payment?: number | null
-            weekly_insurance_payment?: number | null
-            weekly_truck_payment?: number | null
+          setup_completed_at?: string | null
+          special_arrangements?: string | null
+          tarping_pay?: number | null
+          toll_responsibility?: string | null
+          updated_at?: string
+          user_id: string
+          weekly_escrow_payment?: number | null
+          weekly_insurance_payment?: number | null
+          weekly_truck_payment?: number | null
         }
         Update: {
           admin_fee_flat?: number | null
@@ -134,18 +200,15 @@ export type Database = {
           performance_bonus_criteria?: string | null
           revenue_split_percentage?: number | null
           safety_bonus_amount?: number | null
-            setup_completed_at?: string | null
-            special_arrangements?: string | null
-            tarping_pay?: number | null
-            detention_per_hour?: number | null
-            cargo_van_extras?: Json | null
-            straight_truck_extras?: Json | null
-            toll_responsibility?: string | null
-            updated_at?: string
-            user_id?: string
-            weekly_escrow_payment?: number | null
-            weekly_insurance_payment?: number | null
-            weekly_truck_payment?: number | null
+          setup_completed_at?: string | null
+          special_arrangements?: string | null
+          tarping_pay?: number | null
+          toll_responsibility?: string | null
+          updated_at?: string
+          user_id?: string
+          weekly_escrow_payment?: number | null
+          weekly_insurance_payment?: number | null
+          weekly_truck_payment?: number | null
         }
         Relationships: []
       }
@@ -451,54 +514,6 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight_limit?: number
-        }
-        Relationships: []
-      }
-      error_logs: {
-        Row: {
-          id: string
-          message: string
-          error: string
-          stack: string | null
-          context: Json | null
-          timestamp: string
-        }
-        Insert: {
-          id?: string
-          message: string
-          error: string
-          stack?: string | null
-          context?: Json | null
-          timestamp?: string
-        }
-        Update: {
-          id?: string
-          message?: string
-          error?: string
-          stack?: string | null
-          context?: Json | null
-          timestamp?: string
-        }
-        Relationships: []
-      }
-      log_events: {
-        Row: {
-          id: string
-          event: string
-          data: Json | null
-          timestamp: string
-        }
-        Insert: {
-          id?: string
-          event: string
-          data?: Json | null
-          timestamp?: string
-        }
-        Update: {
-          id?: string
-          event?: string
-          data?: Json | null
-          timestamp?: string
         }
         Relationships: []
       }

@@ -345,12 +345,98 @@ export function useSupabaseLoads() {
     }
   }, [user]);
 
+  // Archive all loads to archived_loads table
+  const archiveAllLoads = async () => {
+    if (!user) return;
+
+    if (!navigator.onLine) {
+      handleOffline(() => archiveAllLoads());
+      return;
+    }
+
+    try {
+      // First, get all user's loads
+      const { data: loadsToArchive, error: fetchError } = await supabase
+        .from('loads')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (fetchError) throw fetchError;
+
+      if (!loadsToArchive || loadsToArchive.length === 0) {
+        return { archivedCount: 0 };
+      }
+
+      // Transform loads for archive table
+      const archiveData = loadsToArchive.map(load => ({
+        original_load_id: load.id,
+        user_id: load.user_id,
+        origin: load.origin,
+        destination: load.destination,
+        miles: load.miles,
+        rate: load.rate,
+        fsc: load.fsc || 0,
+        tolls: load.tolls || 0,
+        weight: load.weight,
+        deadhead_miles: load.deadhead_miles || 0,
+        fuel_cost: load.fuel_cost || 0,
+        rpm: load.rpm,
+        profit: load.profit,
+        quality: load.quality,
+        tags: load.tags || [],
+        notes: load.notes,
+        original_created_at: load.created_at,
+        archived_reason: 'bulk_clear'
+      }));
+
+      // Insert into archived_loads
+      const { error: archiveError } = await supabase
+        .from('archived_loads')
+        .insert(archiveData);
+
+      if (archiveError) throw archiveError;
+
+      // Delete from loads table
+      const { error: deleteError } = await supabase
+        .from('loads')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (deleteError) throw deleteError;
+
+      // Update local state
+      setLoads([]);
+
+      const archivedCount = loadsToArchive.length;
+
+      toast({
+        title: "All loads cleared",
+        description: `${archivedCount} loads have been archived successfully.`,
+      });
+
+      return { archivedCount };
+    } catch (error: any) {
+      logError('Error archiving loads:', error);
+      if (isNetworkError(error)) {
+        handleOffline(() => archiveAllLoads());
+      } else {
+        toast({
+          title: "Error archiving loads",
+          description: error.message || "Failed to archive loads.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+    }
+  };
+
   return {
     loads,
     loading,
     saveLoad,
     deleteLoad,
     updateLoad,
+    archiveAllLoads,
     refetch: fetchLoads,
   };
 }

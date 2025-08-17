@@ -10,6 +10,8 @@ import {
   Edit,
   Calculator,
 } from 'lucide-react';
+import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
+import { exportLoadsToCSV } from '@/utils/csvExport';
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
 import { useEffect, useState } from 'react';
@@ -23,6 +25,7 @@ interface DashboardProps {
   onEdit?: (load: Load) => void;
   loading?: boolean;
   onSaveLoad: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void> | void;
+  onClearAll?: () => Promise<void>;
 }
 
 export function Dashboard({
@@ -30,6 +33,7 @@ export function Dashboard({
   onEdit,
   loading,
   onSaveLoad,
+  onClearAll,
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
@@ -121,6 +125,15 @@ export function Dashboard({
   const handleSaveLoad = async (loadData: Omit<Load, 'id' | 'createdAt'>) => {
     await onSaveLoad(loadData);
     handleCloseCalculator();
+  };
+
+  const handleClearAll = async (exportToCsv: boolean) => {
+    if (exportToCsv && loads.length > 0) {
+      exportLoadsToCSV(loads);
+    }
+    if (onClearAll) {
+      await onClearAll();
+    }
   };
 
   return (
@@ -327,7 +340,10 @@ export function Dashboard({
               contentVisible ? "opacity-100" : "opacity-0"
             )}
           >
-            <h2 id="recent-loads-heading" className="text-lg font-semibold">Recent Loads</h2>
+            <div className="flex items-center justify-between">
+              <h2 id="recent-loads-heading" className="text-lg font-semibold">Recent Loads</h2>
+              <ClearAllLoadsDialog loads={loads} onClearAll={handleClearAll} />
+            </div>
             <div className="space-y-2">
               {recentLoads.map((load) => (
                 <Card key={load.id} className="p-4">

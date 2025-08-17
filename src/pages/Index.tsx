@@ -12,9 +12,11 @@ import { Settings } from '@/components/Settings';
 import { NegotiationSettings } from '@/components/NegotiationSettings';
 import { LoadEntryMethod } from '@/components/LoadEntryMethod';
 import { CoreDataMigrationModal } from '@/components/CoreDataMigrationModal';
+import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useCoreDataMigration } from '@/hooks/useCoreDataMigration';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
+import { exportLoadsToCSV } from '@/utils/csvExport';
 
 type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
 
@@ -25,7 +27,7 @@ const Index = () => {
   const [showMigrationModal, setShowMigrationModal] = useState(false);
   const { toast } = useToast();
   const { signOut } = useAuth();
-  const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, refetch } = useSupabaseLoads();
+  const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, archiveAllLoads, refetch } = useSupabaseLoads();
   const { settings } = useSupabaseSettings();
   const { hasCoreData } = useCoreDataMigration();
 
@@ -71,6 +73,14 @@ const Index = () => {
     setEditingLoad(null);
     setOcrData(null);
     setCurrentView('entry-method');
+  };
+
+  const handleClearAll = async (exportToCsv: boolean) => {
+    if (exportToCsv && loads.length > 0) {
+      exportLoadsToCSV(loads);
+    }
+    await archiveAllLoads();
+    await refetch();
   };
 
   const handleManualEntry = () => {
@@ -302,14 +312,17 @@ const Index = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">All Loads ({loads.length})</h2>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddNewLoad}
-                  >
-                    <Calculator className="mr-2 h-4 w-4" />
-                    New Load
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <ClearAllLoadsDialog loads={loads} onClearAll={handleClearAll} />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddNewLoad}
+                    >
+                      <Calculator className="mr-2 h-4 w-4" />
+                      New Load
+                    </Button>
+                  </div>
                 </div>
                 
                 {loads.map((load) => (
@@ -332,6 +345,7 @@ const Index = () => {
             loading={loadsLoading}
             onEdit={handleEditLoad}
             onSaveLoad={handleSaveLoad}
+            onClearAll={() => handleClearAll(true)}
           />
         );
     }
