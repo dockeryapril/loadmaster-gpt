@@ -46,8 +46,8 @@ export const cargoVanProfile: EquipmentProfile = {
   surcharges: {
     tarp: 0, heavyPerMile: 0.05, heavyThresholdLbs: 2500,
     oversizeWidth: 0, oversizeHeight: 0, multiStop: 30,
-    rush: 50, weekend: 0, afterHours: 0, inside: 0,
-    residential: 0, liftgate: 0, palletJack: 0,
+    rush: 50, weekend: 50, afterHours: 50, inside: 50,
+    residential: 50, liftgate: 0, palletJack: 0,
     detentionPerHour: 0, access: 0, securement: 0
   }
 };
@@ -58,8 +58,8 @@ export const straightTruckProfile: EquipmentProfile = {
   surcharges: {
     tarp: 0, heavyPerMile: 0.07, heavyThresholdLbs: 20000,
     oversizeWidth: 0, oversizeHeight: 0, multiStop: 50,
-    rush: 125, weekend: 0, afterHours: 0, inside: 0,
-    residential: 0, liftgate: 0, palletJack: 0,
+    rush: 125, weekend: 75, afterHours: 0, inside: 50,
+    residential: 75, liftgate: 75, palletJack: 50,
     detentionPerHour: 0, access: 0, securement: 0
   }
 };
