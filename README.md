@@ -81,3 +81,37 @@ The project requires the following environment variables:
 - `SUPABASE_ANON_KEY` – anonymous key for your Supabase project.
 - `OPENAI_API_KEY` – your OpenAI API key.
 - `ALLOWED_ORIGINS` – comma-separated list of allowed origins for CORS. Requests from origins outside this list will receive a `403` response.
+
+## Cargo Van and Straight Truck Support
+
+The calculator supports cargo vans and straight trucks with built-in surcharges for common extras. Defaults are applied automatically when the related toggle is enabled.
+
+### Default surcharge values
+
+| Cargo Van | Amount |
+|-----------|-------:|
+| Rush (pickup within 6&nbsp;hrs) | $50 |
+| Weekend | $50 |
+| After hours | $50 |
+| Inside delivery | $50 |
+| Residential | $50 |
+| Multi-stop (per extra stop) | $30 |
+
+| Straight Truck | Amount |
+|----------------|-------:|
+| Rush (pickup within 6&nbsp;hrs) | $125 |
+| Weekend | $75 |
+| Inside delivery | $50 |
+| Residential | $75 |
+| Liftgate | $75 |
+| Pallet jack | $50 |
+| Multi-stop (per extra stop) | $50 |
+
+### Enabling extras in the calculator
+
+1. Choose **Cargo Van** or **Straight Truck** in the equipment dropdown.
+2. Open the **Extras** section.
+3. Toggle options like **Weekend**, **After Hours**, **Inside**, **Residential**, **Liftgate**, **Pallet Jack**, or set the number of **Stops**.
+4. The calculator adds the corresponding surcharge to the target rate and negotiation guidance.
+
+These default surcharge values are defined in [`packages/engine/src/equipmentProfiles.ts`](packages/engine/src/equipmentProfiles.ts).
