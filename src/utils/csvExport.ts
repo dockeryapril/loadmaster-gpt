@@ -1,11 +1,8 @@
 import { Load } from '@/types/load';
 
-export const formatDateForFilename = (date: Date): string => {
-  return date.toISOString().split('T')[0].replace(/-/g, '');
-};
-
-export const exportLoadsToCSV = (loads: Load[]): void => {
+export function exportLoadsToCSV(loads: Load[], filename?: string): void {
   if (loads.length === 0) {
+    console.warn('No loads to export');
     return;
   }
 
@@ -13,18 +10,18 @@ export const exportLoadsToCSV = (loads: Load[]): void => {
     'Origin',
     'Destination', 
     'Miles',
-    'Rate',
-    'RPM',
-    'Profit',
-    'FSC',
-    'Tolls',
-    'Weight',
+    'Rate ($)',
+    'FSC ($)',
+    'Tolls ($)',
+    'Weight (lbs)',
     'Deadhead Miles',
-    'Fuel Cost',
+    'Fuel Cost ($)',
+    'RPM ($)',
+    'Profit ($)',
     'Quality',
     'Tags',
     'Notes',
-    'Created At'
+    'Created Date'
   ];
 
   const csvContent = [
@@ -34,17 +31,17 @@ export const exportLoadsToCSV = (loads: Load[]): void => {
       `"${load.destination}"`,
       load.miles,
       load.rate,
-      load.rpm.toFixed(2),
-      load.profit.toFixed(2),
       load.fsc || 0,
       load.tolls || 0,
       load.weight || '',
       load.deadheadMiles || 0,
       load.fuelCost || 0,
-      load.quality,
-      `"${(load.tags || []).join(', ')}"`,
+      load.rpm,
+      load.profit,
+      `"${load.quality}"`,
+      `"${load.tags ? load.tags.join('; ') : ''}"`,
       `"${load.notes || ''}"`,
-      `"${load.createdAt.toISOString()}"`
+      `"${load.createdAt.toLocaleDateString()}"`,
     ].join(','))
   ].join('\n');
 
@@ -54,10 +51,16 @@ export const exportLoadsToCSV = (loads: Load[]): void => {
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `loads_export_${formatDateForFilename(new Date())}.csv`);
+    
+    const defaultFilename = `loads-export-${new Date().toISOString().split('T')[0]}.csv`;
+    link.setAttribute('download', filename || defaultFilename);
+    
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the URL object
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   }
-};
+}

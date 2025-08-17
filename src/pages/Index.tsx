@@ -12,10 +12,10 @@ import { Settings } from '@/components/Settings';
 import { NegotiationSettings } from '@/components/NegotiationSettings';
 import { LoadEntryMethod } from '@/components/LoadEntryMethod';
 import { CoreDataMigrationModal } from '@/components/CoreDataMigrationModal';
-import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useCoreDataMigration } from '@/hooks/useCoreDataMigration';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
+import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
 import { exportLoadsToCSV } from '@/utils/csvExport';
 
 type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
@@ -87,6 +87,13 @@ const Index = () => {
     setEditingLoad(null);
     setOcrData(null);
     setCurrentView('calculator');
+  };
+
+  const handleClearAllLoads = async (exportToCsv: boolean) => {
+    if (exportToCsv && loads.length > 0) {
+      exportLoadsToCSV(loads);
+    }
+    await archiveAllLoads();
   };
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {
@@ -345,7 +352,7 @@ const Index = () => {
             loading={loadsLoading}
             onEdit={handleEditLoad}
             onSaveLoad={handleSaveLoad}
-            onClearAll={() => handleClearAll(true)}
+            
           />
         );
     }

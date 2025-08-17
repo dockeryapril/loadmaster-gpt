@@ -25,7 +25,6 @@ interface DashboardProps {
   onEdit?: (load: Load) => void;
   loading?: boolean;
   onSaveLoad: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void> | void;
-  onClearAll?: () => Promise<void>;
 }
 
 export function Dashboard({
@@ -33,7 +32,6 @@ export function Dashboard({
   onEdit,
   loading,
   onSaveLoad,
-  onClearAll,
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
@@ -130,9 +128,6 @@ export function Dashboard({
   const handleClearAll = async (exportToCsv: boolean) => {
     if (exportToCsv && loads.length > 0) {
       exportLoadsToCSV(loads);
-    }
-    if (onClearAll) {
-      await onClearAll();
     }
   };
 
