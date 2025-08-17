@@ -18,6 +18,13 @@ export interface Load {
     tarp?: boolean;
     jobsite?: boolean;
     itemType?: string;
+    weekend?: boolean;
+    afterHours?: boolean;
+    inside?: boolean;
+    residential?: boolean;
+    liftgate?: boolean;
+    palletJack?: boolean;
+    detentionHours?: number;
   };
   pickupAt?: string;
   deadheadMiles?: number;
