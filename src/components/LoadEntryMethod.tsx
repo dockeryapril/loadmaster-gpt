@@ -16,23 +16,11 @@ import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { ensureMiles } from '@/utils/ensureMiles';
 import { recordExtractionEvent, recordError } from '@/ai/telemetry';
-import { extractVision } from '@/ai/extractVision';
-import { extractText as extractLLMText } from '@/ai/extractText';
+import { supabase } from '@loadmaster/api';
 import { fuse } from '@/ai/fuse';
 import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 
-const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1] || result;
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 
 interface LoadEntryMethodProps {
   onFieldsDetected: (result: FieldDetectionResult) => void;
@@ -176,13 +164,17 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
 
         let extractionConfidence = 1;
         try {
-          const base64 = await fileToBase64(file);
           let rawExtraction: string | null = null;
-          try {
-            rawExtraction = await extractVision(base64, text);
-          } catch {
-            rawExtraction = await extractLLMText(text);
+          const { data, error } = await supabase.functions.invoke('openai-chat', {
+            body: {
+              prompt: text,
+              systemMessage: 'Extract load information as JSON with a confidence field'
+            }
+          });
+          if (error) {
+            throw error;
           }
+          rawExtraction = data.generatedText;
           if (rawExtraction) {
             const { fields, confidence } = JSON.parse(rawExtraction);
             extractionConfidence = confidence ?? extractionConfidence;
