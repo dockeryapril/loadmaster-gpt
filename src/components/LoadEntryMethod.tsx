@@ -174,6 +174,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         }
         detectionResult.detectedFields = ensuredFields;
 
+        let extractionConfidence = 1;
         try {
           const base64 = await fileToBase64(file);
           let rawExtraction: string | null = null;
@@ -184,6 +185,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           }
           if (rawExtraction) {
             const { fields, confidence } = JSON.parse(rawExtraction);
+            extractionConfidence = confidence ?? extractionConfidence;
             const normalized = validateAndNormalize(fields);
             if (normalized.data) {
             const numericFields = detectionResult.detectedFields.reduce(
@@ -209,7 +211,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             );
             const fused = fuse(normalized.data, numericFields) as any;
             fused.warnings = findWarnings(fused as any);
-            if (confidence < 0.8) fused.warnings.push('Low confidence extraction');
+            if (extractionConfidence < 0.8)
+              fused.warnings.push('Low confidence extraction');
             const validated = validateAndNormalize(fused);
             if (validated.issues) {
               validated.issues.forEach(issue => {
@@ -220,7 +223,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 }).catch(() => {});
               });
             }
-            extractionSchema.safeParse({ fields: fused, confidence });
+            extractionSchema.safeParse({
+              fields: fused,
+              confidence: extractionConfidence,
+            });
             if (fused.warnings.length > 0) {
               fused.warnings.forEach(warning =>
                 toast({ title: 'Warning', description: warning })
@@ -238,12 +244,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           f => f.confidence === 'high'
         );
 
-        // Show correction interface if there are uncertain fields
+        // Show correction interface if there are uncertain fields or low LLM confidence
         const uncertainFields = detectionResult.detectedFields.filter(
           f => f.confidence === 'medium' || f.confidence === 'low'
         );
 
-        if (uncertainFields.length > 0) {
+        if (uncertainFields.length > 0 || extractionConfidence < 0.8) {
           setCurrentDetectionResult(detectionResult);
           setShowCorrection(true);
         } else {
