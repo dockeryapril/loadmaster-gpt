@@ -52,7 +52,7 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
             Negotiation Settings
           </h1>
           <p className="text-muted-foreground">
-            Configure your premium adjustments and negotiation strategy
+            Configure your premium adjustments and negotiation strategy.
           </p>
         </div>
         {onClose && (
@@ -71,7 +71,7 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
               Premium Adjustments
             </CardTitle>
             <CardDescription>
-              Configure how premiums are applied for different load types
+              Configure how premiums are applied for different load types. You can switch between fixed and percentages for each adjustment.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
