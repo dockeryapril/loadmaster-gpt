@@ -303,13 +303,13 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
           <CardHeader>
             <CardTitle>Negotiation Strategy</CardTitle>
             <CardDescription>
-              Configure your anchor and floor rate calculations
+              Configure your ask and bottom line rate calculations.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Anchor Offset (%)</Label>
+                <Label>Ask Offset (%)</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -317,11 +317,11 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                   onChange={(e) => updateLocalSetting('anchor_offset', parseFloat(e.target.value) / 100)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  How much above target for opening bid
+                  How much above settle-for for opening bid.
                 </p>
               </div>
               <div>
-                <Label>Floor Offset (%)</Label>
+                <Label>Bottom Line Offset (%)</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -329,7 +329,7 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                   onChange={(e) => updateLocalSetting('floor_offset', parseFloat(e.target.value) / 100)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  How much below target for minimum rate
+                  How much below settle-for for bottom line rate.
                 </p>
               </div>
             </div>
