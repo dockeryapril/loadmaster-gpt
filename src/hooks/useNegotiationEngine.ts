@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import { computeCalc, suggestTemplates } from '../../packages/engine/src/index';
+import { computeCalc, suggestTemplates, type LoadFields } from '../../packages/engine/src/index';
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
 import { useEquipment } from '@/hooks/useEquipment';
+import type { Equipment, FlatbedSubtype, EquipmentType } from '@/types/equipment';
 
 interface UseNegotiationEngineProps {
   load: Partial<Load>;
@@ -13,7 +14,25 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
   const { equipment, equipmentSubtype } = useEquipment();
   const result = useMemo(() => {
     if (!load.miles || !load.rate) return null;
-    const fields = {
+
+    const eq: Equipment = load.equipment ?? equipment;
+    const subtype: FlatbedSubtype = load.equipmentSubtype ?? equipmentSubtype ?? 'class8_flatbed';
+
+    const flatbedMap: Record<FlatbedSubtype, EquipmentType> = {
+      class8_flatbed: 'flatbed',
+      hotshot: 'hotshot',
+    };
+
+    const equipmentTypeMap: Record<Equipment, EquipmentType> = {
+      flatbed: flatbedMap[subtype],
+      cargo_van: 'cargo_van',
+      straight_truck: 'straight_truck',
+      tractor: 'tractor',
+    };
+
+    const equipmentType = equipmentTypeMap[eq];
+
+    const fields: LoadFields = {
       distanceMi: load.miles,
       offerFlat: load.rate,
       weightLbs: load.weight,
@@ -22,12 +41,13 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
       stops: load.stops,
       ...(load.accessorials ?? {}),
       pickupAt: load.pickupAt,
-      equipment: load.equipment ?? equipment,
-      equipmentSubtype: load.equipmentSubtype ?? equipmentSubtype,
+      equipment: equipmentType === 'hotshot' ? 'flatbed' : equipmentType,
+      equipmentSubtype: equipmentType === 'hotshot' ? 'hotshot' : subtype,
     };
+
     const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
-    const calc = computeCalc(fields as any, margins);
-    const notes = suggestTemplates(fields as any, calc, 3);
+    const calc = computeCalc(fields, margins);
+    const notes = suggestTemplates(fields, calc, 3);
     const calculation: NegotiationCalculation = {
       anchor_rate: calc.negotiation.anchor,
       target_rate: calc.negotiation.target,

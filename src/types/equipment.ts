@@ -1,5 +1,6 @@
 export type Equipment = 'flatbed' | 'cargo_van' | 'straight_truck' | 'tractor';
 export type FlatbedSubtype = 'class8_flatbed' | 'hotshot';
+export type EquipmentType = Equipment | 'hotshot';
 
 export interface RpmTargets {
   green: number;
