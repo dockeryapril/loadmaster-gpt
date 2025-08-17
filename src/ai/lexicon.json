@@ -1,0 +1,36 @@
+{
+  "common": {
+    "distanceMi": ["distance", "miles", "mi", "trip miles"],
+    "offerFlat": ["offer", "price", "pay", "rate"],
+    "pickupAt": ["pickup time", "ready at", "available at"],
+    "stops": ["stops", "stop count", "drops", "pickups"],
+    "weightLbs": ["weight", "lbs", "pounds", "load weight"],
+    "origin": ["origin", "pickup", "from"],
+    "destination": ["destination", "drop", "to", "delivery"],
+    "deadhead": ["deadhead", "dh"],
+    "rate": ["rate", "offer", "total pay"],
+    "miles": ["miles", "distance", "mi"]
+  },
+  "hotshot": {
+    "tarp": ["tarp", "tarping"],
+    "jobsite": ["jobsite", "job site", "construction site"],
+    "itemType": ["item type", "commodity", "freight"],
+    "rush": ["rush", "expedite", "urgent"],
+    "multiStop": ["multistop", "multi stop", "extra stops"]
+  },
+  "cargo_van": {
+    "weekend": ["weekend", "sat", "saturday", "sun", "sunday"],
+    "afterHours": ["after hours", "afterhours", "night", "evening"],
+    "inside": ["inside", "inside delivery", "white glove"],
+    "residential": ["residential", "home", "house"],
+    "multiStop": ["multistop", "multi stop", "extra stops"]
+  },
+  "straight_truck": {
+    "liftgate": ["liftgate", "lift gate", "tail lift"],
+    "inside": ["inside", "inside delivery", "white glove"],
+    "residential": ["residential", "home", "house"],
+    "palletJack": ["pallet jack", "pallet-jack"],
+    "rush": ["rush", "expedite", "urgent"],
+    "multiStop": ["multistop", "multi stop", "extra stops"]
+  }
+}
