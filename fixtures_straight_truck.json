@@ -1,0 +1,54 @@
+{
+  "scenarios": [
+    {
+      "id": "ST1",
+      "name": "rush multistop liftgate inside residential palletjack",
+      "steps": [
+        {
+          "endpoint": "/ocr",
+          "response": {
+            "fields": {
+              "distanceMi": 150,
+              "offerFlat": 450,
+              "pickupAt": "now+3h",
+              "stops": 3,
+              "liftgate": true,
+              "inside": true,
+              "residential": true,
+              "palletJack": true
+            }
+          }
+        },
+        {
+          "endpoint": "/calc",
+          "response": {
+            "baseRpm": 3,
+            "resultColor": "green",
+            "surcharges": {
+              "liftgate": 75,
+              "inside": 50,
+              "residential": 75,
+              "palletJack": 50,
+              "rush": 125,
+              "multiStop": 100
+            }
+          }
+        },
+        {
+          "endpoint": "/templates",
+          "response": {
+            "suggestions": [
+              { "templateId": "t_liftgate" },
+              { "templateId": "t_residential_st" },
+              { "templateId": "t_inside_st" },
+              { "templateId": "t_palletjack" },
+              { "templateId": "t_rush_st" },
+              { "templateId": "t_multistop_st" },
+              { "templateId": "t_anchor" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
