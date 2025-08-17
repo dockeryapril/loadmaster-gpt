@@ -904,15 +904,15 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
 
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
-                        <div className="text-muted-foreground">Anchor</div>
+                        <div className="text-muted-foreground">Ask</div>
                         <div className="font-medium">${negotiation.calc.negotiation.anchor}</div>
                       </div>
                       <div>
-                        <div className="text-muted-foreground">Target</div>
+                        <div className="text-muted-foreground">Settle For</div>
                         <div className="font-medium">${negotiation.calc.negotiation.target}</div>
                       </div>
                       <div>
-                        <div className="text-muted-foreground">Floor</div>
+                        <div className="text-muted-foreground">Bottom Line</div>
                         <div className="font-medium">${negotiation.calc.negotiation.floor}</div>
                       </div>
                     </div>
