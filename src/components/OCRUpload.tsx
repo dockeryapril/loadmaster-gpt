@@ -6,11 +6,16 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
-import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDetector';
+import { SmartFieldDetector, FieldDetectionResult, DetectedField } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { logError } from '@/utils/errorLogger';
 import { ensureMiles } from '@/utils/ensureMiles';
+import { extractVision } from '@/ai/extractVision';
+import { extractText } from '@/ai/extractText';
+import { fuse } from '@/ai/fuse';
+import { logExtractionEvent } from '@/ai/telemetry';
+import { useEquipment } from '@/hooks/useEquipment';
 
 interface OCRUploadProps {
   onTextExtracted: (text: string) => void;
@@ -37,6 +42,19 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const fullImageUrlRef = useRef<string | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const imageElementRef = useRef<HTMLImageElement | null>(null);
+  const { equipment } = useEquipment();
+
+  const fileToBase64 = (f: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(f);
+    });
 
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
@@ -103,10 +121,55 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
 
         let detectionResult: FieldDetectionResult | null = null;
         try {
-          detectionResult = await SmartFieldDetector.detectFields(
-            text,
-            enableFuelCostTracking
-          );
+          const base64 = await fileToBase64(file);
+          const equipmentKey =
+            equipment === 'cargo_van' || equipment === 'straight_truck'
+              ? (equipment as any)
+              : 'hotshot';
+          const [vision, llm] = await Promise.all([
+            extractVision(base64, equipmentKey),
+            extractText(text, equipmentKey)
+          ]);
+          const fused = fuse(vision, llm);
+          logExtractionEvent(fused);
+
+          const toLevel = (c: number): 'high' | 'medium' | 'low' =>
+            c >= 0.8 ? 'high' : c >= 0.5 ? 'medium' : 'low';
+
+          const fields: DetectedField[] = [];
+
+          if (fused.extract.distanceMi !== undefined)
+            fields.push({
+              field: 'miles',
+              value: String(fused.extract.distanceMi),
+              confidence: toLevel(fused.confidence.distanceMi)
+            });
+          if (fused.extract.offerFlat !== undefined)
+            fields.push({
+              field: 'rate',
+              value: String(fused.extract.offerFlat),
+              confidence: toLevel(fused.confidence.offerFlat)
+            });
+          if (fused.extract.weightLbs !== undefined)
+            fields.push({
+              field: 'weight',
+              value: String(fused.extract.weightLbs),
+              confidence: toLevel(fused.confidence.weightLbs)
+            });
+
+          const avgConf =
+            fields.length === 0
+              ? 0
+              : fields.reduce((a, b) =>
+                  a + (b.confidence === 'high' ? 1 : b.confidence === 'medium' ? 0.5 : 0.2),
+                0) / fields.length;
+
+          detectionResult = {
+            detectedFields: fields,
+            processingTime: 0,
+            rawText: text,
+            confidence: toLevel(avgConf)
+          } as FieldDetectionResult;
         } catch (err) {
           logError('Field detection error:', err);
         }
@@ -119,32 +182,29 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             title: 'Field detection failed',
             description:
               'Could not detect load information. Switching to manual entry.',
-            variant: 'destructive',
+            variant: 'destructive'
           });
           logOCREnd('OCRUpload', startTime, false, 'field_detection_failed');
           onManualEntry();
           return;
         }
 
-        // Apply learned corrections
         detectionResult.detectedFields = SmartFieldDetector.applyLearnedCorrections(
           detectionResult.detectedFields
         );
 
-        // Ensure miles field is present
         const ensuredFields = ensureMiles(detectionResult.detectedFields);
         if (!ensuredFields) {
           toast({
             title: 'Miles required',
             description: 'Miles are required to proceed.',
-            variant: 'destructive',
+            variant: 'destructive'
           });
           logOCREnd('OCRUpload', startTime, false, 'missing_miles');
           return;
         }
         detectionResult.detectedFields = ensuredFields;
 
-        // Auto-fill high confidence fields immediately
         const autoFillFields = detectionResult.detectedFields.filter(
           f => f.confidence === 'high'
         );
@@ -152,20 +212,26 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           onFieldsDetected(detectionResult);
         }
 
-        // Show correction interface if there are uncertain fields
+        const requiredFields = ['miles', 'rate'];
+        const missingRequired = requiredFields.some(
+          field => !detectionResult!.detectedFields.find(f => f.field === field)
+        );
+        const lowRequired = detectionResult.detectedFields.some(
+          f => requiredFields.includes(f.field) && f.confidence !== 'high'
+        );
         const uncertainFields = detectionResult.detectedFields.filter(
-          f => f.confidence === 'medium' || f.confidence === 'low'
+          f => f.confidence !== 'high'
         );
 
-        if (uncertainFields.length > 0) {
+        if (uncertainFields.length > 0 || missingRequired || lowRequired) {
           setCurrentDetectionResult(detectionResult);
           setShowCorrection(true);
         }
 
         onTextExtracted(text);
         toast({
-          title: "Text extracted successfully!",
-          description: `Found ${detectionResult.detectedFields.length} load fields. ${autoFillFields.length} auto-filled.`,
+          title: 'Text extracted successfully!',
+          description: `Found ${detectionResult.detectedFields.length} load fields. ${autoFillFields.length} auto-filled.`
         });
         logOCREnd('OCRUpload', startTime, true);
       } else {
