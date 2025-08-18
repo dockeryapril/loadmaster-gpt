@@ -16,6 +16,23 @@ import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { ensureMiles } from '@/utils/ensureMiles';
 import { recordExtractionEvent, recordError } from '@/ai/telemetry';
+import { extractVision } from '@/ai/extractVision';
+import { extractText as extractLLMText } from '@/ai/extractText';
+import { fuse } from '@/ai/fuse';
+import { findWarnings, validateAndNormalize } from '@/lib/normalize';
+import { extractionSchema } from '@/ai/extractionSchema';
+
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(',')[1] || result;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
 interface LoadEntryMethodProps {
   onFieldsDetected: (result: FieldDetectionResult) => void;
@@ -157,17 +174,82 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         }
         detectionResult.detectedFields = ensuredFields;
 
+        let extractionConfidence = 1;
+        try {
+          const base64 = await fileToBase64(file);
+          let rawExtraction: string | null = null;
+          try {
+            rawExtraction = await extractVision(base64, text);
+          } catch {
+            rawExtraction = await extractLLMText(text);
+          }
+          if (rawExtraction) {
+            const { fields, confidence } = JSON.parse(rawExtraction);
+            extractionConfidence = confidence ?? extractionConfidence;
+            const normalized = validateAndNormalize(fields);
+            if (normalized.data) {
+            const numericFields = detectionResult.detectedFields.reduce(
+              (acc, field) => {
+                const parsed = parseFloat(field.value.replace(/[^0-9.]/g, ''));
+                if (Number.isNaN(parsed)) return acc;
+                switch (field.field) {
+                  case 'weight':
+                    acc.weightLbs = parsed;
+                    break;
+                  case 'miles':
+                    acc.distanceMi = parsed;
+                    break;
+                  case 'rate':
+                    acc.offerFlat = parsed;
+                    break;
+                  default:
+                    break;
+                }
+                return acc;
+              },
+              {} as Record<string, number>
+            );
+            const fused = fuse(normalized.data, numericFields) as any;
+            fused.warnings = findWarnings(fused as any);
+            if (extractionConfidence < 0.8)
+              fused.warnings.push('Low confidence extraction');
+            const validated = validateAndNormalize(fused);
+            if (validated.issues) {
+              validated.issues.forEach(issue => {
+                fused.warnings.push(issue.message);
+                recordError(issue.message, {
+                  source: 'LoadEntryMethod',
+                  stage: 'validation'
+                }).catch(() => {});
+              });
+            }
+            extractionSchema.safeParse({
+              fields: fused,
+              confidence: extractionConfidence,
+            });
+            if (fused.warnings.length > 0) {
+              fused.warnings.forEach(warning =>
+                toast({ title: 'Warning', description: warning })
+              );
+              detectionResult.warnings = fused.warnings;
+            }
+          }
+        }
+        } catch (err) {
+          recordError(err, { source: 'LoadEntryMethod', stage: 'llm_extraction' }).catch(() => {});
+        }
+
         // Auto-fill high confidence fields immediately
         const autoFillFields = detectionResult.detectedFields.filter(
           f => f.confidence === 'high'
         );
 
-        // Show correction interface if there are uncertain fields
+        // Show correction interface if there are uncertain fields or low LLM confidence
         const uncertainFields = detectionResult.detectedFields.filter(
           f => f.confidence === 'medium' || f.confidence === 'low'
         );
 
-        if (uncertainFields.length > 0) {
+        if (uncertainFields.length > 0 || extractionConfidence < 0.8) {
           setCurrentDetectionResult(detectionResult);
           setShowCorrection(true);
         } else {
