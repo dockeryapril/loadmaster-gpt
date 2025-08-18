@@ -21,7 +21,8 @@ export async function logEvent(event: string, data: Record<string, unknown> = {}
   }
 
   try {
-    await supabase.from('log_events').insert(payload);
+    // TODO: Create log_events table or use alternative logging
+    console.log('log_event', payload);
   } catch (err) {
     console.error('failed to record event log', err, payload);
   }

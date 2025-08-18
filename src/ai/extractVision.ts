@@ -1,36 +1,29 @@
-import { makeOpenAI, DEFAULT_OPENAI_MODEL } from "./openaiClient";
+import { supabase } from "@/integrations/supabase/client";
 import { FIELD_EXTRACTION_FEWSHOTS } from "./fewshot";
 import { recordExtractionEvent, recordError } from "./telemetry";
 import { extractionSchema } from "./extractionSchema";
 
-const FEWSHOT_VISION_INPUT = FIELD_EXTRACTION_FEWSHOTS.map((m) => ({
-  role: m.role,
-  content: [
-    {
-      type: m.role === "assistant" ? "output_text" : "input_text",
-      text: m.content,
-    },
-  ],
-}));
-
 export async function extractVision(imageBase64: string, prompt: string): Promise<string> {
   const start = Date.now();
   try {
-    const client = makeOpenAI();
-    const response = await client.responses.create({
-      model: DEFAULT_OPENAI_MODEL,
-      input: [
-        ...FEWSHOT_VISION_INPUT,
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: prompt },
-            { type: "input_image", image_base64: imageBase64 },
-          ],
-        },
-      ],
+    // Create system message with few-shot examples
+    const systemMessage = FIELD_EXTRACTION_FEWSHOTS.map(ex => 
+      `${ex.role === 'system' ? 'SYSTEM: ' : ex.role === 'user' ? 'USER: ' : 'ASSISTANT: '}${ex.content}`
+    ).join('\n\n');
+
+    const { data, error } = await supabase.functions.invoke('openai-chat', {
+      body: { 
+        prompt, 
+        systemMessage: `${systemMessage}\n\nYou extract structured fields from documents and respond with JSON only.`,
+        imageBase64
+      }
     });
-    const raw = response.output_text ?? "";
+
+    if (error) {
+      throw new Error(`Supabase function error: ${error.message}`);
+    }
+
+    const raw = data?.generatedText ?? "";
     let text = raw;
     try {
       const parsed = extractionSchema.parse(JSON.parse(raw));

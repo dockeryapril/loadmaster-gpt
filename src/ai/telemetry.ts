@@ -27,7 +27,8 @@ export async function recordExtractionEvent(payload: Omit<ExtractionEventPayload
   }
 
   try {
-    await supabase.from('ai_extraction_events').insert(data);
+    // TODO: Create ai_extraction_events table or use alternative logging
+    console.log('ai_extraction_event', data);
   } catch (err) {
     console.error('failed to record extraction event', err, data);
   }
@@ -48,7 +49,8 @@ export async function recordError(error: unknown, context: Record<string, unknow
   }
 
   try {
-    await supabase.from('error_logs').insert(payload);
+    // TODO: Create error_logs table or use alternative logging
+    console.log('ai_extraction_error', payload);
   } catch (err) {
     console.error('failed to record error log', err, payload);
   }

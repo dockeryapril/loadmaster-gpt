@@ -28,13 +28,34 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    const { prompt, systemMessage } = await req.json();
+    const { prompt, systemMessage, imageBase64 } = await req.json();
 
     if (!prompt) {
       throw new Error('Prompt is required');
     }
 
     console.log('Processing OpenAI request with prompt length:', prompt.length);
+
+    // Prepare messages for chat completions
+    const messages = [
+      { 
+        role: 'system', 
+        content: systemMessage || 'You are a helpful assistant that processes and analyzes text data.' 
+      }
+    ];
+
+    // Add user message with text and optionally image
+    if (imageBase64) {
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
+        ]
+      });
+    } else {
+      messages.push({ role: 'user', content: prompt });
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -44,13 +65,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: systemMessage || 'You are a helpful assistant that processes and analyzes text data.' 
-          },
-          { role: 'user', content: prompt }
-        ],
+        messages,
         temperature: 0.3,
         max_tokens: 1000,
       }),

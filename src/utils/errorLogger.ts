@@ -29,7 +29,8 @@ export async function logError(
   }
 
   try {
-    await supabase.from('error_logs').insert(payload);
+    // TODO: Create error_logs table or use alternative logging
+    console.log('error_log', payload);
   } catch (err) {
     console.error('failed to record error log', err, payload);
   }
