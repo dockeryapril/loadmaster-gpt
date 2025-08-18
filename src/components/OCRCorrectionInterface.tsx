@@ -27,6 +27,23 @@ export function OCRCorrectionInterface({
   overallConfidence,
   warnings
 }: OCRCorrectionInterfaceProps) {
+  console.log('OCRCorrectionInterface render:', { 
+    detectedFields, 
+    rawText: rawText?.length, 
+    overallConfidence, 
+    warnings 
+  });
+
+  // Add error boundary for missing data
+  if (!detectedFields) {
+    console.error('OCRCorrectionInterface: detectedFields is null/undefined');
+    return (
+      <div className="p-4 text-center">
+        <p className="text-red-600">Error: No field data provided</p>
+        <Button onClick={onCancel} className="mt-2">Cancel</Button>
+      </div>
+    );
+  }
   const getConfidenceBadge = (confidence: 'high' | 'medium' | 'low') => {
     const variants = {
       high: 'bg-green-100 text-green-800',
