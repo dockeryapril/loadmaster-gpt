@@ -456,17 +456,23 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
 
   // Show correction interface
   if (showCorrection && currentDetectionResult) {
+    console.log('Rendering OCRCorrectionInterface with:', {
+      detectedFields: currentDetectionResult.detectedFields,
+      rawTextLength: currentDetectionResult.rawText?.length,
+      confidence: currentDetectionResult.confidence
+    });
+    
     return (
-      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} className="min-h-screen p-4">
         <OCRCorrectionInterface
-        detectedFields={currentDetectionResult.detectedFields}
-        rawText={currentDetectionResult.rawText}
-        onFieldCorrection={handleFieldCorrection}
-        onConfirm={handleConfirmCorrections}
-        onCancel={handleCancelCorrections}
-        overallConfidence={currentDetectionResult.confidence}
-        warnings={currentDetectionResult.warnings}
-      />
+          detectedFields={currentDetectionResult.detectedFields}
+          rawText={currentDetectionResult.rawText}
+          onFieldCorrection={handleFieldCorrection}
+          onConfirm={handleConfirmCorrections}
+          onCancel={handleCancelCorrections}
+          overallConfidence={currentDetectionResult.confidence}
+          warnings={currentDetectionResult.warnings}
+        />
       </div>
     );
   }

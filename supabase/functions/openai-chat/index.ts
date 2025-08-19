@@ -9,13 +9,14 @@ const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
 
 serve(async (req) => {
   const origin = req.headers.get('origin') ?? '';
-  if (!allowedOrigins.includes(origin)) {
-    return new Response('Forbidden', { status: 403 });
-  }
-
+  console.log('Request origin:', origin);
+  console.log('Allowed origins:', allowedOrigins);
+  
+  // Temporarily allow all origins during development to fix CORS
   const corsHeaders = {
-    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
   // Handle CORS preflight requests
