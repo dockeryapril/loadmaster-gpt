@@ -90,6 +90,9 @@ export class SmartFieldDetector {
       };
 
     } catch (error) {
+      if (error instanceof RateLimitExceededError) {
+        throw error;
+      }
       logError('Error in AI field detection:', error);
       return this.fallbackDetection(ocrText, startTime);
     }
