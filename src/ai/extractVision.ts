@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { callOpenAIWithRateLimit, RateLimitExceededError } from "@/utils/apiWrapper";
 import { FIELD_EXTRACTION_FEWSHOTS } from "./fewshot";
 import { recordExtractionEvent, recordError } from "./telemetry";
 import { extractionSchema } from "./extractionSchema";
@@ -11,17 +11,11 @@ export async function extractVision(imageBase64: string, prompt: string): Promis
       `${ex.role === 'system' ? 'SYSTEM: ' : ex.role === 'user' ? 'USER: ' : 'ASSISTANT: '}${ex.content}`
     ).join('\n\n');
 
-    const { data, error } = await supabase.functions.invoke('openai-chat', {
-      body: { 
-        prompt, 
-        systemMessage: `${systemMessage}\n\nYou extract structured fields from documents and respond with JSON only.`,
-        imageBase64
-      }
-    });
-
-    if (error) {
-      throw new Error(`Supabase function error: ${error.message}`);
-    }
+    const data = await callOpenAIWithRateLimit(
+      prompt, 
+      `${systemMessage}\n\nYou extract structured fields from documents and respond with JSON only.`,
+      imageBase64
+    );
 
     const raw = data?.generatedText ?? "";
     let text = raw;

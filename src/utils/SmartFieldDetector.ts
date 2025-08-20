@@ -1,4 +1,4 @@
-import { supabase } from '@loadmaster/api';
+import { callOpenAIWithRateLimit, RateLimitExceededError } from '@/utils/apiWrapper';
 import { logError } from '@/utils/errorLogger';
 import lexicon from '@/ai/lexicon.json';
 
@@ -60,14 +60,7 @@ export class SmartFieldDetector {
 
       const prompt = `Extract trucking load information from this OCR text:\n\n${ocrText}`;
 
-      const { data, error } = await supabase.functions.invoke('openai-chat', {
-        body: { prompt, systemMessage }
-      });
-
-      if (error) {
-        logError('AI field detection failed:', error);
-        return this.fallbackDetection(ocrText, startTime);
-      }
+      const data = await callOpenAIWithRateLimit(prompt, systemMessage);
 
       // Parse AI response
       const aiResponse = data.generatedText;

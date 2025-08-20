@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { useRateLimit } from '@/contexts/RateLimitContext';
+import { RateLimitExceededError } from '@/utils/apiWrapper';
 import { OCRPreprocessor } from '@/utils/OCRPreprocessor';
 import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
@@ -46,6 +48,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { handleRateLimitError } = useRateLimit();
   const [showCorrection, setShowCorrection] = useState(false);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
@@ -134,6 +137,10 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             enableFuelCostTracking
           );
         } catch (err) {
+          if (err instanceof RateLimitExceededError) {
+            handleRateLimitError(err);
+            return;
+          }
           recordError(err, { source: 'OCRUpload', stage: 'field_detection' }).catch(() => {});
         }
 
@@ -188,7 +195,11 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           let rawExtraction: string | null = null;
           try {
             rawExtraction = await extractVision(base64, text);
-          } catch {
+          } catch (visionErr) {
+            if (visionErr instanceof RateLimitExceededError) {
+              handleRateLimitError(visionErr);
+              return;
+            }
             rawExtraction = await extractLLMText(text);
           }
           if (rawExtraction) {
@@ -196,6 +207,10 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             extractionConfidence = parsed.confidence ?? extractionConfidence;
           }
         } catch (err) {
+          if (err instanceof RateLimitExceededError) {
+            handleRateLimitError(err);
+            return;
+          }
           recordError(err, { source: 'OCRUpload', stage: 'llm_extraction' }).catch(() => {});
         }
 

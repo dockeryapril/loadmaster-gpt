@@ -4,11 +4,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { RateLimitProvider } from "@/contexts/RateLimitContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Core from "./pages/Core";
 import Landing from "./pages/Landing";
+import Upgrade from "./pages/Upgrade";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +35,7 @@ const AppContent = () => {
     <Routes>
       <Route path="/auth" element={<Auth />} />
       <Route path="/core" element={<Core />} />
+      <Route path="/upgrade" element={<Upgrade />} />
       <Route path="/" element={
         user ? (
           <ProtectedRoute>
@@ -55,7 +58,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppContent />
+          <RateLimitProvider>
+            <AppContent />
+          </RateLimitProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
