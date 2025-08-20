@@ -18,10 +18,12 @@ serve(async (req) => {
   console.log('Allowed origins:', allowedOrigins);
   
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : '',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
+
+  if (!allowedOrigins.includes(origin)) return new Response('Forbidden', { status: 403 });
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
