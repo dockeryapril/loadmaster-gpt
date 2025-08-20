@@ -45,9 +45,9 @@ const Landing = () => {
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background z-10"></div>
           
-          {/* Trucks Container */}
+          {/* Trucks Container
           <div className="relative z-0 flex items-end justify-center w-full max-w-6xl mx-auto px-4">
-            {/* Cargo Van */}
+            {/* Cargo Van 
             <div className="flex-1 max-w-sm">
               <img 
                 src={cargoVan} 
@@ -56,7 +56,7 @@ const Landing = () => {
               />
             </div>
             
-            {/* Flatbed Truck (Hero) */}
+            {/* Flatbed Truck (Hero) 
             <div className="flex-1 max-w-lg -mx-8 z-10">
               <img 
                 src={flatbedTruck} 
@@ -65,7 +65,7 @@ const Landing = () => {
               />
             </div>
             
-            {/* Straight Truck */}
+            {/* Straight Truck 
             <div className="flex-1 max-w-sm">
               <img 
                 src={straightTruck} 
@@ -73,7 +73,7 @@ const Landing = () => {
                 className="w-full h-auto object-contain"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Hero Content */}
           <div className="absolute inset-0 flex items-center justify-center z-20">
