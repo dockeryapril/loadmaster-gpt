@@ -19,6 +19,7 @@ import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
 import { exportLoadsToCSV } from '@/utils/csvExport';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { useRateLimit } from '@/contexts/RateLimitContext';
+import { getFeatureFlags } from '@/utils/featureFlags';
 
 type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
 
@@ -28,11 +29,12 @@ const Index = () => {
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
   const [showMigrationModal, setShowMigrationModal] = useState(false);
   const { toast } = useToast();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, archiveAllLoads, refetch } = useSupabaseLoads();
   const { settings } = useSupabaseSettings();
   const { hasCoreData } = useCoreDataMigration();
   const { showRateLimitBanner, dismissBanner } = useRateLimit();
+  const featureFlags = getFeatureFlags(user);
 
   // Check for Core data on mount
   useEffect(() => {
@@ -79,7 +81,7 @@ const Index = () => {
   };
 
   const handleClearAll = async (exportToCsv: boolean) => {
-    if (exportToCsv && loads.length > 0) {
+    if (featureFlags.historyExport && exportToCsv && loads.length > 0) {
       exportLoadsToCSV(loads);
     }
     await archiveAllLoads();
@@ -93,7 +95,7 @@ const Index = () => {
   };
 
   const handleClearAllLoads = async (exportToCsv: boolean) => {
-    if (exportToCsv && loads.length > 0) {
+    if (featureFlags.historyExport && exportToCsv && loads.length > 0) {
       exportLoadsToCSV(loads);
     }
     await archiveAllLoads();

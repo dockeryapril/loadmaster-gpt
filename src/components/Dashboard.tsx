@@ -19,6 +19,8 @@ import { cn } from '@/lib/utils';
 import { LoadEntryMethod } from './LoadEntryMethod';
 import { LoadCalculator } from './LoadCalculator';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
+import { useAuth } from '@/contexts/AuthContext';
+import { getFeatureFlags } from '@/utils/featureFlags';
 
 interface DashboardProps {
   loads: Load[];
@@ -37,6 +39,8 @@ export function Dashboard({
   const [contentVisible, setContentVisible] = useState(!loading);
   const [showCalculator, setShowCalculator] = useState(false);
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
+  const { user } = useAuth();
+  const { historyExport } = getFeatureFlags(user);
 
   useEffect(() => {
     if (!loading) {
@@ -126,7 +130,7 @@ export function Dashboard({
   };
 
   const handleClearAll = async (exportToCsv: boolean) => {
-    if (exportToCsv && loads.length > 0) {
+    if (historyExport && exportToCsv && loads.length > 0) {
       exportLoadsToCSV(loads);
     }
   };

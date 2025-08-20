@@ -12,6 +12,8 @@ import { useNegotiationEngine } from '@/hooks/useNegotiationEngine';
 import { Load } from '@/types/load';
 import { MESSAGE_TEMPLATES, Negotiation } from '@/types/negotiation';
 import { Copy, TrendingUp, Target, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getFeatureFlags } from '@/utils/featureFlags';
 
 interface NegotiationSheetProps {
   open: boolean;
@@ -23,6 +25,8 @@ interface NegotiationSheetProps {
 export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: NegotiationSheetProps) {
   const { calculation, notes, resultColor } = useNegotiationEngine({ load });
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { advancedTemplates } = getFeatureFlags(user);
   
   const [selectedStrategy, setSelectedStrategy] = useState<string>(calculation?.suggested_strategy || 'standard');
   const [customMessage, setCustomMessage] = useState('');
@@ -242,55 +246,57 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
         )}
 
           {/* Message Templates */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Negotiation Message</CardTitle>
-              <CardDescription>
-                Choose a template and customize your message
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Strategy Template</Label>
-                <Select value={selectedStrategy} onValueChange={setSelectedStrategy}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MESSAGE_TEMPLATES.map((template) => (
-                      <SelectItem key={template.id} value={template.strategy}>
-                        {template.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {advancedTemplates && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Negotiation Message</CardTitle>
+                <CardDescription>
+                  Choose a template and customize your message
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Strategy Template</Label>
+                  <Select value={selectedStrategy} onValueChange={setSelectedStrategy}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MESSAGE_TEMPLATES.map((template) => (
+                        <SelectItem key={template.id} value={template.strategy}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div>
-                <Label>Message</Label>
-                {selectedStrategy === 'custom' ? (
-                  <Textarea
-                    value={customMessage}
-                    onChange={(e) => setCustomMessage(e.target.value)}
-                    placeholder="Enter your custom negotiation message..."
-                    rows={8}
-                  />
-                ) : (
-                  <Textarea
-                    value={generateMessage()}
-                    readOnly
-                    rows={8}
-                    className="bg-muted/50"
-                  />
-                )}
-              </div>
+                <div>
+                  <Label>Message</Label>
+                  {selectedStrategy === 'custom' ? (
+                    <Textarea
+                      value={customMessage}
+                      onChange={(e) => setCustomMessage(e.target.value)}
+                      placeholder="Enter your custom negotiation message..."
+                      rows={8}
+                    />
+                  ) : (
+                    <Textarea
+                      value={generateMessage()}
+                      readOnly
+                      rows={8}
+                      className="bg-muted/50"
+                    />
+                  )}
+                </div>
 
-              <Button onClick={handleCopyMessage} className="w-full">
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Message to Clipboard
-              </Button>
-            </CardContent>
-          </Card>
+                <Button onClick={handleCopyMessage} className="w-full">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Message to Clipboard
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Outcome Tracking */}
           <Card>

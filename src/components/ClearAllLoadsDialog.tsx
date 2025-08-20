@@ -12,6 +12,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Download, Archive, Trash2 } from 'lucide-react';
 import { Load } from '@/types/load';
+import { useAuth } from '@/contexts/AuthContext';
+import { getFeatureFlags } from '@/utils/featureFlags';
 
 interface ClearAllLoadsDialogProps {
   loads: Load[];
@@ -23,13 +25,15 @@ export function ClearAllLoadsDialog({
   onClearAll,
 }: ClearAllLoadsDialogProps) {
   const [open, setOpen] = useState(false);
-  const [exportToCsv, setExportToCsv] = useState(true);
+  const { user } = useAuth();
+  const { historyExport } = getFeatureFlags(user);
+  const [exportToCsv, setExportToCsv] = useState(historyExport);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleConfirm = async () => {
     setIsProcessing(true);
     try {
-      await onClearAll(exportToCsv);
+      await onClearAll(historyExport && exportToCsv);
       setOpen(false);
     } finally {
       setIsProcessing(false);
@@ -60,19 +64,24 @@ export function ClearAllLoadsDialog({
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="export-csv"
-              checked={exportToCsv}
-              onCheckedChange={(checked) => setExportToCsv(!!checked)}
-              disabled={isProcessing}
-            />
-            <label htmlFor="export-csv" className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              <Download className="h-4 w-4" />
-              Export to CSV before clearing
-            </label>
-          </div>
-          
+          {historyExport && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="export-csv"
+                checked={exportToCsv}
+                onCheckedChange={(checked) => setExportToCsv(!!checked)}
+                disabled={isProcessing}
+              />
+              <label
+                htmlFor="export-csv"
+                className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                <Download className="h-4 w-4" />
+                Export to CSV before clearing
+              </label>
+            </div>
+          )}
+
           <div className="rounded-lg border border-border bg-muted/50 p-3">
             <div className="flex items-start gap-2">
               <Archive className="h-4 w-4 text-muted-foreground mt-0.5" />

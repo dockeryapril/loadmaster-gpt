@@ -27,6 +27,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { computeCalc, suggestTemplates } from '../../packages/engine/src/index';
 import { useEquipment } from '@/hooks/useEquipment';
+import { useAuth } from '@/contexts/AuthContext';
+import { getFeatureFlags } from '@/utils/featureFlags';
 
 interface LoadCalculatorProps {
   onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => void;
@@ -54,6 +56,8 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const [showLoadEntry, setShowLoadEntry] = useState(false);
   const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+  const { advancedTemplates } = getFeatureFlags(user);
 
   const form = useForm<LoadFormValues>({
     defaultValues: {
@@ -125,9 +129,9 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
     } as const;
     const margins = { anchorPct: 0.18, targetPct: 0.1, floorPct: 0.0 } as const;
     const calc = computeCalc(fields as any, margins);
-    const notes = suggestTemplates(fields as any, calc, 3);
+    const notes = advancedTemplates ? suggestTemplates(fields as any, calc, 3) : [];
     return { calc, notes };
-  }, [requiredFilled, hasErrors, miles, rate, weight, equipment, equipmentSubtype, extras]);
+  }, [requiredFilled, hasErrors, miles, rate, weight, equipment, equipmentSubtype, extras, advancedTemplates]);
 
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);

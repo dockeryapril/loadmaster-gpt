@@ -4,6 +4,8 @@ import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
 import { useEquipment } from '@/hooks/useEquipment';
 import type { Equipment, FlatbedSubtype, EquipmentType } from '@/types/equipment';
+import { useAuth } from '@/contexts/AuthContext';
+import { getFeatureFlags } from '@/utils/featureFlags';
 
 interface UseNegotiationEngineProps {
   load: Partial<Load>;
@@ -12,6 +14,8 @@ interface UseNegotiationEngineProps {
 
 export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEngineProps) {
   const { equipment, equipmentSubtype } = useEquipment();
+  const { user } = useAuth();
+  const { advancedTemplates } = getFeatureFlags(user);
   const result = useMemo(() => {
     if (!load.miles || !load.rate) return null;
 
@@ -47,17 +51,17 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
 
     const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
     const calc = computeCalc(fields, margins);
-    const notes = suggestTemplates(fields, calc, 3);
+    const notes = advancedTemplates ? suggestTemplates(fields, calc, 3) : [];
     const calculation: NegotiationCalculation = {
       anchor_rate: calc.negotiation.anchor,
       target_rate: calc.negotiation.target,
       floor_rate: calc.negotiation.floor,
       base_rpm: calc.baseRpm,
-      premiums_applied: notes.map(n => n.templateId),
+      premiums_applied: advancedTemplates ? notes.map(n => n.templateId) : [],
       lane_baseline_rpm: laneBaselineRpm,
       suggested_strategy: 'standard',
     };
     return { calculation, notes, resultColor: calc.resultColor };
-  }, [load, laneBaselineRpm, equipment, equipmentSubtype]);
+  }, [load, laneBaselineRpm, equipment, equipmentSubtype, advancedTemplates]);
   return { ...(result ?? {}), isReady: !!result };
 }
