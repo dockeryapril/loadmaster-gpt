@@ -21,6 +21,8 @@ import { extractText as extractLLMText } from '@/ai/extractText';
 import { fuse } from '@/ai/fuse';
 import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
+import { useRateLimit } from '@/contexts/RateLimitContext';
+import { RateLimitExceededError } from '@/utils/apiWrapper';
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -59,6 +61,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const dialogRef = useRef<HTMLDivElement>(null);
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
+  const { handleRateLimitError } = useRateLimit();
 
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
@@ -126,6 +129,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             settings.enableFuelCostTracking
           );
         } catch (err) {
+          if (err instanceof RateLimitExceededError) {
+            handleRateLimitError(err);
+            return;
+          }
           recordError(err, { source: 'LoadEntryMethod', stage: 'field_detection' }).catch(() => {});
         }
 
@@ -180,7 +187,11 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           let rawExtraction: string | null = null;
           try {
             rawExtraction = await extractVision(base64, text);
-          } catch {
+          } catch (visionErr) {
+            if (visionErr instanceof RateLimitExceededError) {
+              handleRateLimitError(visionErr);
+              return;
+            }
             rawExtraction = await extractLLMText(text);
           }
           if (rawExtraction) {
@@ -236,6 +247,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           }
         }
         } catch (err) {
+          if (err instanceof RateLimitExceededError) {
+            handleRateLimitError(err);
+            return;
+          }
           recordError(err, { source: 'LoadEntryMethod', stage: 'llm_extraction' }).catch(() => {});
         }
 
@@ -282,20 +297,25 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         }).catch(() => {});
       }
     } catch (error) {
-      recordError(error, { source: 'LoadEntryMethod' }).catch(() => {});
-      toast({
-        title: "OCR failed",
-        description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
-        variant: "destructive",
-      });
-      setShowOCRFallback(true);
-      logOCREnd('LoadEntryMethod', startTime, false, error);
-      recordExtractionEvent({
-        source: 'LoadEntryMethod',
-        success: false,
-        duration: Date.now() - startTime,
-        error: error instanceof Error ? error.message : String(error)
-      }).catch(() => {});
+      if (error instanceof RateLimitExceededError) {
+        handleRateLimitError(error);
+        return;
+      } else {
+        recordError(error, { source: 'LoadEntryMethod' }).catch(() => {});
+        toast({
+          title: "OCR failed",
+          description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
+          variant: "destructive",
+        });
+        setShowOCRFallback(true);
+        logOCREnd('LoadEntryMethod', startTime, false, error);
+        recordExtractionEvent({
+          source: 'LoadEntryMethod',
+          success: false,
+          duration: Date.now() - startTime,
+          error: error instanceof Error ? error.message : String(error)
+        }).catch(() => {});
+      }
     } finally {
       setIsProcessing(false);
       setOcrProgress(0);

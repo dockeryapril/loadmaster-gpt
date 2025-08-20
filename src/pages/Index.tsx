@@ -17,6 +17,8 @@ import { useCoreDataMigration } from '@/hooks/useCoreDataMigration';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
 import { exportLoadsToCSV } from '@/utils/csvExport';
+import { RateLimitBanner } from '@/components/RateLimitBanner';
+import { useRateLimit } from '@/contexts/RateLimitContext';
 
 type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
 
@@ -30,6 +32,7 @@ const Index = () => {
   const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, archiveAllLoads, refetch } = useSupabaseLoads();
   const { settings } = useSupabaseSettings();
   const { hasCoreData } = useCoreDataMigration();
+  const { showRateLimitBanner, dismissBanner } = useRateLimit();
 
   // Check for Core data on mount
   useEffect(() => {
@@ -362,6 +365,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div id="entry-section" className="max-w-md mx-auto px-4 py-6 pb-36">
         {renderHeader()}
+        <RateLimitBanner show={showRateLimitBanner} onDismiss={dismissBanner} />
         {renderContent()}
       </div>
       {renderBottomNav()}
