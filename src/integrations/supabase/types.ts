@@ -457,6 +457,30 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          count: number
+          created_at: string
+          day: string
+          device_id: string
+          updated_at: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          day?: string
+          device_id: string
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          day?: string
+          device_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           business_setup_completed: boolean | null
@@ -522,7 +546,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_rate_limit: {
+        Args: { p_day?: string; p_device_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
