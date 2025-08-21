@@ -22,11 +22,17 @@ serve(async (req) => {
     allowedOrigins.includes(origin) || 
     (origin && origin.startsWith('http://localhost'));
     
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': isOriginAllowed ? (origin || '*') : '*',
+  const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
   };
+
+  if (isOriginAllowed && origin) {
+    corsHeaders['Access-Control-Allow-Origin'] = origin;
+  } else {
+    corsHeaders['Access-Control-Allow-Origin'] = 'null';
+  }
 
   // Handle CORS preflight requests first
   if (req.method === 'OPTIONS') {
@@ -63,7 +69,7 @@ serve(async (req) => {
     const userTier = req.headers.get('x-user-tier') || 'core';
 
     let currentCount = 1;
-    let limit = userTier === 'pro' ? proLimitPerDay : coreLimitPerDay;
+    const limit = userTier === 'pro' ? proLimitPerDay : coreLimitPerDay;
     let rateLimitInfo = { currentCount, limit, tier: userTier };
 
     // Try rate limiting if Supabase is configured
