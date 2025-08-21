@@ -9,7 +9,7 @@ const Landing = () => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate("/auth");
+    navigate("/auth?mode=signup");
   };
 
   const handleLogin = () => {
