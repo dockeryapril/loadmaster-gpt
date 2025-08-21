@@ -179,7 +179,7 @@ const Landing = () => {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                <Truck className="w-4 h-4 text-primary-foreground" />
+                <LayoutDashboard className="w-4 h-4 text-primary-foreground" />
               </div>
               <span className="font-semibold text-foreground">LoadMaster GPT</span>
             </div>
