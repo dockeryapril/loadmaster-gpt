@@ -92,7 +92,7 @@ const Landing = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 py-6">
-                  Try LoadMasterLITE for FREE!
+                  Try LoadMasterLITE - FREE!
                 </Button>
                 <Button size="lg" variant="outline" onClick={handleLogin} className="text-lg px-8 py-6">
                   Watch Demo
