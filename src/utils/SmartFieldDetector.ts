@@ -28,7 +28,8 @@ export class SmartFieldDetector {
 
   static async detectFields(ocrText: string, enableFuelCostTracking: boolean = false): Promise<FieldDetectionResult> {
     const startTime = performance.now();
-    
+    let aiResponse = '';
+
     try {
       // Create AI prompt for field detection with enhanced trucking context
       const systemMessage = `You are an expert at extracting trucking load information from OCR text from load sheets, rate confirmations, and dispatch documents.
@@ -80,14 +81,15 @@ export class SmartFieldDetector {
       const data = await callOpenAIWithRateLimit(prompt, systemMessage);
 
       // Parse AI response
-      const aiResponse = data.generatedText;
+      aiResponse = data.generatedText;
       let parsedFields: DetectedField[] = [];
       
       try {
         const parsed = JSON.parse(aiResponse);
         parsedFields = parsed.fields || [];
       } catch (parseError) {
-        logError('Failed to parse AI response:', parseError);
+        console.error('Failed to parse AI response:', aiResponse, parseError);
+        logError('Failed to parse AI response', parseError, { aiResponse });
         return this.fallbackDetection(ocrText, startTime);
       }
 
@@ -110,7 +112,7 @@ export class SmartFieldDetector {
       if (error instanceof RateLimitExceededError) {
         throw error;
       }
-      logError('Error in AI field detection:', error);
+      logError('Error in AI field detection:', error, { aiResponse, ocrText });
       return this.fallbackDetection(ocrText, startTime);
     }
   }
