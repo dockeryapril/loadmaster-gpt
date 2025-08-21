@@ -29,14 +29,26 @@ describe('SmartFieldDetector.detectFields', () => {
     expect(callOpenAIWithRateLimit).toHaveBeenCalled();
   });
 
-  it('returns low confidence when fallback is triggered', async () => {
+  it('returns low confidence when fallback finds no fields', async () => {
     vi.mocked(callOpenAIWithRateLimit).mockResolvedValue({
       generatedText: 'invalid json'
     });
 
-    const result = await SmartFieldDetector.detectFields('Miles: 500 Rate: $1000');
+    const result = await SmartFieldDetector.detectFields('no useful data');
 
     expect(result.confidence).toBe('low');
+  });
+
+  it('assigns medium confidence for numeric matches in fallback detection', async () => {
+    vi.mocked(callOpenAIWithRateLimit).mockResolvedValue({
+      generatedText: 'invalid json'
+    });
+
+    const result = await SmartFieldDetector.detectFields('Rate: $1000 for a trip of 500 miles');
+
+    const milesField = result.detectedFields.find(f => f.field === 'miles');
+    expect(milesField?.confidence).toBe('medium');
+    expect(result.confidence).toBe('medium');
   });
 });
 

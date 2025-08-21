@@ -120,7 +120,7 @@ export class SmartFieldDetector {
   private static fallbackDetection(ocrText: string, startTime: number): FieldDetectionResult {
     console.log('Using fallback pattern detection');
     const fields: DetectedField[] = [];
-    
+
     // Basic regex patterns for common formats
     const patterns = {
       miles: /(\d+)\s*(miles?|mi\.?)/i,
@@ -131,24 +131,27 @@ export class SmartFieldDetector {
       weight: /(\d+(?:,\d{3})*)\s*(?:lbs?|pounds?)/i
     };
 
+    const numericFields = new Set(['miles', 'rate', 'deadhead', 'weight']);
+
     for (const [field, pattern] of Object.entries(patterns)) {
       const match = ocrText.match(pattern);
       if (match && match[1]) {
         fields.push({
           field: field as DetectedField['field'],
           value: match[1],
-          confidence: 'low' // Fallback always low confidence
+          confidence: numericFields.has(field) ? 'medium' : 'low'
         });
       }
     }
 
     const processingTime = performance.now() - startTime;
-    
+    const overallConfidence = this.calculateOverallConfidence(fields, true);
+
     return {
       detectedFields: fields,
       processingTime,
       rawText: ocrText,
-      confidence: 'low'
+      confidence: overallConfidence
     };
   }
 
@@ -181,18 +184,25 @@ export class SmartFieldDetector {
     });
   }
 
-  private static calculateOverallConfidence(fields: DetectedField[]): 'high' | 'medium' | 'low' {
+  private static calculateOverallConfidence(fields: DetectedField[], isFallback: boolean = false): 'high' | 'medium' | 'low' {
     if (fields.length === 0) return 'low';
-    
+
     // Weighted confidence calculation
     const confidenceScores = { high: 1, medium: 0.6, low: 0.2 };
     const totalScore = fields.reduce((sum, field) => sum + confidenceScores[field.confidence], 0);
     const avgScore = totalScore / fields.length;
-    
+
     // Boost confidence if we have critical fields (miles, rate)
     const hasCriticalFields = fields.some(f => f.field === 'miles' || f.field === 'rate');
-    const adjustedScore = hasCriticalFields ? avgScore + 0.1 : avgScore;
-    
+
+    let adjustedScore = hasCriticalFields ? avgScore + 0.1 : avgScore;
+
+    // In fallback mode, account for limited field coverage
+    if (isFallback) {
+      const coverage = Math.min(fields.length / 4, 1); // consider 4 core fields
+      adjustedScore = avgScore * coverage + (hasCriticalFields ? 0.1 : 0);
+    }
+
     if (adjustedScore >= this.HIGH_CONFIDENCE_THRESHOLD) return 'high';
     if (adjustedScore >= this.MEDIUM_CONFIDENCE_THRESHOLD) return 'medium';
     return 'low';
