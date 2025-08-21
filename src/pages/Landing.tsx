@@ -166,10 +166,10 @@ const Landing = () => {
             Ready to Negotiate Better Rates?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join thousands of owner-operators who've increased their margins with LoadMaster GPT.
+            Join a community of owner-operators increasing their margins with LoadMaster.
           </p>
           <Button size="lg" onClick={handleGetStarted} className="text-lg px-12 py-6">
-            Start Your Free Trial Today
+            Try For Free Today!
           </Button>
         </div>
       </section>
