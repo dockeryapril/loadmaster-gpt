@@ -94,9 +94,10 @@ const Landing = () => {
                 <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 py-6">
                   Try LoadMasterLITE - FREE!
                 </Button>
+                {/*
                 <Button size="lg" variant="outline" onClick={handleLogin} className="text-lg px-8 py-6">
                   Watch Demo
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
