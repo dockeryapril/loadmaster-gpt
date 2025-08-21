@@ -45,6 +45,7 @@ const AppContent = () => {
           <Landing />
         )
       } />
+      <Route path="/landing" element={<Landing />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
