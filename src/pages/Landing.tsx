@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Truck, Calculator, Camera, MessageSquare } from "lucide-react";
+import { Truck, Calculator, Camera, MessageSquare, LayoutDashboard } from "lucide-react";
 import cargoVan from "@/assets/cargo-van.jpg";
 import flatbedTruck from "@/assets/flatbed-truck.jpg";
 import straightTruck from "@/assets/straight-truck.jpg";
@@ -23,7 +23,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Truck className="w-5 h-5 text-primary-foreground" />
+              <LayoutDashboard className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground">LoadMaster</span>
           </div>
