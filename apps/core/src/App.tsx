@@ -143,7 +143,7 @@ function App() {
               <Truck className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">LoadMaster Core</h1>
+              <h1 className="text-xl font-bold">LoadMasterLITE</h1>
               <p className="text-sm text-muted-foreground">Free Rate Calculator</p>
             </div>
           </div>
@@ -166,7 +166,7 @@ function App() {
             {user && isPro && (
               <Button variant="default" size="sm" onClick={handleOpenProApp}>
                 <ExternalLink className="h-4 w-4 mr-2" />
-                Pro App
+                PRO App
               </Button>
             )}
           </div>
@@ -371,7 +371,7 @@ function App() {
         
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
-          <p>LoadMaster Core - Free Forever</p>
+          <p>LoadMasterLITE - Free Forever</p>
           {!user && (
             <p className="mt-2">
               <Button variant="link" onClick={handleSignIn} className="text-xs">

@@ -478,7 +478,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             <p className="text-sm text-muted-foreground">{Math.round(ocrProgress)}%</p>
             <div className="text-sm text-muted-foreground space-y-1 text-center">
               <p>Processing image...</p>
-              <p className="text-xs">Optimizing → OCR → AI Analysis</p>
+              <p className="text-xs">Optimizing → AI Analysis</p>
             </div>
           </div>
         ) : (

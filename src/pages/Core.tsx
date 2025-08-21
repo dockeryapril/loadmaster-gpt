@@ -196,7 +196,7 @@ const Core = () => {
             {user && isPro && (
               <Button variant="default" size="sm" onClick={handleOpenProApp}>
                 <ExternalLink className="h-4 w-4 mr-2" />
-                Pro App
+                PRO App
               </Button>
             )}
           </div>
@@ -401,13 +401,13 @@ const Core = () => {
         
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
-          <p>LoadMaster - Free Forever</p>
+          <p>LoadMasterLITE - Free Forever</p>
           <p className="mt-2">
             Want more?{' '}
             <Link to="/upgrade" className="underline">
               Unlock AI-powered negotiations
             </Link>{' '}
-            and smarter load insights with LoadMaster Pro.
+            and smarter load insights with LoadMasterPRO.
           </p>
           {!user && (
             <p className="mt-2">

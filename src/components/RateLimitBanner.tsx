@@ -18,7 +18,7 @@ export function RateLimitBanner({ show, onDismiss }: RateLimitBannerProps) {
       <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
       <AlertDescription className="flex items-center justify-between">
         <span className="text-amber-800 dark:text-amber-200">
-          Free limit reached today. Come back tomorrow or upgrade to Pro for more checks.
+          Free limit reached today. Come back tomorrow or upgrade to PRO for more checks.
         </span>
         <div className="flex gap-2 ml-4">
           <Button 

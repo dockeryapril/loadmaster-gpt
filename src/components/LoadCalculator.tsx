@@ -429,7 +429,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                     }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Miles</FormLabel>
+                        <FormLabel>Loaded Miles</FormLabel>
                         <FormControl>
                           <Input type="number" min={0} max={3000} placeholder="0" {...field} />
                         </FormControl>

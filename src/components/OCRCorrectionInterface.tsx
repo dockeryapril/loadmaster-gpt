@@ -107,7 +107,7 @@ export function OCRCorrectionInterface({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left side: Original text */}
         <Card className="p-4">
-          <Label className="text-sm font-medium">Original OCR Text</Label>
+          <Label className="text-sm font-medium">Original Image Text</Label>
           <Textarea
             value={rawText}
             readOnly

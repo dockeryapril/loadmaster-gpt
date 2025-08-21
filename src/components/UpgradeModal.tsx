@@ -31,7 +31,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             <div className="p-2 bg-primary/10 rounded-lg">
               <Truck className="h-5 w-5 text-primary" />
             </div>
-            Upgrade to Pro
+            Upgrade to PRO
           </DialogTitle>
         </DialogHeader>
         
@@ -44,7 +44,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
               <Zap className="h-4 w-4 text-primary" />
               <div>
-                <p className="font-medium text-sm">100 AI checks per day</p>
+                <p className="font-medium text-sm">100 AI-powered load checks per day</p>
                 <p className="text-xs text-muted-foreground">vs 10 on free plan</p>
               </div>
             </div>
@@ -70,7 +70,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
               onClick={handleUpgrade}
               className="flex-1"
             >
-              Upgrade to Pro
+              Upgrade to PRO
             </Button>
           </div>
         </div>

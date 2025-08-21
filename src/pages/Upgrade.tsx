@@ -35,8 +35,8 @@ export default function Upgrade() {
                 <Truck className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">LoadMaster GPT</h1>
-                <p className="text-sm text-muted-foreground">Upgrade to Pro</p>
+                <h1 className="text-xl font-bold">LoadMaster</h1>
+                <p className="text-sm text-muted-foreground">Upgrade to PRO</p>
               </div>
             </div>
             <Button 
@@ -63,7 +63,7 @@ export default function Upgrade() {
           <Card className="relative">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl">Core</CardTitle>
+                <CardTitle className="text-2xl">LITE</CardTitle>
                 <Badge variant="secondary">Current</Badge>
               </div>
               <CardDescription>Perfect for getting started</CardDescription>
@@ -97,7 +97,7 @@ export default function Upgrade() {
             </div>
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
-                Pro
+                PRO
                 <Zap className="h-5 w-5 text-primary" />
               </CardTitle>
               <CardDescription>Unlimited power for serious drivers</CardDescription>
@@ -108,7 +108,7 @@ export default function Upgrade() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-sm text-muted-foreground">
-                Everything in Core, plus:
+                Everything in LITE, plus:
               </div>
               <ul className="space-y-3">
                 {proFeatures.map((feature, index) => (
@@ -119,7 +119,7 @@ export default function Upgrade() {
                 ))}
               </ul>
               <Button className="w-full">
-                Upgrade to Pro
+                Upgrade to PRO
               </Button>
               <p className="text-xs text-center text-muted-foreground">
                 Cancel anytime. No contracts.
@@ -139,7 +139,7 @@ export default function Upgrade() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground text-center">
-                  Pro users get detailed RPM trends, lane analysis, and profit optimization insights.
+                  PRO users get detailed RPM trends, lane analysis, and profit optimization insights.
                 </p>
               </CardContent>
             </Card>
