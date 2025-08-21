@@ -1,6 +1,7 @@
 import { callOpenAIWithRateLimit, RateLimitExceededError } from '@/utils/apiWrapper';
 import { logError } from '@/utils/errorLogger';
 import lexicon from '@/ai/lexicon.json';
+import { isDebugMode, debugLog } from '@/utils/debug';
 
 const HINT_WORDS = Object.values(lexicon as Record<string, Record<string, string[]>>)
   .flatMap(section => Object.values(section))
@@ -20,6 +21,7 @@ export interface FieldDetectionResult {
   rawText: string;
   confidence: 'high' | 'medium' | 'low';
   warnings?: string[];
+  aiResponse?: string;
 }
 
 export class SmartFieldDetector {
@@ -29,6 +31,7 @@ export class SmartFieldDetector {
   static async detectFields(ocrText: string, enableFuelCostTracking: boolean = false): Promise<FieldDetectionResult> {
     const startTime = performance.now();
     let aiResponse = '';
+    const debug = isDebugMode();
 
     try {
       // Create AI prompt for field detection with enhanced trucking context
@@ -82,6 +85,9 @@ export class SmartFieldDetector {
 
       // Parse AI response
       aiResponse = data.generatedText;
+      if (debug) {
+        debugLog('OpenAI response:', aiResponse);
+      }
       let parsedFields: DetectedField[] = [];
       
       try {
@@ -90,22 +96,26 @@ export class SmartFieldDetector {
       } catch (parseError) {
         console.error('Failed to parse AI response:', aiResponse, parseError);
         logError('Failed to parse AI response', parseError, { aiResponse });
-        return this.fallbackDetection(ocrText, startTime);
+        return this.fallbackDetection(ocrText, startTime, aiResponse);
       }
 
       // Validate and clean up detected fields, filter out fuel cost if disabled
-      const validatedFields = this.validateFields(parsedFields).filter(field => 
+      const validatedFields = this.validateFields(parsedFields).filter(field =>
         enableFuelCostTracking || field.field !== 'fuelCost'
       );
+      if (debug) {
+        debugLog('Detected fields:', validatedFields);
+      }
       const overallConfidence = this.calculateOverallConfidence(validatedFields);
-      
+
       const processingTime = performance.now() - startTime;
-      
+
       return {
         detectedFields: validatedFields,
         processingTime,
         rawText: ocrText,
-        confidence: overallConfidence
+        confidence: overallConfidence,
+        aiResponse: debug ? aiResponse : undefined
       };
 
     } catch (error) {
@@ -113,12 +123,14 @@ export class SmartFieldDetector {
         throw error;
       }
       logError('Error in AI field detection:', error, { aiResponse, ocrText });
-      return this.fallbackDetection(ocrText, startTime);
+      return this.fallbackDetection(ocrText, startTime, aiResponse);
     }
   }
 
-  private static fallbackDetection(ocrText: string, startTime: number): FieldDetectionResult {
-    console.log('Using fallback pattern detection');
+  private static fallbackDetection(ocrText: string, startTime: number, aiResponse = ''): FieldDetectionResult {
+    if (isDebugMode()) {
+      debugLog('Using fallback pattern detection');
+    }
     const fields: DetectedField[] = [];
 
     // Basic regex patterns for common formats
@@ -146,12 +158,16 @@ export class SmartFieldDetector {
 
     const processingTime = performance.now() - startTime;
     const overallConfidence = this.calculateOverallConfidence(fields, true);
+    if (isDebugMode()) {
+      debugLog('Fallback detected fields:', fields);
+    }
 
     return {
       detectedFields: fields,
       processingTime,
       rawText: ocrText,
-      confidence: overallConfidence
+      confidence: overallConfidence,
+      aiResponse: isDebugMode() ? aiResponse : undefined
     };
   }
 
@@ -163,17 +179,19 @@ export class SmartFieldDetector {
       switch (field.field) {
         case 'miles':
         case 'deadhead':
-        case 'weight':
+        case 'weight': {
           // Allow common formats: "500", "1,250", "25K", "15000#"
           const numericValue = field.value.replace(/[^\d]/g, '');
           return numericValue.length > 0 && parseInt(numericValue) > 0;
+        }
         case 'rate':
         case 'fsc':
         case 'tolls':
-        case 'fuelCost':
+        case 'fuelCost': {
           // Allow dollar amounts: "$1,250.00", "1250", "2.50"
           const cleanRate = field.value.replace(/[$,]/g, '');
           return /^\d+(?:\.\d{1,2})?$/.test(cleanRate) && parseFloat(cleanRate) > 0;
+        }
         case 'origin':
         case 'destination':
           // Must have at least 3 characters and ideally city/state format

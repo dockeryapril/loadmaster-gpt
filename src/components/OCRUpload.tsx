@@ -17,6 +17,7 @@ import { fuse } from '@/ai/fuse';
 import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { logError } from '@/utils/errorLogger';
+import { isDebugMode } from '@/utils/debug';
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -56,6 +57,15 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const fullImageUrlRef = useRef<string | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const imageElementRef = useRef<HTMLImageElement | null>(null);
+  const debug = isDebugMode();
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+
+  const addDebugLog = (message: string, data?: unknown) => {
+    if (!debug) return;
+    const text = data !== undefined ? `${message} ${typeof data === 'string' ? data : JSON.stringify(data)}` : message;
+    setDebugLogs(prev => [...prev, text]);
+    console.debug(message, data);
+  };
 
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
@@ -69,6 +79,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
 
       // Step 1: Preprocess image for better OCR
       const preprocessResult = await OCRPreprocessor.preprocessImage(file);
+      addDebugLog('Preprocess original size', preprocessResult.originalSize);
+      addDebugLog('Preprocess processed size', preprocessResult.processedSize);
 
       // Step 2: Extract text with Tesseract and retry logic
       let text = '';
@@ -84,8 +96,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
                   if (m.status === 'recognizing text') {
                     const progress = m.progress * 100;
                     setOcrProgress(progress);
-                    console.log(`OCR Progress: ${Math.round(progress)}%`);
                   }
+                  addDebugLog('Tesseract event', m);
                 }
               }
             );
@@ -134,6 +146,10 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             text,
             enableFuelCostTracking
           );
+          addDebugLog('Detection result', detectionResult);
+          if (detectionResult?.aiResponse) {
+            addDebugLog('OpenAI response', detectionResult.aiResponse);
+          }
         } catch (err) {
           if (err instanceof RateLimitExceededError) {
             handleRateLimitError(err);
@@ -188,7 +204,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         detectionResult.detectedFields = ensuredFields;
 
         // Use SmartFieldDetector confidence as the main extraction confidence
-        let extractionConfidence = detectionResult.confidence === 'high' ? 0.9 : 
+        const extractionConfidence = detectionResult.confidence === 'high' ? 0.9 :
                                    detectionResult.confidence === 'medium' ? 0.7 : 0.5;
 
         // Fuse fields and check for warnings
@@ -503,6 +519,15 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           <p>For best results, ensure text is clear and well-lit</p>
         </div>
         </div>
+        {debug && debugLogs.length > 0 && (
+          <div className="mt-4 max-h-40 overflow-auto rounded border p-2 text-left text-xs">
+            {debugLogs.map((log, idx) => (
+              <pre key={idx} className="whitespace-pre-wrap">
+                {log}
+              </pre>
+            ))}
+          </div>
+        )}
       </Card>
     </section>
   );
