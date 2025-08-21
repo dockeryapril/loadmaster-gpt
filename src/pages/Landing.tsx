@@ -122,7 +122,7 @@ const Landing = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-3">OCR Load Scanning</h3>
               <p className="text-muted-foreground">
-                Snap a photo of any load board offer, text, or email and instantly extract all the key details with the power of AI.
+                Take a screenshot or snap a photo of any load board offer, text, or email and instantly extract all the key details with the power of AI.
               </p>
             </div>
 
