@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard, TrendingUp } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useAuth } from '@/contexts/AuthContext';
@@ -134,9 +135,11 @@ const Index = () => {
       return (
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <Link to="/landing">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
+              </div>
+            </Link>
             {/*
             <div>
               <h1 className="text-xl font-bold">LoadMasterPro</h1>
