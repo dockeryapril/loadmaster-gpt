@@ -181,10 +181,10 @@ const Landing = () => {
               <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
                 <LayoutDashboard className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold text-foreground">LoadMaster GPT</span>
+              <span className="font-semibold text-foreground">LoadMaster</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <span>© 2024 LoadMaster GPT. All rights reserved.</span>
+              <span>© 2025 LoadMaster. All rights reserved.</span>
             </div>
           </div>
         </div>
