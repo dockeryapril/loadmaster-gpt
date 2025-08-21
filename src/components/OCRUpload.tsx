@@ -17,8 +17,6 @@ import { fuse } from '@/ai/fuse';
 import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { logError } from '@/utils/errorLogger';
-import { extractVision } from '@/ai/extractVision';
-import { extractText as extractLLMText } from '@/ai/extractText';
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -189,30 +187,9 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         }
         detectionResult.detectedFields = ensuredFields;
 
-        let extractionConfidence = 1;
-        try {
-          const base64 = await fileToBase64(file);
-          let rawExtraction: string | null = null;
-          try {
-            rawExtraction = await extractVision(base64, text);
-          } catch (visionErr) {
-            if (visionErr instanceof RateLimitExceededError) {
-              handleRateLimitError(visionErr);
-              return;
-            }
-            rawExtraction = await extractLLMText(text);
-          }
-          if (rawExtraction) {
-            const parsed = JSON.parse(rawExtraction);
-            extractionConfidence = parsed.confidence ?? extractionConfidence;
-          }
-        } catch (err) {
-          if (err instanceof RateLimitExceededError) {
-            handleRateLimitError(err);
-            return;
-          }
-          recordError(err, { source: 'OCRUpload', stage: 'llm_extraction' }).catch(() => {});
-        }
+        // Use SmartFieldDetector confidence as the main extraction confidence
+        let extractionConfidence = detectionResult.confidence === 'high' ? 0.9 : 
+                                   detectionResult.confidence === 'medium' ? 0.7 : 0.5;
 
         // Fuse fields and check for warnings
         const numericFields = detectionResult.detectedFields.reduce(

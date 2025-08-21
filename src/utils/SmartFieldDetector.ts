@@ -30,28 +30,40 @@ export class SmartFieldDetector {
     const startTime = performance.now();
     
     try {
-      // Create AI prompt for field detection
-      const systemMessage = `You are an expert at extracting trucking load information from OCR text.
+      // Create AI prompt for field detection with enhanced trucking context
+      const systemMessage = `You are an expert at extracting trucking load information from OCR text from load sheets, rate confirmations, and dispatch documents.
       Use these hint words to recognize field variations: ${HINT_WORDS}.
       
+      COMMON DOCUMENT LAYOUTS:
+      - Load confirmations: "Load #", "Miles:", "Rate:", "From:", "To:", "Weight:"
+      - Rate sheets: "$/mile", "Total Miles", "Pickup", "Delivery", "Cargo Weight"  
+      - Dispatch sheets: "Origin", "Destination", "Distance", "Pay", "Deadhead"
+      
       Extract the following fields with confidence levels:
-      - miles (trip distance, total miles, mi, distance)
-      - rate (total pay amount, rate per mile, total rate, may include $ symbol)
-      - origin (pickup location, from, origin city/state)
-      - destination (delivery location, to, destination city/state)
-      - deadhead (deadhead miles, DH, empty miles if mentioned)
-      - weight (cargo weight in lbs, pounds, weight)
-      - fsc (fuel surcharge, fuel supplement, FSC)
-      - tolls (toll costs, tolls, toll charges)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost, fuel expense if enabled)' : ''}
+      - miles (trip distance, total miles, mi, distance, loaded miles)
+      - rate (total pay amount, rate per mile, total rate, gross pay, may include $ symbol)
+      - origin (pickup location, from, origin city/state, shipper location)
+      - destination (delivery location, to, destination city/state, consignee location)
+      - deadhead (deadhead miles, DH, empty miles, positioning miles)
+      - weight (cargo weight in lbs, pounds, weight, gross weight)
+      - fsc (fuel surcharge, fuel supplement, FSC, fuel allowance)
+      - tolls (toll costs, tolls, toll charges, toll reimbursement)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost, fuel expense, fuel charges if enabled)' : ''}
       
-      Be generous with confidence scoring. Use "high" confidence for clearly identifiable values,
-      "medium" for reasonably identifiable values, and "low" only for very uncertain values.
+      CALCULATION RULES:
+      - If you see "$/mile" rates, multiply by miles to get total rate
+      - Convert weight formats: "25K" = 25000, "15,000#" = 15000
+      - Recognize city abbreviations: "CHI" = Chicago, "ATL" = Atlanta
       
-      Look for patterns like:
-      - Numbers followed by "mi", "miles", "MI"
-      - Dollar amounts with $, amounts per mile
-      - City, State format for locations
-      - Weight followed by "lbs", "pounds"
+      CONFIDENCE GUIDELINES (be generous but accurate):
+      - "high": Clear numeric values with proper labels and context
+      - "medium": Recognizable values that may need minor interpretation  
+      - "low": Ambiguous values requiring human verification
+      
+      PATTERN RECOGNITION:
+      - Miles: Numbers near "mi", "miles", "distance", "loaded"
+      - Rate: Dollar amounts near "rate", "pay", "total", per-mile calculations
+      - Locations: City/State pairs, ZIP codes, facility names
+      - Weight: Numbers near "lbs", "#", "pounds", "weight"
       
       Return ONLY a JSON object in this exact format:
       {
@@ -61,12 +73,7 @@ export class SmartFieldDetector {
         ]
       }
       
-      Confidence levels:
-      - "high": Clearly identifiable value with strong context
-      - "medium": Reasonably identifiable value
-      - "low": Uncertain value that needs review
-      
-      If a field is not found, don't include it. Extract all fields you can identify with appropriate confidence.`;
+      If a field is not found, don't include it. Extract all identifiable fields with appropriate confidence.`;
 
       const prompt = `Extract trucking load information from this OCR text:\n\n${ocrText}`;
 
@@ -145,21 +152,27 @@ export class SmartFieldDetector {
 
   private static validateFields(fields: DetectedField[]): DetectedField[] {
     return fields.filter(field => {
-      // Basic validation rules
+      // Basic validation rules with improved numeric parsing
       if (!field.value || field.value.trim() === '') return false;
       
       switch (field.field) {
         case 'miles':
         case 'deadhead':
         case 'weight':
-          return /^\d+$/.test(field.value.replace(',', ''));
+          // Allow common formats: "500", "1,250", "25K", "15000#"
+          const numericValue = field.value.replace(/[^\d]/g, '');
+          return numericValue.length > 0 && parseInt(numericValue) > 0;
         case 'rate':
         case 'fsc':
         case 'tolls':
-          return /^\d+(?:\.\d{2})?$/.test(field.value.replace(/[$,]/g, ''));
+        case 'fuelCost':
+          // Allow dollar amounts: "$1,250.00", "1250", "2.50"
+          const cleanRate = field.value.replace(/[$,]/g, '');
+          return /^\d+(?:\.\d{1,2})?$/.test(cleanRate) && parseFloat(cleanRate) > 0;
         case 'origin':
         case 'destination':
-          return field.value.length > 2;
+          // Must have at least 3 characters and ideally city/state format
+          return field.value.length >= 3;
         default:
           return true;
       }
