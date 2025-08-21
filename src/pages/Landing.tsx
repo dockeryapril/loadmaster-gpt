@@ -152,7 +152,7 @@ const Landing = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-3">Equipment Profiles</h3>
               <p className="text-muted-foreground">
-                Customized calculations for cargo vans, flatbeds, straight trucks, and specialized equipment.
+                Customized calculations SPECIFICALLY for cargo vans, flatbeds, straight trucks, and specialized equipment.
               </p>
             </div>
           </div>
