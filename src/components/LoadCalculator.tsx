@@ -21,6 +21,7 @@ import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, gen
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { LoadEntryMethod } from './LoadEntryMethod';
 import { NegotiationSheet } from './NegotiationSheet';
+import { NegotiationPanel } from '@/features/negotiation/NegotiationPanel';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -112,6 +113,11 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
     palletJack: false,
   });
 
+  const [askRate, setAskRate] = useState(0);
+  const [settleRate, setSettleRate] = useState(0);
+  const [bottomRate, setBottomRate] = useState(0);
+  const [scripts, setScripts] = useState({ ask: '', settle: '', bottom: '' });
+
   const negotiation = useMemo(() => {
     if (!requiredFilled || hasErrors) return null;
     const fields = {
@@ -136,6 +142,14 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
     const notes = advancedTemplates ? suggestTemplates(fields as any, calc, 3) : [];
     return { calc, notes };
   }, [requiredFilled, hasErrors, miles, rate, weight, equipment, extras, advancedTemplates]);
+
+  useEffect(() => {
+    if (negotiation) {
+      setAskRate(negotiation.calc.negotiation.anchor);
+      setSettleRate(negotiation.calc.negotiation.target);
+      setBottomRate(negotiation.calc.negotiation.floor);
+    }
+  }, [negotiation]);
 
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
@@ -941,17 +955,58 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <div className="text-muted-foreground">Ask</div>
-                        <div className="font-medium">${negotiation.calc.negotiation.anchor}</div>
+                        <Input
+                          type="number"
+                          value={askRate}
+                          onChange={(e) => setAskRate(Number(e.target.value))}
+                        />
                       </div>
                       <div>
                         <div className="text-muted-foreground">Settle For</div>
-                        <div className="font-medium">${negotiation.calc.negotiation.target}</div>
+                        <Input
+                          type="number"
+                          value={settleRate}
+                          onChange={(e) => setSettleRate(Number(e.target.value))}
+                        />
                       </div>
                       <div>
                         <div className="text-muted-foreground">Bottom Line</div>
-                        <div className="font-medium">${negotiation.calc.negotiation.floor}</div>
+                        <Input
+                          type="number"
+                          value={bottomRate}
+                          onChange={(e) => setBottomRate(Number(e.target.value))}
+                        />
                       </div>
                     </div>
+
+                    <NegotiationPanel
+                      askRate={askRate}
+                      settleRate={settleRate}
+                      bottomRate={bottomRate}
+                      miles={parseFloat(miles) || 0}
+                      weightLbs={weight ? parseFloat(weight) : undefined}
+                      offerTotal={
+                        (parseFloat(rate) || 0) +
+                        (parseFloat(fsc) || 0) +
+                        (parseFloat(tolls) || 0)
+                      }
+                      rpm={calculation.rpm}
+                      pickupCity={origin}
+                      deliveryCity={destination}
+                      equipmentType={equipment}
+                      flags={{
+                        isRush: extras.afterHours || extras.weekend || undefined,
+                        tarpRequired: extras.tarp || undefined,
+                        extraStops:
+                          extras.stops && extras.stops > 1
+                            ? extras.stops - 1
+                            : undefined,
+                        fuelSurchargeMentioned: !!fsc,
+                        palletJack: extras.palletJack || undefined,
+                        liftGate: extras.liftgate || undefined,
+                      }}
+                      onScriptChange={setScripts}
+                    />
 
                     {negotiation.notes.length > 0 && (
                       <div className="space-y-1 text-sm">
