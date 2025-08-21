@@ -29,6 +29,8 @@ serve(async (req) => {
   const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Max-Age': '86400',
     'Vary': 'Origin',
   };
 
