@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Loader2, Truck } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Truck, LayoutDashboard } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 export default function Auth() {
@@ -123,12 +123,12 @@ export default function Auth() {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-              <Truck className="w-6 h-6 text-primary-foreground" />
+              <LayoutDashboard className="w-6 h-6 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl">LoadMaster GPT</CardTitle>
+          <CardTitle className="text-2xl">LoadMaster</CardTitle>
           <CardDescription>
-            Your intelligent load calculator and tracking system
+          Smarter load decisions in seconds
           </CardDescription>
         </CardHeader>
         <CardContent>
