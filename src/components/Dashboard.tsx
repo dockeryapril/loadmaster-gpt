@@ -11,7 +11,6 @@ import {
   Calculator,
 } from 'lucide-react';
 import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
-import { exportLoadsToCSV } from '@/utils/csvExport';
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
 import { useEffect, useState } from 'react';
@@ -19,14 +18,13 @@ import { cn } from '@/lib/utils';
 import { LoadEntryMethod } from './LoadEntryMethod';
 import { LoadCalculator } from './LoadCalculator';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
-import { useAuth } from '@/contexts/AuthContext';
-import { getFeatureFlags } from '@/utils/featureFlags';
 
 interface DashboardProps {
   loads: Load[];
   onEdit?: (load: Load) => void;
   loading?: boolean;
   onSaveLoad: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void> | void;
+  onClearAll?: (exportToCsv: boolean) => Promise<void>;
 }
 
 export function Dashboard({
@@ -34,13 +32,12 @@ export function Dashboard({
   onEdit,
   loading,
   onSaveLoad,
+  onClearAll,
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
   const [showCalculator, setShowCalculator] = useState(false);
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
-  const { user } = useAuth();
-  const { historyExport } = getFeatureFlags(user);
 
   useEffect(() => {
     if (!loading) {
@@ -130,8 +127,8 @@ export function Dashboard({
   };
 
   const handleClearAll = async (exportToCsv: boolean) => {
-    if (historyExport && exportToCsv && loads.length > 0) {
-      exportLoadsToCSV(loads);
+    if (onClearAll) {
+      await onClearAll(exportToCsv);
     }
   };
 
