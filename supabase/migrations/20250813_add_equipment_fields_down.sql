@@ -3,7 +3,6 @@
 
 ALTER TABLE IF EXISTS public.user_settings
   DROP COLUMN IF EXISTS equipment,
-  DROP COLUMN IF EXISTS equipment_subtype,
   DROP COLUMN IF EXISTS rpm_thresholds_json;
 
 ALTER TABLE IF EXISTS public.negotiation_settings
@@ -19,6 +18,5 @@ ALTER TABLE IF EXISTS public.negotiation_settings
 
 ALTER TABLE IF EXISTS public.loads
   DROP COLUMN IF EXISTS equipment,
-  DROP COLUMN IF EXISTS equipment_subtype,
   DROP COLUMN IF EXISTS accessorials,
   DROP COLUMN IF EXISTS calc;

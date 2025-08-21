@@ -1,4 +1,4 @@
-import type { Equipment, FlatbedSubtype, EquipmentProfile, SurchargePrefs, RpmTargets } from './equipmentProfiles';
+import type { Equipment, EquipmentProfile, SurchargePrefs, RpmTargets } from './equipmentProfiles';
 
 export interface LoadFields {
   brokerName?: string; pickup?: string; delivery?: string;
@@ -7,7 +7,7 @@ export interface LoadFields {
   tarp?: boolean; jobsite?: boolean; itemType?: string; detentionHours?: number;
   weekend?: boolean; afterHours?: boolean; inside?: boolean; residential?: boolean;
   liftgate?: boolean; palletJack?: boolean;
-  offerFlat: number; equipment: Equipment; equipmentSubtype?: FlatbedSubtype;
+  offerFlat: number; equipment: Equipment;
 }
 
 export interface CalcResult {
@@ -23,4 +23,4 @@ export interface CalcResult {
 }
 
 export interface NegotiationMargins { anchorPct: number; targetPct: number; floorPct: number; }
-export { Equipment, FlatbedSubtype, EquipmentProfile, SurchargePrefs, RpmTargets };
+export { Equipment, EquipmentProfile, SurchargePrefs, RpmTargets };

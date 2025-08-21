@@ -1,4 +1,4 @@
-import type { Equipment, FlatbedSubtype } from './equipment';
+import type { Equipment } from './equipment';
 
 export interface Load {
   id: string;
@@ -13,7 +13,6 @@ export interface Load {
   heightFt?: number;
   stops?: number;
   equipment?: Equipment;
-  equipmentSubtype?: FlatbedSubtype;
   accessorials?: {
     tarp?: boolean;
     jobsite?: boolean;

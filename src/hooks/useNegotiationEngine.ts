@@ -3,7 +3,7 @@ import { computeCalc, suggestTemplates, type LoadFields } from '../../packages/e
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
 import { useEquipment } from '@/hooks/useEquipment';
-import type { Equipment, FlatbedSubtype, EquipmentType } from '@/types/equipment';
+import type { Equipment } from '@/types/equipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
 
@@ -13,28 +13,13 @@ interface UseNegotiationEngineProps {
 }
 
 export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEngineProps) {
-  const { equipment, equipmentSubtype } = useEquipment();
+  const { equipment } = useEquipment();
   const { user } = useAuth();
   const { advancedTemplates } = getFeatureFlags(user);
   const result = useMemo(() => {
     if (!load.miles || !load.rate) return null;
 
     const eq: Equipment = load.equipment ?? equipment;
-    const subtype: FlatbedSubtype = load.equipmentSubtype ?? equipmentSubtype ?? 'class8_flatbed';
-
-    const flatbedMap: Record<FlatbedSubtype, EquipmentType> = {
-      class8_flatbed: 'flatbed',
-      hotshot: 'hotshot',
-    };
-
-    const equipmentTypeMap: Record<Equipment, EquipmentType> = {
-      flatbed: flatbedMap[subtype],
-      cargo_van: 'cargo_van',
-      straight_truck: 'straight_truck',
-      tractor: 'tractor',
-    };
-
-    const equipmentType = equipmentTypeMap[eq];
 
     const fields: LoadFields = {
       distanceMi: load.miles,
@@ -45,8 +30,7 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
       stops: load.stops,
       ...(load.accessorials ?? {}),
       pickupAt: load.pickupAt,
-      equipment: equipmentType === 'hotshot' ? 'flatbed' : equipmentType,
-      equipmentSubtype: equipmentType === 'hotshot' ? 'hotshot' : subtype,
+      equipment: eq,
     };
 
     const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
@@ -62,6 +46,6 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
       suggested_strategy: 'standard',
     };
     return { calculation, notes, resultColor: calc.resultColor };
-  }, [load, laneBaselineRpm, equipment, equipmentSubtype, advancedTemplates]);
+  }, [load, laneBaselineRpm, equipment, advancedTemplates]);
   return { ...(result ?? {}), isReady: !!result };
 }
