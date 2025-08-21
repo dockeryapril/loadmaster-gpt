@@ -120,7 +120,7 @@ const Landing = () => {
               <div className="w-16 h-16 bg-card border border-border rounded-xl flex items-center justify-center mx-auto mb-6">
                 <Camera className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">OCR Load Scanning</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-3">Screenshot Load Scanning</h3>
               <p className="text-muted-foreground">
                 Take a screenshot or snap a photo of any load board offer, text, or email and instantly extract all the key details with the power of AI.
               </p>
