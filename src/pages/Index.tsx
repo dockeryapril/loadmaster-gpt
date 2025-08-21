@@ -95,13 +95,6 @@ const Index = () => {
     setCurrentView('calculator');
   };
 
-  const handleClearAllLoads = async (exportToCsv: boolean) => {
-    if (featureFlags.historyExport && exportToCsv && loads.length > 0) {
-      exportLoadsToCSV(loads);
-    }
-    await archiveAllLoads();
-  };
-
   const handleFieldsDetected = (result: FieldDetectionResult) => {
     // Convert detectedFields array to an object for easier access
     const fieldsMap = result.detectedFields.reduce((acc, field) => {
@@ -360,7 +353,7 @@ const Index = () => {
             loading={loadsLoading}
             onEdit={handleEditLoad}
             onSaveLoad={handleSaveLoad}
-            
+            onClearAll={handleClearAll}
           />
         );
     }
