@@ -9,18 +9,22 @@ const coreLimitPerDay = parseInt(Deno.env.get('CORE_LIMIT_PER_DAY') || '10');
 const proLimitPerDay = parseInt(Deno.env.get('PRO_LIMIT_PER_DAY') || '100');
 const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
 serve(async (req) => {
   const origin = req.headers.get('origin') ?? '';
+  const normalizedOrigin = origin.replace(/\/$/, '');
   console.log('Request origin:', origin);
   console.log('Allowed origins:', allowedOrigins);
-  
+
   // CORS setup with fallback for development
-  const isOriginAllowed = allowedOrigins.length === 0 || 
-    allowedOrigins.includes(origin) || 
-    (origin && origin.startsWith('http://localhost'));
+  const isLocalOrigin = /^https?:\/\/localhost(:\d+)?$/.test(normalizedOrigin) ||
+    /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin);
+
+  const isOriginAllowed = allowedOrigins.length === 0 ||
+    allowedOrigins.includes(normalizedOrigin) ||
+    isLocalOrigin;
     
   const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',
