@@ -17,69 +17,95 @@ serve(async (req) => {
   console.log('Request origin:', origin);
   console.log('Allowed origins:', allowedOrigins);
   
+  // CORS setup with fallback for development
+  const isOriginAllowed = allowedOrigins.length === 0 || 
+    allowedOrigins.includes(origin) || 
+    (origin && origin.startsWith('http://localhost'));
+    
   const corsHeaders = {
-    'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : '',
+    'Access-Control-Allow-Origin': isOriginAllowed ? (origin || '*') : '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
-  if (!allowedOrigins.includes(origin)) return new Response('Forbidden', { status: 403 });
-
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests first
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY is not configured');
-    }
+  // Only check origin restrictions for non-OPTIONS requests
+  if (allowedOrigins.length > 0 && !isOriginAllowed) {
+    console.log('Origin not allowed:', origin);
+    return new Response(JSON.stringify({ 
+      error: 'origin_not_allowed',
+      message: 'Origin not allowed'
+    }), { 
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
 
-    if (!supabaseUrl || !supabaseServiceRole) {
-      throw new Error('Supabase configuration missing');
+  try {
+    // Check OpenAI API key first
+    if (!openAIApiKey) {
+      console.error('OPENAI_API_KEY is not configured');
+      return new Response(JSON.stringify({ 
+        error: 'configuration_error',
+        message: 'OpenAI API key is not configured. Please contact support.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Get rate limiting headers
     const deviceId = req.headers.get('x-device-id');
     const userTier = req.headers.get('x-user-tier') || 'core';
 
-    if (!deviceId) {
-      throw new Error('Device ID is required');
-    }
+    let currentCount = 1;
+    let limit = userTier === 'pro' ? proLimitPerDay : coreLimitPerDay;
+    let rateLimitInfo = { currentCount, limit, tier: userTier };
 
-    console.log('Rate limiting check for device:', deviceId, 'tier:', userTier);
+    // Try rate limiting if Supabase is configured
+    if (supabaseUrl && supabaseServiceRole && deviceId) {
+      try {
+        console.log('Rate limiting check for device:', deviceId, 'tier:', userTier);
+        
+        const supabase = createClient(supabaseUrl, supabaseServiceRole);
 
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceRole);
+        // Check and increment rate limit
+        const { data: rateLimitData, error: rateLimitError } = await supabase.rpc('increment_rate_limit', {
+          p_device_id: deviceId,
+          p_day: new Date().toISOString().split('T')[0]
+        });
 
-    // Check and increment rate limit
-    const { data: rateLimitData, error: rateLimitError } = await supabase.rpc('increment_rate_limit', {
-      p_device_id: deviceId,
-      p_day: new Date().toISOString().split('T')[0]
-    });
+        if (rateLimitError) {
+          console.error('Rate limit check error (continuing without limit):', rateLimitError);
+        } else {
+          currentCount = rateLimitData;
+          rateLimitInfo = { currentCount, limit, tier: userTier };
+          
+          console.log('Current usage:', currentCount, 'Limit:', limit, 'Tier:', userTier);
 
-    if (rateLimitError) {
-      console.error('Rate limit check error:', rateLimitError);
-      throw new Error('Rate limit check failed');
-    }
-
-    const currentCount = rateLimitData;
-    const limit = userTier === 'pro' ? proLimitPerDay : coreLimitPerDay;
-
-    console.log('Current usage:', currentCount, 'Limit:', limit, 'Tier:', userTier);
-
-    if (currentCount > limit) {
-      console.log('Rate limit exceeded for device:', deviceId);
-      return new Response(JSON.stringify({ 
-        error: 'rate_limit',
-        message: 'Daily free limit reached. Upgrade to Pro to continue.',
-        currentCount,
-        limit,
-        tier: userTier
-      }), {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+          if (currentCount > limit) {
+            console.log('Rate limit exceeded for device:', deviceId);
+            return new Response(JSON.stringify({ 
+              error: 'rate_limit',
+              message: 'Daily free limit reached. Upgrade to Pro to continue.',
+              currentCount,
+              limit,
+              tier: userTier
+            }), {
+              status: 429,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        }
+      } catch (rateLimitError) {
+        console.error('Rate limiting failed (continuing without limit):', rateLimitError);
+      }
+    } else {
+      console.log('Rate limiting skipped - missing configuration or device ID');
     }
 
     const { prompt, systemMessage, imageBase64 } = await req.json();
@@ -169,22 +195,33 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       generatedText,
       usage: data.usage,
-      rateLimitInfo: {
-        currentCount,
-        limit,
-        tier: userTier
-      }
+      rateLimitInfo
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in openai-chat function:', error);
+    
+    // Provide user-friendly error messages
+    let userMessage = 'An unexpected error occurred. Please try again.';
+    let statusCode = 500;
+    
+    if (error.message.includes('OpenAI API error')) {
+      userMessage = 'There was an issue processing your request. Please try again.';
+    } else if (error.message.includes('Prompt is required')) {
+      userMessage = 'Request is missing required data.';
+      statusCode = 400;
+    } else if (error.message.includes('fetch')) {
+      userMessage = 'Network error occurred. Please check your connection and try again.';
+    }
+    
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: 'function_error',
+      message: userMessage,
       details: 'Check function logs for more information'
     }), {
-      status: 500,
+      status: statusCode,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
