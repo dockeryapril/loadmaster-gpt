@@ -176,7 +176,7 @@ export function Dashboard({
 
       {/* Stats Grid */}
       <section aria-labelledby="stats-heading" className="relative">
-        <h2 id="stats-heading" className="sr-only">Dashboard statistics</h2>
+        <h2 id="stats-heading" className="sr-only">Dashboard Statistics</h2>
         {showSkeleton && (
           <div className={cn(
             "grid grid-cols-2 gap-4 transition-opacity duration-500",
