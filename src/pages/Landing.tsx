@@ -86,8 +86,9 @@ const Landing = () => {
                 Made Simple
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-                Scan load boards with AI, calculate optimal rates instantly, and negotiate like a pro. 
-                Built for owner-operators who demand better margins.
+              Upload your load offer — screenshot or manual entry — and let AI do the heavy lifting.
+              Get instant rate targets, edit details on the fly, and use proven negotiation scripts
+              designed for owner-operators chasing better margins.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 py-6">
@@ -121,7 +122,7 @@ const Landing = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-3">OCR Load Scanning</h3>
               <p className="text-muted-foreground">
-                Snap a photo of any load board and instantly extract all the key details with AI-powered OCR.
+                Snap a photo of any load board offer, text, or email and instantly extract all the key details with the power of AI.
               </p>
             </div>
 
@@ -141,7 +142,7 @@ const Landing = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-3">AI Negotiation Coach</h3>
               <p className="text-muted-foreground">
-                Get personalized negotiation scripts and strategies to secure better rates from brokers.
+                Get personalized negotiation scripts and strategies to secure better rates.
               </p>
             </div>
 
