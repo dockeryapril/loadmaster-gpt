@@ -354,6 +354,7 @@ const Index = () => {
             onEdit={handleEditLoad}
             onSaveLoad={handleSaveLoad}
             onClearAll={handleClearAll}
+            onDelete={handleDeleteLoad}
           />
         );
     }
