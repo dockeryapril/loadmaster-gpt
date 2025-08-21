@@ -121,6 +121,33 @@ serve(async (req) => {
         model: 'gpt-5-mini-2025-08-07',
         messages,
         max_completion_tokens: 1000,
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'field_detection',
+            schema: {
+              type: 'object',
+              properties: {
+                fields: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      field: { type: 'string' },
+                      value: { type: 'string' },
+                      confidence: { type: 'string' }
+                    },
+                    required: ['field', 'value', 'confidence'],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ['fields'],
+              additionalProperties: false
+            },
+            strict: true
+          }
+        },
       }),
     });
 
