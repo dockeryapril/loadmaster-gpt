@@ -23,8 +23,8 @@ export interface FieldDetectionResult {
 }
 
 export class SmartFieldDetector {
-  private static readonly HIGH_CONFIDENCE_THRESHOLD = 0.8;
-  private static readonly MEDIUM_CONFIDENCE_THRESHOLD = 0.5;
+  private static readonly HIGH_CONFIDENCE_THRESHOLD = 0.7;
+  private static readonly MEDIUM_CONFIDENCE_THRESHOLD = 0.4;
 
   static async detectFields(ocrText: string, enableFuelCostTracking: boolean = false): Promise<FieldDetectionResult> {
     const startTime = performance.now();
@@ -33,15 +33,25 @@ export class SmartFieldDetector {
       // Create AI prompt for field detection
       const systemMessage = `You are an expert at extracting trucking load information from OCR text.
       Use these hint words to recognize field variations: ${HINT_WORDS}.
+      
       Extract the following fields with confidence levels:
-      - miles (trip distance)
-      - rate (total pay amount, may include $ symbol)
-      - origin (pickup city/state)
-      - destination (delivery city/state)
-      - deadhead (deadhead miles if mentioned)
-      - weight (cargo weight in lbs)
-      - fsc (fuel surcharge)
-      - tolls (toll costs)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost if enabled)' : ''}
+      - miles (trip distance, total miles, mi, distance)
+      - rate (total pay amount, rate per mile, total rate, may include $ symbol)
+      - origin (pickup location, from, origin city/state)
+      - destination (delivery location, to, destination city/state)
+      - deadhead (deadhead miles, DH, empty miles if mentioned)
+      - weight (cargo weight in lbs, pounds, weight)
+      - fsc (fuel surcharge, fuel supplement, FSC)
+      - tolls (toll costs, tolls, toll charges)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost, fuel expense if enabled)' : ''}
+      
+      Be generous with confidence scoring. Use "high" confidence for clearly identifiable values,
+      "medium" for reasonably identifiable values, and "low" only for very uncertain values.
+      
+      Look for patterns like:
+      - Numbers followed by "mi", "miles", "MI"
+      - Dollar amounts with $, amounts per mile
+      - City, State format for locations
+      - Weight followed by "lbs", "pounds"
       
       Return ONLY a JSON object in this exact format:
       {
@@ -52,11 +62,11 @@ export class SmartFieldDetector {
       }
       
       Confidence levels:
-      - "high": Very certain about the value
-      - "medium": Somewhat certain, may need review
-      - "low": Uncertain, definitely needs review
+      - "high": Clearly identifiable value with strong context
+      - "medium": Reasonably identifiable value
+      - "low": Uncertain value that needs review
       
-      If a field is not found, don't include it. Only return fields you can identify.`;
+      If a field is not found, don't include it. Extract all fields you can identify with appropriate confidence.`;
 
       const prompt = `Extract trucking load information from this OCR text:\n\n${ocrText}`;
 
@@ -159,11 +169,17 @@ export class SmartFieldDetector {
   private static calculateOverallConfidence(fields: DetectedField[]): 'high' | 'medium' | 'low' {
     if (fields.length === 0) return 'low';
     
-    const highConfidenceCount = fields.filter(f => f.confidence === 'high').length;
-    const totalFields = fields.length;
+    // Weighted confidence calculation
+    const confidenceScores = { high: 1, medium: 0.6, low: 0.2 };
+    const totalScore = fields.reduce((sum, field) => sum + confidenceScores[field.confidence], 0);
+    const avgScore = totalScore / fields.length;
     
-    if (highConfidenceCount / totalFields >= this.HIGH_CONFIDENCE_THRESHOLD) return 'high';
-    if (highConfidenceCount / totalFields >= this.MEDIUM_CONFIDENCE_THRESHOLD) return 'medium';
+    // Boost confidence if we have critical fields (miles, rate)
+    const hasCriticalFields = fields.some(f => f.field === 'miles' || f.field === 'rate');
+    const adjustedScore = hasCriticalFields ? avgScore + 0.1 : avgScore;
+    
+    if (adjustedScore >= this.HIGH_CONFIDENCE_THRESHOLD) return 'high';
+    if (adjustedScore >= this.MEDIUM_CONFIDENCE_THRESHOLD) return 'medium';
     return 'low';
   }
 

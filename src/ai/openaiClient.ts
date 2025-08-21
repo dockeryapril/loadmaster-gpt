@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-export const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
+export const DEFAULT_OPENAI_MODEL = "gpt-5-mini-2025-08-07";
 
 export function makeOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY;
