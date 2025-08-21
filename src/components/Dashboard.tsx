@@ -1,6 +1,5 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   TrendingUp,
@@ -10,6 +9,8 @@ import {
   Edit,
   Calculator,
 } from 'lucide-react';
+import { LoadCard } from '@/components/LoadCard';
+import { SwipeToDelete } from '@/components/SwipeToDelete';
 import { ClearAllLoadsDialog } from '@/components/ClearAllLoadsDialog';
 import { Load } from '@/types/load';
 import { SetupBanner } from './SetupBanner';
@@ -25,6 +26,7 @@ interface DashboardProps {
   loading?: boolean;
   onSaveLoad: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void> | void;
   onClearAll?: (exportToCsv: boolean) => Promise<void>;
+  onDelete?: (id: string) => void;
 }
 
 export function Dashboard({
@@ -33,6 +35,7 @@ export function Dashboard({
   loading,
   onSaveLoad,
   onClearAll,
+  onDelete,
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
@@ -129,6 +132,12 @@ export function Dashboard({
   const handleClearAll = async (exportToCsv: boolean) => {
     if (onClearAll) {
       await onClearAll(exportToCsv);
+    }
+  };
+
+  const handleDeleteLoad = (id: string) => {
+    if (onDelete) {
+      onDelete(id);
     }
   };
 
@@ -342,33 +351,13 @@ export function Dashboard({
             </div>
             <div className="space-y-2">
               {recentLoads.map((load) => (
-                <Card key={load.id} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1">
-                      <div className={`w-3 h-3 rounded-full ${getQualityDotColor(load.quality)}`} />
-                      <div>
-                        <div className="text-sm font-medium">{load.origin} → {load.destination}</div>
-                        <div className="text-xs text-muted-foreground">{load.miles} mi • ${load.rate.toLocaleString()}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={getQualityColor(load.quality)}>
-                        ${load.rpm.toFixed(2)}/mi
-                      </Badge>
-                      {onEdit && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEdit(load)}
-                          className="h-8 w-8 p-0"
-                          aria-label="Edit load"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </Card>
+                <SwipeToDelete key={load.id} id={load.id} onDelete={handleDeleteLoad}>
+                  <LoadCard
+                    load={load}
+                    onDelete={handleDeleteLoad}
+                    onEdit={onEdit}
+                  />
+                </SwipeToDelete>
               ))}
             </div>
           </div>

@@ -54,9 +54,10 @@ export function LoadCard({ load, onDelete, onEdit }: LoadCardProps) {
             variant="ghost"
             size="sm"
             onClick={() => onDelete(load.id)}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+            className="h-8 px-2 text-muted-foreground hover:text-destructive"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
           </Button>
         )}
       </div>
