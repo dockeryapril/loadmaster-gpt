@@ -32,7 +32,7 @@ const Landing = () => {
               Sign In
             </Button>
             <Button onClick={handleGetStarted}>
-              Get Started
+              Sign Up
             </Button>
           </div>
         </div>
