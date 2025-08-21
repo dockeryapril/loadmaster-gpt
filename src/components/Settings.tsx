@@ -11,6 +11,12 @@ import { defaultUserSettings } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
 import { useEquipment } from '@/hooks/useEquipment';
 import type { Equipment, FlatbedSubtype } from '@/types/equipment';
+import { 
+  validateFuelPrice, 
+  validateMPG, 
+  validateRPM, 
+  validateWeightLimit 
+} from '@/utils/inputValidation';
 
 interface SettingsProps {
   onClose?: () => void;
@@ -30,20 +36,64 @@ export function Settings({ onClose }: SettingsProps) {
   const [enableFuelCostTracking, setEnableFuelCostTracking] = useState(settings.enableFuelCostTracking);
 
   const handleSave = async () => {
+    // Validate all inputs before saving
+    const fuelPriceValidation = validateFuelPrice(fuelPrice);
+    const mpgValidation = validateMPG(mpg);
+    const excellentRpmValidation = validateRPM(excellentRpm);
+    const goodRpmValidation = validateRPM(goodRpm);
+    const fairRpmValidation = validateRPM(fairRpm);
+    const weightLimitValidation = validateWeightLimit(weightLimit);
+
+    // Check for validation errors
+    const validationErrors = [];
+    if (!fuelPriceValidation.isValid) validationErrors.push(`Fuel Price: ${fuelPriceValidation.error}`);
+    if (!mpgValidation.isValid) validationErrors.push(`MPG: ${mpgValidation.error}`);
+    if (!excellentRpmValidation.isValid) validationErrors.push(`Excellent RPM: ${excellentRpmValidation.error}`);
+    if (!goodRpmValidation.isValid) validationErrors.push(`Good RPM: ${goodRpmValidation.error}`);
+    if (!fairRpmValidation.isValid) validationErrors.push(`Fair RPM: ${fairRpmValidation.error}`);
+    if (!weightLimitValidation.isValid) validationErrors.push(`Weight Limit: ${weightLimitValidation.error}`);
+
+    // Validate RPM threshold order (excellent > good > fair)
+    const excellentVal = parseFloat(excellentRpm);
+    const goodVal = parseFloat(goodRpm);
+    const fairVal = parseFloat(fairRpm);
+    
+    if (excellentVal <= goodVal) {
+      validationErrors.push('Excellent RPM must be higher than Good RPM');
+    }
+    if (goodVal <= fairVal) {
+      validationErrors.push('Good RPM must be higher than Fair RPM');
+    }
+
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: validationErrors.join('. '),
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newSettings = {
       ...settings,
-      fuelPrice: parseFloat(fuelPrice) || defaultUserSettings.fuelPrice,
-      mpg: parseFloat(mpg) || defaultUserSettings.mpg,
+      fuelPrice: parseFloat(fuelPrice),
+      mpg: parseFloat(mpg),
       rpmThresholds: {
-        excellent: parseFloat(excellentRpm) || defaultUserSettings.rpmThresholds.excellent,
-        good: parseFloat(goodRpm) || defaultUserSettings.rpmThresholds.good,
-        fair: parseFloat(fairRpm) || defaultUserSettings.rpmThresholds.fair,
+        excellent: excellentVal,
+        good: goodVal,
+        fair: fairVal,
       },
-      weightLimit: parseFloat(weightLimit) || defaultUserSettings.weightLimit,
+      weightLimit: parseFloat(weightLimit),
       enableFuelCostTracking,
     };
     
     await updateSettings(newSettings);
+    
+    toast({
+      title: "Settings saved",
+      description: "Your settings have been updated successfully.",
+    });
+    
     onClose?.();
   };
 

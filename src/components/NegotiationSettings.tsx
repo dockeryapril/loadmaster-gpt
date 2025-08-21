@@ -9,6 +9,12 @@ import { Separator } from '@/components/ui/separator';
 import { useNegotiationSettings } from '@/hooks/useNegotiationSettings';
 import { NegotiationSettings as NegotiationSettingsType } from '@/types/negotiation';
 import { Loader2, TrendingUp, Settings2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  validatePercentage, 
+  validateRushThreshold, 
+  validateNumeric 
+} from '@/utils/inputValidation';
 
 interface NegotiationSettingsProps {
   onClose?: () => void;
@@ -18,6 +24,7 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
   const { settings, loading, updateSettings } = useNegotiationSettings();
   const [localSettings, setLocalSettings] = useState<Partial<NegotiationSettingsType>>({});
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (settings) {
@@ -26,9 +33,111 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
   }, [settings]);
 
   const handleSave = async () => {
+    // Validate all numeric inputs before saving
+    const validationErrors = [];
+
+    // Validate percentage values
+    if (localSettings.rush_value !== undefined) {
+      const rushValidation = localSettings.rush_method === 'percentage' 
+        ? validatePercentage(localSettings.rush_value)
+        : validateNumeric(localSettings.rush_value, 0, 10); // Max $10/mile
+      if (!rushValidation.isValid) {
+        validationErrors.push(`Rush Value: ${rushValidation.error}`);
+      }
+    }
+
+    if (localSettings.weekend_value !== undefined) {
+      const weekendValidation = localSettings.weekend_method === 'percentage' 
+        ? validatePercentage(localSettings.weekend_value)
+        : validateNumeric(localSettings.weekend_value, 0, 10);
+      if (!weekendValidation.isValid) {
+        validationErrors.push(`Weekend Value: ${weekendValidation.error}`);
+      }
+    }
+
+    if (localSettings.heavy_value !== undefined) {
+      const heavyValidation = localSettings.heavy_method === 'percentage' 
+        ? validatePercentage(localSettings.heavy_value)
+        : validateNumeric(localSettings.heavy_value, -5, 5); // Can be negative
+      if (!heavyValidation.isValid) {
+        validationErrors.push(`Heavy Value: ${heavyValidation.error}`);
+      }
+    }
+
+    if (localSettings.multi_stop_value !== undefined) {
+      const multiStopValidation = localSettings.multi_stop_method === 'percentage' 
+        ? validatePercentage(localSettings.multi_stop_value)
+        : validateNumeric(localSettings.multi_stop_value, 0, 1000);
+      if (!multiStopValidation.isValid) {
+        validationErrors.push(`Multi-Stop Value: ${multiStopValidation.error}`);
+      }
+    }
+
+    if (localSettings.premium_freight_value !== undefined) {
+      const premiumValidation = localSettings.premium_freight_method === 'percentage' 
+        ? validatePercentage(localSettings.premium_freight_value)
+        : validateNumeric(localSettings.premium_freight_value, 0, 10);
+      if (!premiumValidation.isValid) {
+        validationErrors.push(`Premium Freight Value: ${premiumValidation.error}`);
+      }
+    }
+
+    // Validate offset percentages
+    if (localSettings.anchor_offset !== undefined) {
+      const anchorValidation = validatePercentage(localSettings.anchor_offset * 100);
+      if (!anchorValidation.isValid) {
+        validationErrors.push(`Ask Offset: ${anchorValidation.error}`);
+      }
+    }
+
+    if (localSettings.floor_offset !== undefined) {
+      const floorValidation = validatePercentage(localSettings.floor_offset * 100);
+      if (!floorValidation.isValid) {
+        validationErrors.push(`Bottom Line Offset: ${floorValidation.error}`);
+      }
+    }
+
+    // Validate rush threshold
+    if (localSettings.rush_threshold_hours !== undefined) {
+      const thresholdValidation = validateRushThreshold(localSettings.rush_threshold_hours);
+      if (!thresholdValidation.isValid) {
+        validationErrors.push(`Rush Threshold: ${thresholdValidation.error}`);
+      }
+    }
+
+    // Validate weight threshold
+    if (localSettings.heavy_weight_threshold !== undefined) {
+      const weightValidation = validateNumeric(localSettings.heavy_weight_threshold, 1000, 150000);
+      if (!weightValidation.isValid) {
+        validationErrors.push(`Heavy Weight Threshold: ${weightValidation.error}`);
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: validationErrors.join('. '),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
-    await updateSettings(localSettings);
-    setSaving(false);
+    try {
+      await updateSettings(localSettings);
+      toast({
+        title: "Settings saved",
+        description: "Your negotiation settings have been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error saving settings",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateLocalSetting = (key: keyof NegotiationSettingsType, value: any) => {
