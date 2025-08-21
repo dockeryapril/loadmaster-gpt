@@ -96,7 +96,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const hasErrors = Object.keys(form.formState.errors).length > 0;
   const requiredFilled = origin && destination && miles && rate;
 
-  const { equipment, equipmentSubtype } = useEquipment();
+  const { equipment } = useEquipment();
 
   const [extras, setExtras] = useState({
     tarp: false,
@@ -119,7 +119,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
       offerFlat: parseFloat(rate) || 0,
       weightLbs: weight ? parseFloat(weight) : undefined,
       equipment,
-      equipmentSubtype,
       tarp: extras.tarp || undefined,
       stops: extras.stops ? Number(extras.stops) : undefined,
       widthFt: extras.widthFt ? parseFloat(extras.widthFt) : undefined,
@@ -136,7 +135,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
     const calc = computeCalc(fields as any, margins);
     const notes = advancedTemplates ? suggestTemplates(fields as any, calc, 3) : [];
     return { calc, notes };
-  }, [requiredFilled, hasErrors, miles, rate, weight, equipment, equipmentSubtype, extras, advancedTemplates]);
+  }, [requiredFilled, hasErrors, miles, rate, weight, equipment, extras, advancedTemplates]);
 
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [contentVisible, setContentVisible] = useState(false);
@@ -264,7 +263,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
       heightFt: extras.heightFt ? parseFloat(extras.heightFt) : undefined,
       stops: extras.stops ? extras.stops : undefined,
       equipment,
-      equipmentSubtype,
+      
       accessorials: {
         tarp: extras.tarp || undefined,
         weekend: extras.weekend || undefined,
@@ -603,7 +602,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                   />
                 </div>
 
-                {equipment === 'flatbed' && equipmentSubtype === 'hotshot' && (
+                {equipment === 'hotshot' && (
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
                       <Checkbox

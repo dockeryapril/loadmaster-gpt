@@ -1,6 +1,4 @@
-export type Equipment = 'flatbed' | 'cargo_van' | 'straight_truck' | 'tractor';
-export type FlatbedSubtype = 'class8_flatbed' | 'hotshot';
-export type EquipmentType = Equipment | 'hotshot';
+export type Equipment = 'cargo_van' | 'straight_truck' | 'hotshot';
 
 export interface RpmTargets {
   green: number;
@@ -29,7 +27,6 @@ export interface SurchargePrefs {
 
 export interface EquipmentProfile {
   equipment: Equipment;
-  subtype?: FlatbedSubtype;
   rpmTargets: RpmTargets;
   surcharges: SurchargePrefs;
 }

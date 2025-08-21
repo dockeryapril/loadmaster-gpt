@@ -36,11 +36,10 @@ describe('Hotshot fixtures', () => {
         jobsite: ocr.jobsite,
         itemType: ocr.itemType,
         pickupAt,
-        equipment: 'flatbed',
-        equipmentSubtype: 'hotshot'
+        equipment: 'hotshot'
       } as const;
 
-      const calc = computeCalc(fields as any, margins, selectProfile('flatbed', 'hotshot'));
+      const calc = computeCalc(fields as any, margins, selectProfile('hotshot'));
 
       expect(calc.baseRpm).toBeCloseTo(expectedCalc.baseRpm, 2);
       expect(calc.resultColor).toBe(expectedCalc.resultColor);

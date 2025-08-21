@@ -17,7 +17,7 @@ export function suggestTemplates(fields: LoadFields, calc: CalcResult, max = 3):
   const stops = fields.stops || 1;
 
   switch (fields.equipment) {
-    case 'flatbed': {
+    case 'hotshot': {
       const oversizeAmt = calc.surcharges.oversizeWidth + calc.surcharges.oversizeHeight;
       if (oversizeAmt > 0 && ((fields.widthFt && fields.widthFt > 8.5) || (fields.heightFt && fields.heightFt > 13.5))) {
         out.push({ templateId: 't_oversize', message: `Oversize at ${fields.widthFt ?? ''}${fields.widthFt ? ' ft wide' : ''}${fields.heightFt && fields.heightFt > 13.5 ? ` x ${fields.heightFt} ft tall` : ''} means extra routing and permits. Add $${oversizeAmt} and I can roll with it.` });
@@ -30,7 +30,7 @@ export function suggestTemplates(fields: LoadFields, calc: CalcResult, max = 3):
         out.push({ templateId: 't_tarp', message: `Rate looks light for a tarped load — tarping runs $${calc.surcharges.tarp} on top of base. Let’s get that added and I can lock it in.` });
       }
       if (h2p <= 6 && calc.surcharges.rush > 0) {
-        out.push({ templateId: 't_rush', message: `Pickup in ${h2p} hrs — short notice. Rush pay is $${calc.surcharges.rush} for flatbed. Add that and I’ll be there.` });
+        out.push({ templateId: 't_rush', message: `Pickup in ${h2p} hrs — short notice. Rush pay is $${calc.surcharges.rush} for hotshot. Add that and I’ll be there.` });
       }
       if (stops > 1 && calc.surcharges.multiStop > 0) {
         out.push({ templateId: 't_multistop', message: `Multiple stops (${fields.stops}) = more time and unload/load labor. Add $${calc.surcharges.multiStop} and I can commit.` });

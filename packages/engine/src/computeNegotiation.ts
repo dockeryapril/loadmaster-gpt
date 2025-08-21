@@ -21,7 +21,7 @@ function colorFromRpm(rpm: number, profile: EquipmentProfile): 'red' | 'yellow' 
 }
 
 export function computeCalc(fields: LoadFields, margins: NegotiationMargins, profile?: EquipmentProfile): CalcResult {
-  const p = profile ?? selectProfile(fields.equipment, fields.equipmentSubtype);
+  const p = profile ?? selectProfile(fields.equipment);
   const miles = Math.max(1, Number(fields.distanceMi || 0));
   const baseFlat = Number(fields.offerFlat || 0);
   const baseRpm = round2(baseFlat / miles);
@@ -32,16 +32,16 @@ export function computeCalc(fields: LoadFields, margins: NegotiationMargins, pro
   const access = fields.jobsite ? p.surcharges.access : 0;
   const detentionPerHour = fields.detentionHours ? fields.detentionHours * p.surcharges.detentionPerHour : 0;
 
-  // Flatbed / Hotshot specific adders
-  const isFlatbed = p.equipment === 'flatbed';
-  const tarp = isFlatbed && fields.tarp ? p.surcharges.tarp : 0;
+  // Hotshot specific adders
+  const isHotshot = p.equipment === 'hotshot';
+  const tarp = isHotshot && fields.tarp ? p.surcharges.tarp : 0;
   const oversizeWidth =
-    isFlatbed && fields.widthFt && fields.widthFt > 8.5 ? p.surcharges.oversizeWidth : 0;
+    isHotshot && fields.widthFt && fields.widthFt > 8.5 ? p.surcharges.oversizeWidth : 0;
   const oversizeHeight =
-    isFlatbed && fields.heightFt && fields.heightFt > 13.5 ? p.surcharges.oversizeHeight : 0;
-  const securement = isFlatbed && isSecurementIntensive(fields.itemType) ? p.surcharges.securement : 0;
+    isHotshot && fields.heightFt && fields.heightFt > 13.5 ? p.surcharges.oversizeHeight : 0;
+  const securement = isHotshot && isSecurementIntensive(fields.itemType) ? p.surcharges.securement : 0;
   const heavyPerMile =
-    isFlatbed && fields.weightLbs && fields.weightLbs >= p.surcharges.heavyThresholdLbs
+    isHotshot && fields.weightLbs && fields.weightLbs >= p.surcharges.heavyThresholdLbs
       ? p.surcharges.heavyPerMile
       : 0;
 

@@ -19,9 +19,9 @@ describe('Hotshot fixtures', () => {
         distanceMi: ocr.distanceMi ?? pickStep(scn, '/loads').request.route.distanceMi,
         offerFlat: ocr.offerFlat, weightLbs: ocr.weightLbs, widthFt: ocr.widthFt, heightFt: ocr.heightFt,
         stops: ocr.stops, tarp: ocr.tarp, jobsite: ocr.jobsite, itemType: ocr.itemType, pickupAt: ocr.pickupAt,
-        equipment: 'flatbed', equipmentSubtype: 'hotshot'
+        equipment: 'hotshot'
       } as const;
-      const calc = computeCalc(fields as any, margins, selectProfile('flatbed','hotshot'));
+      const calc = computeCalc(fields as any, margins, selectProfile('hotshot'));
       expect(calc.baseRpm).toBeCloseTo(expectedCalc.baseRpm, 2);
       expect(calc.resultColor).toBe(expectedCalc.resultColor);
       for (const k of Object.keys(expectedCalc.surcharges)) {
