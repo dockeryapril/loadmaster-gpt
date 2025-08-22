@@ -100,7 +100,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           } catch (err) {
             if (attempt < maxAttempts) {
               toast({
-                title: `OCR attempt ${attempt} failed`,
+                title: `Imaging attempt ${attempt} failed`,
                 description: `Trying again (${attempt + 1}/${maxAttempts}). Ensure the image is clear.`,
                 variant: "destructive",
               });
