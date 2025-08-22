@@ -1,8 +1,10 @@
 /**
- * Feature flags system for Core vs Pro tiers
+ * Feature flags system for Free vs Pro tiers
  */
 
-export type Tier = 'core' | 'pro';
+import { getTier, isPro, isFree } from './tier';
+
+export type Tier = 'lite' | 'pro';
 
 export interface FeatureFlags {
   // Core features (available to everyone)
@@ -20,15 +22,15 @@ export interface FeatureFlags {
 }
 
 export function flagsFor(tier: Tier): FeatureFlags {
-  const coreFlags: FeatureFlags = {
-    // Core features
+  const freeFlags: FeatureFlags = {
+    // Free tier features (available to lite/core)
     ocrExtraction: true,
     editData: true,
     rpmCalculator: true,
     negotiationPanel: true,
     loadHistory: true,
     
-    // Pro features (disabled for core)
+    // Pro features (disabled for free tier)
     advancedTemplates: false,
     historyExport: false,
     unlimitedLimits: false,
@@ -37,7 +39,7 @@ export function flagsFor(tier: Tier): FeatureFlags {
 
   if (tier === 'pro') {
     return {
-      ...coreFlags,
+      ...freeFlags,
       // Enable Pro features
       advancedTemplates: true,
       historyExport: true,
@@ -46,10 +48,12 @@ export function flagsFor(tier: Tier): FeatureFlags {
     };
   }
 
-  return coreFlags;
+  return freeFlags;
 }
 
 export function getFeatureFlags(user?: any): FeatureFlags {
-  const tier = user?.app_metadata?.tier === 'pro' ? 'pro' : 'core';
+  // Use the centralized tier system, fallback to user metadata if available
+  const userTier = user?.app_metadata?.tier;
+  const tier = userTier === 'pro' ? 'pro' : getTier();
   return flagsFor(tier);
 }

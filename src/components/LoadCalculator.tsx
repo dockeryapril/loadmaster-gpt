@@ -32,6 +32,7 @@ import { useEquipment } from '@/hooks/useEquipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
 import { usePlan } from '@/hooks/usePlan';
+import { isPro, isFree } from '@/utils/tier';
 import { UpgradeCard } from './UpgradeCard';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
 import { UpgradeModal } from './UpgradeModal';
@@ -69,9 +70,10 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const [saving, setSaving] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { user } = useAuth();
-  const { plan, isPro } = usePlan();
-  const { advancedTemplates } = getFeatureFlags(user);
-  const userTier = isPro ? 'pro' : 'lite';
+  const { plan, isPro: isPlanPro } = usePlan();
+  const { advancedTemplates, ocrExtraction } = getFeatureFlags(user);
+  const isProTier = isPro() || isPlanPro; // Use centralized tier system with fallback
+  const userTier = isProTier ? 'pro' : 'lite';
 
   const form = useForm<LoadFormValues>({
     defaultValues: {

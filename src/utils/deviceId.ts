@@ -15,20 +15,32 @@ export function getDeviceId(): string {
 }
 
 export function getTier(user?: any): 'lite' | 'pro' {
+  // DEPRECATED: Use src/utils/tier.ts instead
+  // This function is kept for backward compatibility
+  console.warn('deviceId.getTier is deprecated, use src/utils/tier.ts instead');
+  
   // Check user metadata first
   if (user?.app_metadata?.tier === 'pro') {
     return 'pro';
   }
   
-  // Check localStorage tier setting
-  const tier = localStorage.getItem(TIER_KEY);
-  if (tier === 'pro') {
-    return 'pro';
+  // Import and use the centralized tier system
+  if (typeof window !== 'undefined') {
+    const { getTier: getCentralizedTier } = require('./tier');
+    return getCentralizedTier();
   }
   
-  return 'lite'; // Default to lite
+  return 'lite'; // Default to lite for server-side
 }
 
 export function setTier(tier: 'lite' | 'pro') {
-  localStorage.setItem(TIER_KEY, tier);
+  // DEPRECATED: Use src/utils/tier.ts instead
+  console.warn('deviceId.setTier is deprecated, use src/utils/tier.ts instead');
+  
+  if (typeof window !== 'undefined') {
+    const { setTier: setCentralizedTier } = require('./tier');
+    setCentralizedTier(tier);
+  } else {
+    localStorage.setItem(TIER_KEY, tier);
+  }
 }

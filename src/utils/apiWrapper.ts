@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getDeviceId, getTier } from "./deviceId";
+import { getDeviceId } from "./deviceId";
+import { getTier } from "./tier";
 
 export interface RateLimitError {
   error: 'rate_limit';

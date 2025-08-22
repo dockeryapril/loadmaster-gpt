@@ -72,7 +72,10 @@ serve(async (req) => {
 
     // Get rate limiting headers
     const deviceId = req.headers.get('x-device-id');
-    const userTier = req.headers.get('x-user-tier') || 'lite';
+    const rawTier = (req.headers.get('x-user-tier') || 'lite').toLowerCase();
+    
+    // Normalize tier: both 'core' and 'lite' map to free tier
+    const userTier = (rawTier === 'core' || rawTier === 'lite') ? 'lite' : 'pro';
 
     let currentCount = 1;
     const limit = userTier === 'pro' ? proLimitPerDay : coreLimitPerDay;
@@ -104,8 +107,8 @@ serve(async (req) => {
             return new Response(JSON.stringify({ 
               error: 'rate_limit',
               message: userTier === 'lite' 
-                ? 'Daily Lite OCR limit reached. Upgrade to Pro for scripts and higher limits.'
-                : 'Daily free limit reached. Upgrade to Pro to continue.',
+                ? 'Daily Lite/Core OCR limit reached. Upgrade to Pro for scripts and higher limits.'
+                : 'Daily Pro limit reached. Please try again tomorrow.',
               currentCount,
               limit,
               tier: userTier

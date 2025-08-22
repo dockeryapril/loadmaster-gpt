@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RateLimitProvider } from "@/contexts/RateLimitContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { DebugBanner } from "@/components/DebugBanner";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Core from "./pages/Core";
@@ -32,23 +33,26 @@ const AppContent = () => {
   }
 
   return (
-    <Routes>
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/core" element={<Core />} />
-      <Route path="/upgrade" element={<Upgrade />} />
-      <Route path="/" element={
-        user ? (
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
-        ) : (
-          <Landing />
-        )
-      } />
-      <Route path="/landing" element={<Landing />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <DebugBanner />
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/core" element={<Core />} />
+        <Route path="/upgrade" element={<Upgrade />} />
+        <Route path="/" element={
+          user ? (
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          ) : (
+            <Landing />
+          )
+        } />
+        <Route path="/landing" element={<Landing />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 };
 
