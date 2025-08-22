@@ -26,6 +26,9 @@ export type Database = {
           id: string
           miles: number
           notes: string | null
+          negotiation_channel: string | null
+          negotiation_tone: string | null
+          negotiation_scripts: Json | null
           origin: string
           original_created_at: string
           original_load_id: string
@@ -49,6 +52,9 @@ export type Database = {
           id?: string
           miles: number
           notes?: string | null
+          negotiation_channel?: string | null
+          negotiation_tone?: string | null
+          negotiation_scripts?: Json | null
           origin: string
           original_created_at: string
           original_load_id: string
@@ -72,6 +78,9 @@ export type Database = {
           id?: string
           miles?: number
           notes?: string | null
+          negotiation_channel?: string | null
+          negotiation_tone?: string | null
+          negotiation_scripts?: Json | null
           origin?: string
           original_created_at?: string
           original_load_id?: string
