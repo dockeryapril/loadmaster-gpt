@@ -291,32 +291,6 @@ export function Dashboard({
           </Card>
         )}
       </section>
-      {/* Get Started Banner when no loads */}
-      {!loading && loads.length === 0 && (
-        <Card
-          className={cn(
-            "p-8 text-center transition-opacity duration-500",
-            contentVisible ? "opacity-100" : "opacity-0"
-          )}
-        >
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Get Started</h2>
-            <p className="text-sm text-muted-foreground">
-              Use the entry options above to add your first load.
-            </p>
-            <Button
-              className="w-full sm:w-auto mx-auto"
-              onClick={() => {
-                document
-                  .getElementById('entry-section')
-                  ?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              Get Started
-            </Button>
-          </div>
-        </Card>
-      )}
 
       {/* Recent Loads */}
       <section aria-labelledby="recent-loads-heading" className="relative">
