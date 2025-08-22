@@ -4,8 +4,7 @@ import Tesseract from 'tesseract.js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Camera, Upload, Calculator, ArrowRight, Loader2 } from 'lucide-react';
-import { OCRUpload } from './OCRUpload';
+import { Camera, Upload, Calculator, ArrowRight, Loader2, X } from 'lucide-react';
 import { CameraInterface } from './CameraInterface';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
@@ -56,6 +55,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const [showMilesModal, setShowMilesModal] = useState(false);
   const [milesResolver, setMilesResolver] = useState<((value: string | null) => void) | null>(null);
 
+  // Add cancellation support
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [processingStage, setProcessingStage] = useState<string>('');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const imageElementRef = useRef<HTMLImageElement | null>(null);
@@ -69,8 +72,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
     setOcrProgress(0);
+    setProcessingStage('Initializing...');
+    
+    // Create new abort controller for this upload
+    abortControllerRef.current = new AbortController();
+    const abortSignal = abortControllerRef.current.signal;
+    
     const startTime = logOCRStart('LoadEntryMethod');
     try {
+      // Check if cancelled before starting
+      if (abortSignal.aborted) {
+        throw new Error('Upload cancelled');
+      }
+
+      setProcessingStage('Optimizing image...');
       toast({
         title: "Processing image...",
         description: "Optimizing image and extracting text.",
@@ -79,12 +94,25 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       // Step 1: Preprocess image for better OCR
       const preprocessResult = await OCRPreprocessor.preprocessImage(file);
 
+      // Check if cancelled after preprocessing
+      if (abortSignal.aborted) {
+        OCRPreprocessor.cleanup(preprocessResult.processedImageUrl);
+        throw new Error('Upload cancelled');
+      }
+
       // Step 2: Extract text with Tesseract and retry logic
       let text = '';
       const maxAttempts = 3;
+      setProcessingStage('Extracting text...');
+      
       try {
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
+            // Check if cancelled before each attempt
+            if (abortSignal.aborted) {
+              throw new Error('Upload cancelled');
+            }
+
             const result = await Tesseract.recognize(
               preprocessResult.processedImageUrl,
               'eng',
@@ -98,9 +126,19 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 }
               }
             );
+            
+            // Check if cancelled after OCR
+            if (abortSignal.aborted) {
+              throw new Error('Upload cancelled');
+            }
+            
             text = result.data.text;
             break;
           } catch (err) {
+            if (abortSignal.aborted) {
+              throw new Error('Upload cancelled');
+            }
+            
             if (attempt < maxAttempts) {
               toast({
                 title: `Imaging attempt ${attempt} failed`,
@@ -119,7 +157,13 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       }
 
       if (text.trim()) {
+        // Check if cancelled before AI analysis
+        if (abortSignal.aborted) {
+          throw new Error('Upload cancelled');
+        }
+
         // Step 3: AI-powered field detection
+        setProcessingStage('Analyzing with AI...');
         toast({
           title: "Analyzing text...",
           description: "Using AI to detect load information.",
@@ -131,7 +175,16 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             text,
             settings.enableFuelCostTracking
           );
+          
+          // Check if cancelled after AI analysis
+          if (abortSignal.aborted) {
+            throw new Error('Upload cancelled');
+          }
         } catch (err) {
+          if (abortSignal.aborted || (err instanceof Error && err.message === 'Upload cancelled')) {
+            throw new Error('Upload cancelled');
+          }
+          
           if (err instanceof RateLimitExceededError) {
             handleRateLimitError(err);
             return;
@@ -317,6 +370,22 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         }).catch(() => {});
       }
     } catch (error) {
+      // Check if this was a cancellation
+      if (error instanceof Error && error.message === 'Upload cancelled') {
+        toast({
+          title: "Upload cancelled",
+          description: "Image processing was cancelled.",
+        });
+        logOCREnd('LoadEntryMethod', startTime, false, 'cancelled');
+        recordExtractionEvent({
+          source: 'LoadEntryMethod',
+          success: false,
+          duration: Date.now() - startTime,
+          error: 'cancelled'
+        }).catch(() => {});
+        return;
+      }
+      
       if (error instanceof RateLimitExceededError) {
         handleRateLimitError(error);
         return;
@@ -339,6 +408,9 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     } finally {
       setIsProcessing(false);
       setOcrProgress(0);
+      setProcessingStage('');
+      abortControllerRef.current = null;
+      
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
         objectUrlRef.current = null;
@@ -467,6 +539,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     setCorrectedFields({});
   };
 
+  const handleCancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  };
+
   const handleCloseCameraInterface = () => {
     setShowCameraInterface(false);
     setCameraStream(null);
@@ -522,29 +600,26 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     return (
       <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} className="space-y-6">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Extract Text from Image</h2>
+          <h2 className="text-xl font-semibold mb-2">Image Processing Failed</h2>
           <p className="text-sm text-muted-foreground">
-            Take a photo or upload an image of your load document
+            Try again or switch to manual entry
           </p>
         </div>
         
-        <OCRUpload
-          onTextExtracted={handleTextExtracted}
-          onFieldsDetected={handleFieldsDetected}
-          onManualEntry={onManualEntry}
-          isProcessing={isProcessing}
-          setIsProcessing={setIsProcessing}
-          enableFuelCostTracking={settings.enableFuelCostTracking}
-        />
-
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-3">
           <Button
             variant="outline"
             onClick={() => setShowOCRFallback(false)}
             disabled={isProcessing}
-            className="w-full max-w-xs"
+            className="flex-1 max-w-xs"
           >
-            Back to Options
+            Try Again
+          </Button>
+          <Button
+            onClick={onManualEntry}
+            className="flex-1 max-w-xs"
+          >
+            Manual Entry
           </Button>
         </div>
       </div>
@@ -568,11 +643,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             <Progress value={ocrProgress} className="w-48" />
             <p className="text-sm text-muted-foreground">{Math.round(ocrProgress)}%</p>
             <div className="text-center space-y-2">
-              <p className="font-medium">Processing your image</p>
+              <p className="font-medium">{processingStage || 'Processing your image'}</p>
               <p className="text-sm text-muted-foreground">
-                Optimizing → AI Analysis
+                This may take a moment
               </p>
             </div>
+            <Button
+              onClick={handleCancelUpload}
+              variant="outline"
+              size="sm"
+              className="mt-2 text-destructive hover:text-destructive border-destructive"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel Upload
+            </Button>
           </div>
         </Card>
       </div>
