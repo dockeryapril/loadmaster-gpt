@@ -128,10 +128,10 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const [scripts, setScripts] = useState({ ask: '', settle: '', bottom: '' });
 
   useEffect(() => {
-    if (initialData?.negotiationScript) {
-      setChannel(initialData.negotiationScript.channel);
-      setTone(initialData.negotiationScript.tone);
-      setScripts(initialData.negotiationScript.scripts);
+    if (initialData?.negotiationChannel) {
+      setChannel(initialData.negotiationChannel);
+      setTone(initialData.negotiationTone || 'professional');
+      setScripts(initialData.negotiationScripts || { ask: '', settle: '', bottom: '' });
     }
   }, [initialData]);
 
@@ -288,11 +288,9 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
       quality: calculation.quality,
       tags: calculation.tags,
       notes: values.notes || '',
-      negotiationScript: {
-        channel,
-        tone,
-        scripts,
-      },
+      negotiationChannel: channel,
+      negotiationTone: tone,
+      negotiationScripts: scripts,
     };
 
     if (onSaveLoad) {

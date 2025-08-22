@@ -45,7 +45,13 @@ export interface Load {
   tags: string[];
   createdAt: Date;
   notes?: string;
-  negotiationScript?: NegotiationScript;
+  negotiationChannel?: Channel;
+  negotiationTone?: Tone;
+  negotiationScripts?: {
+    ask: string;
+    settle: string;
+    bottom: string;
+  };
 }
 
 export interface UserSettings {

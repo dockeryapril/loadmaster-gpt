@@ -260,6 +260,9 @@ export type Database = {
           fuel_cost: number | null
           id: string
           miles: number
+          negotiation_channel: string | null
+          negotiation_scripts: Json | null
+          negotiation_tone: string | null
           notes: string | null
           origin: string
           profit: number
@@ -280,6 +283,9 @@ export type Database = {
           fuel_cost?: number | null
           id?: string
           miles: number
+          negotiation_channel?: string | null
+          negotiation_scripts?: Json | null
+          negotiation_tone?: string | null
           notes?: string | null
           origin: string
           profit: number
@@ -300,6 +306,9 @@ export type Database = {
           fuel_cost?: number | null
           id?: string
           miles?: number
+          negotiation_channel?: string | null
+          negotiation_scripts?: Json | null
+          negotiation_tone?: string | null
           notes?: string | null
           origin?: string
           profit?: number

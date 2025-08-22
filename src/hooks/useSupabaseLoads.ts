@@ -82,13 +82,9 @@ export function useSupabaseLoads() {
         tags: load.tags || [],
         createdAt: new Date(load.created_at),
         notes: load.notes || undefined,
-        negotiationScript: load.negotiation_script
-          ? {
-              channel: load.negotiation_script.channel,
-              tone: load.negotiation_script.tone,
-              scripts: load.negotiation_script.scripts,
-            }
-          : undefined,
+        negotiationChannel: load.negotiation_channel || undefined,
+        negotiationTone: load.negotiation_tone || undefined,
+        negotiationScripts: load.negotiation_scripts || undefined,
       }));
 
       setLoads(transformedLoads);
@@ -169,7 +165,9 @@ export function useSupabaseLoads() {
             tags: loadData.tags,
             notes: loadData.notes,
             created_at: creationTimestamp,
-            negotiation_script: loadData.negotiationScript || null,
+            negotiation_channel: loadData.negotiationChannel || null,
+            negotiation_tone: loadData.negotiationTone || null, 
+            negotiation_scripts: loadData.negotiationScripts || null,
           },
         ])
         .select()
@@ -195,13 +193,9 @@ export function useSupabaseLoads() {
         tags: data.tags || [],
         createdAt: new Date(data.created_at),
         notes: data.notes || undefined,
-        negotiationScript: data.negotiation_script
-          ? {
-              channel: data.negotiation_script.channel,
-              tone: data.negotiation_script.tone,
-              scripts: data.negotiation_script.scripts,
-            }
-          : undefined,
+        negotiationChannel: data.negotiation_channel || undefined,
+        negotiationTone: data.negotiation_tone || undefined,
+        negotiationScripts: data.negotiation_scripts || undefined,
       };
 
       setLoads(prev => [newLoad, ...prev]);
@@ -303,7 +297,9 @@ export function useSupabaseLoads() {
           quality: loadData.quality,
           tags: loadData.tags,
           notes: loadData.notes,
-          negotiation_script: loadData.negotiationScript || null,
+          negotiation_channel: loadData.negotiationChannel || null,
+          negotiation_tone: loadData.negotiationTone || null,
+          negotiation_scripts: loadData.negotiationScripts || null,
         })
         .eq('id', id)
         .eq('user_id', user.id)
@@ -330,13 +326,9 @@ export function useSupabaseLoads() {
         tags: data.tags || [],
         createdAt: new Date(data.created_at),
         notes: data.notes || undefined,
-        negotiationScript: data.negotiation_script
-          ? {
-              channel: data.negotiation_script.channel,
-              tone: data.negotiation_script.tone,
-              scripts: data.negotiation_script.scripts,
-            }
-          : undefined,
+        negotiationChannel: data.negotiation_channel || undefined,
+        negotiationTone: data.negotiation_tone || undefined,
+        negotiationScripts: data.negotiation_scripts || undefined,
       };
 
       setLoads(prev => prev.map(load => load.id === id ? updatedLoad : load));
@@ -408,7 +400,9 @@ export function useSupabaseLoads() {
         quality: load.quality,
         tags: load.tags || [],
         notes: load.notes,
-        negotiation_script: load.negotiation_script,
+        negotiation_channel: load.negotiation_channel,
+        negotiation_tone: load.negotiation_tone,
+        negotiation_scripts: load.negotiation_scripts,
         original_created_at: load.created_at,
         archived_reason: 'bulk_clear'
       }));
