@@ -115,3 +115,19 @@ The calculator supports cargo vans and straight trucks with built-in surcharges 
 4. The calculator adds the corresponding surcharge to the settle‑for rate and negotiation guidance.
 
 These default surcharge values are defined in [`packages/engine/src/equipmentProfiles.ts`](packages/engine/src/equipmentProfiles.ts).
+
+## Negotiation templates and AI polishing
+
+- **File locations**
+  - Script templates: [`src/features/negotiation/templates.ts`](src/features/negotiation/templates.ts)
+  - AI polish helper: [`src/features/negotiation/enhanceWithAI.ts`](src/features/negotiation/enhanceWithAI.ts)
+
+### Modifying templates, tone, and channel
+
+- Edit `templates.ts` to change how ask, settle, and bottom scripts are generated.
+- To add or adjust tone or channel options, update the `Tone` and `Channel` types and their related logic in `buildMessage` and `channelWrap`.
+
+### Enabling the AI polish button
+
+- The **Improve with AI** button in the negotiation panel sends the current script to the `enhanceWithAI` helper, which calls the `openai-chat` Edge Function via `callOpenAIWithRateLimit`.
+- This button appears only for **Pro** plan users (`usePlan` hook). Upgrade to Pro and ensure the Edge Function is deployed to enable AI polishing.
