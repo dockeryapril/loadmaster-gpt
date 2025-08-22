@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import Tesseract from 'tesseract.js';
-import { Camera, Upload, Loader2 } from 'lucide-react';
+import { Camera, Upload, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -62,6 +62,10 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const [showMilesModal, setShowMilesModal] = useState(false);
   const [milesResolver, setMilesResolver] = useState<((value: string | null) => void) | null>(null);
+  
+  // Add cancellation support
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [processingStage, setProcessingStage] = useState<string>('');
 
   const addDebugLog = (message: string, data?: unknown) => {
     if (!debug) return;
@@ -73,8 +77,20 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const handleOCR = async (file: File) => {
     setIsProcessing(true);
     setOcrProgress(0);
+    setProcessingStage('Initializing...');
+    
+    // Create new abort controller for this upload
+    abortControllerRef.current = new AbortController();
+    const abortSignal = abortControllerRef.current.signal;
+    
     const startTime = logOCRStart('OCRUpload');
     try {
+      // Check if cancelled before starting
+      if (abortSignal.aborted) {
+        throw new Error('Upload cancelled');
+      }
+      
+      setProcessingStage('Optimizing image...');
       toast({
         title: "Processing image...",
         description: "Optimizing image and extracting text.",
@@ -85,12 +101,25 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
       addDebugLog('Preprocess original size', preprocessResult.originalSize);
       addDebugLog('Preprocess processed size', preprocessResult.processedSize);
 
+      // Check if cancelled after preprocessing
+      if (abortSignal.aborted) {
+        OCRPreprocessor.cleanup(preprocessResult.processedImageUrl);
+        throw new Error('Upload cancelled');
+      }
+
       // Step 2: Extract text with Tesseract and retry logic
       let text = '';
       const maxAttempts = 3;
+      setProcessingStage('Extracting text...');
+      
       try {
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
+            // Check if cancelled before each attempt
+            if (abortSignal.aborted) {
+              throw new Error('Upload cancelled');
+            }
+            
             const recognizePromise = Tesseract.recognize(
               preprocessResult.processedImageUrl,
               'eng',
@@ -107,7 +136,7 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
 
             fullImagePromiseRef.current
               ?.then(url => {
-                if (url) {
+                if (url && !abortSignal.aborted) {
                   setPreviewSrc(url);
                 } else {
                   setPreviewSrc(null);
@@ -116,9 +145,19 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
               .catch(() => setPreviewSrc(null));
 
             const result = await recognizePromise;
+            
+            // Check if cancelled after OCR
+            if (abortSignal.aborted) {
+              throw new Error('Upload cancelled');
+            }
+            
             text = result.data.text;
             break;
           } catch (err) {
+            if (abortSignal.aborted) {
+              throw new Error('Upload cancelled');
+            }
+            
             if (attempt < maxAttempts) {
               toast({
                 title: `OCR attempt ${attempt} failed`,
@@ -137,7 +176,13 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
       }
 
       if (text.trim()) {
+        // Check if cancelled before AI analysis
+        if (abortSignal.aborted) {
+          throw new Error('Upload cancelled');
+        }
+        
         // Step 3: AI-powered field detection
+        setProcessingStage('Analyzing with AI...');
         toast({
           title: "Analyzing text...",
           description: "Using AI to detect load information.",
@@ -149,11 +194,21 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             text,
             enableFuelCostTracking
           );
+          
+          // Check if cancelled after AI analysis
+          if (abortSignal.aborted) {
+            throw new Error('Upload cancelled');
+          }
+          
           addDebugLog('Detection result', detectionResult);
           if (detectionResult?.aiResponse) {
             addDebugLog('OpenAI response', detectionResult.aiResponse);
           }
         } catch (err) {
+          if (abortSignal.aborted || (err instanceof Error && err.message === 'Upload cancelled')) {
+            throw new Error('Upload cancelled');
+          }
+          
           if (err instanceof RateLimitExceededError) {
             handleRateLimitError(err);
             return;
@@ -320,6 +375,22 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         }).catch(() => {});
       }
     } catch (error) {
+      // Check if this was a cancellation
+      if (error instanceof Error && error.message === 'Upload cancelled') {
+        toast({
+          title: "Upload cancelled",
+          description: "Image processing was cancelled.",
+        });
+        logOCREnd('OCRUpload', startTime, false, 'cancelled');
+        recordExtractionEvent({
+          source: 'OCRUpload',
+          success: false,
+          duration: Date.now() - startTime,
+          error: 'cancelled'
+        }).catch(() => {});
+        return;
+      }
+      
       recordError(error, { source: 'OCRUpload' }).catch(() => {});
       toast({
         title: "OCR failed",
@@ -336,6 +407,9 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
     } finally {
       setIsProcessing(false);
       setOcrProgress(0);
+      setProcessingStage('');
+      abortControllerRef.current = null;
+      
       if (fullImageUrlRef.current) {
         URL.revokeObjectURL(fullImageUrlRef.current);
         fullImageUrlRef.current = null;
@@ -452,6 +526,12 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
     setCorrectedFields({});
   };
 
+  const handleCancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  };
+
   if (showCorrection && currentDetectionResult) {
     return (
       <OCRCorrectionInterface
@@ -490,9 +570,18 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
             <Progress value={ocrProgress} className="w-48" />
             <p className="text-sm text-muted-foreground">{Math.round(ocrProgress)}%</p>
             <div className="text-sm text-muted-foreground space-y-1 text-center">
-              <p>Processing image...</p>
-              <p className="text-xs">Optimizing → AI Analysis</p>
+              <p>{processingStage || 'Processing image...'}</p>
+              <p className="text-xs">This may take a moment</p>
             </div>
+            <Button
+              onClick={handleCancelUpload}
+              variant="outline"
+              size="sm"
+              className="mt-2 text-destructive hover:text-destructive"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel Upload
+            </Button>
           </div>
         ) : (
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
