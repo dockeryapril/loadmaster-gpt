@@ -5,7 +5,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { usePlan } from '@/hooks/usePlan';
 import generateScripts, { Channel, Tone, Equipment } from './templates';
 import enhanceWithAI from './enhanceWithAI';
 
@@ -63,9 +63,8 @@ export function NegotiationPanel({
   const initialized = useRef(false);
   const [improving, setImproving] = useState<null | keyof typeof scripts>(null);
 
-  const { user } = useAuth();
   const { toast } = useToast();
-  const isPro = user?.app_metadata?.tier === 'pro';
+  const { isPro } = usePlan();
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -157,7 +156,26 @@ export function NegotiationPanel({
           return updated;
         });
       } catch (err) {
-        toast({ description: err instanceof Error ? err.message : 'Failed to improve script' });
+        const fallback = generateScripts({
+          ask: askRate,
+          settle: settleRate,
+          bottom: bottomRate,
+          channel,
+          tone,
+          equipment: equipmentType,
+          miles,
+          ...flags,
+        });
+        setScripts(prev => {
+          const updated = { ...prev, [stage]: fallback[stage] };
+          onScriptChange?.(updated);
+          return updated;
+        });
+        toast({
+          title: 'AI enhancement failed',
+          description: err instanceof Error ? err.message : 'Failed to improve script',
+          variant: 'destructive',
+        });
       } finally {
         setImproving(null);
       }
