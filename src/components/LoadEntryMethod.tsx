@@ -303,7 +303,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       } else {
         recordError(error, { source: 'LoadEntryMethod' }).catch(() => {});
         toast({
-          title: "OCR failed",
+          title: "Imaging failed",
           description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
           variant: "destructive",
         });
