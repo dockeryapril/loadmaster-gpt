@@ -30,8 +30,7 @@ export async function callOpenAIWithRateLimit(
     headers: {
       'x-device-id': getDeviceId(),
       'x-user-tier': getTier()
-    },
-    fetch: (input, init) => fetch(input, { ...init, credentials: 'include' })
+    }
   });
 
   if (error) {

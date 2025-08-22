@@ -31,6 +31,10 @@ import { computeCalc, suggestTemplates } from '../../packages/engine/src/index';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
+import { getTier } from '@/utils/deviceId';
+import { UpgradeCard } from './UpgradeCard';
+import { RateLimitExceededError } from '@/utils/apiWrapper';
+import { UpgradeModal } from './UpgradeModal';
 import { 
   validateLoadForm, 
   sanitizeText, 
@@ -63,8 +67,10 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const [showLoadEntry, setShowLoadEntry] = useState(false);
   const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { user } = useAuth();
   const { advancedTemplates } = getFeatureFlags(user);
+  const userTier = getTier(user);
 
   const form = useForm<LoadFormValues>({
     defaultValues: {
@@ -246,39 +252,11 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   };
 
   const onSubmit = async (values: LoadFormValues) => {
-    // Validate the entire form with security checks
-    const validationResult = validateLoadForm({
-      origin: values.origin,
-      destination: values.destination,
-      miles: values.miles,
-      rate: values.rate,
-      fsc: values.fsc,
-      tolls: values.tolls,
-      weight: values.weight,
-      deadheadMiles: values.deadheadMiles,
-      fuelCost: values.fuelCost,
-      notes: values.notes,
-    });
-
-    if (!validationResult.isValid) {
-      // Set form errors
-      Object.entries(validationResult.errors).forEach(([field, error]) => {
-        form.setError(field as keyof LoadFormValues, { message: error });
-      });
-      
-      toast({
-        title: "Validation Error",
-        description: "Please check the form for errors and try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const calculation = calculateLoad();
 
     const loadData: Omit<Load, 'id' | 'createdAt'> = {
-      origin: sanitizeLocation(values.origin),
-      destination: sanitizeLocation(values.destination),
+      origin: values.origin,
+      destination: values.destination,
       miles: parseFloat(values.miles),
       rate: parseFloat(values.rate),
       fsc: values.fsc ? parseFloat(values.fsc) : undefined,
@@ -309,7 +287,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
       profit: calculation.profit,
       quality: calculation.quality,
       tags: calculation.tags,
-      notes: sanitizeText(values.notes || ''),
+      notes: values.notes || '',
       negotiationScript: {
         channel,
         tone,
@@ -328,9 +306,9 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   };
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {
-    // Auto-fill form fields based on AI detection with sanitization
+    // Auto-fill form fields based on AI detection
     result.detectedFields.forEach((field) => {
-      const value = sanitizeText(field.value.replace(/[$,]/g, ''));
+      const value = field.value.replace(/[$,]/g, '');
 
       switch (field.field) {
         case 'miles':
@@ -340,10 +318,10 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
           form.setValue('rate', value, { shouldValidate: true });
           break;
         case 'origin':
-          form.setValue('origin', sanitizeLocation(field.value), { shouldValidate: true });
+          form.setValue('origin', field.value, { shouldValidate: true });
           break;
         case 'destination':
-          form.setValue('destination', sanitizeLocation(field.value), { shouldValidate: true });
+          form.setValue('destination', field.value, { shouldValidate: true });
           break;
         case 'deadhead':
           form.setValue('deadheadMiles', value, { shouldValidate: true });
@@ -995,39 +973,43 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       </div>
                     </div>
 
-                    <NegotiationPanel
-                      askRate={askRate}
-                      settleRate={settleRate}
-                      bottomRate={bottomRate}
-                      miles={parseFloat(miles) || 0}
-                      weightLbs={weight ? parseFloat(weight) : undefined}
-                      offerTotal={
-                        (parseFloat(rate) || 0) +
-                        (parseFloat(fsc) || 0) +
-                        (parseFloat(tolls) || 0)
-                      }
-                      rpm={calculation.rpm}
-                      pickupCity={origin}
-                      deliveryCity={destination}
-                      equipmentType={equipment}
-                      flags={{
-                        isRush: extras.afterHours || extras.weekend || undefined,
-                        tarpRequired: extras.tarp || undefined,
-                        extraStops:
-                          extras.stops && extras.stops > 1
-                            ? extras.stops - 1
-                            : undefined,
-                        fuelSurchargeMentioned: !!fsc,
-                        palletJack: extras.palletJack || undefined,
-                        liftGate: extras.liftgate || undefined,
-                      }}
-                      initialChannel={channel}
-                      initialTone={tone}
-                      initialScripts={scripts}
-                      onChannelChange={setChannel}
-                      onToneChange={setTone}
-                      onScriptChange={setScripts}
-                    />
+                    {userTier === 'pro' ? (
+                      <NegotiationPanel
+                        askRate={askRate}
+                        settleRate={settleRate}
+                        bottomRate={bottomRate}
+                        miles={parseFloat(miles) || 0}
+                        weightLbs={weight ? parseFloat(weight) : undefined}
+                        offerTotal={
+                          (parseFloat(rate) || 0) +
+                          (parseFloat(fsc) || 0) +
+                          (parseFloat(tolls) || 0)
+                        }
+                        rpm={calculation.rpm}
+                        pickupCity={origin}
+                        deliveryCity={destination}
+                        equipmentType={equipment}
+                        flags={{
+                          isRush: extras.afterHours || extras.weekend || undefined,
+                          tarpRequired: extras.tarp || undefined,
+                          extraStops:
+                            extras.stops && extras.stops > 1
+                              ? extras.stops - 1
+                              : undefined,
+                          fuelSurchargeMentioned: !!fsc,
+                          palletJack: extras.palletJack || undefined,
+                          liftGate: extras.liftgate || undefined,
+                        }}
+                        initialChannel={channel}
+                        initialTone={tone}
+                        initialScripts={scripts}
+                        onChannelChange={setChannel}
+                        onToneChange={setTone}
+                        onScriptChange={setScripts}
+                      />
+                    ) : (
+                      <UpgradeCard />
+                    )}
 
                     {negotiation.notes.length > 0 && (
                       <div className="space-y-1 text-sm">
@@ -1090,6 +1072,10 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
           deadheadMiles: parseFloat(deadheadMiles) || 0,
           notes,
         }}
+      />
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
       />
       </Form>
     );

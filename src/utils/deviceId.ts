@@ -3,6 +3,7 @@
  */
 
 const DEVICE_ID_KEY = 'loadmaster_device_id';
+const TIER_KEY = 'lm_tier';
 
 export function getDeviceId(): string {
   let deviceId = localStorage.getItem(DEVICE_ID_KEY);
@@ -13,26 +14,21 @@ export function getDeviceId(): string {
   return deviceId;
 }
 
-export function getTier(user?: any): 'core' | 'pro' {
-  // Simple implementation - can be extended with user data
-  // For now, everyone is 'core' unless manually upgraded
+export function getTier(user?: any): 'lite' | 'pro' {
+  // Check user metadata first
   if (user?.app_metadata?.tier === 'pro') {
     return 'pro';
   }
   
-  // Check for simple allowlist in localStorage for testing
-  const allowlistTier = localStorage.getItem('loadmaster_tier_override');
-  if (allowlistTier === 'pro') {
+  // Check localStorage tier setting
+  const tier = localStorage.getItem(TIER_KEY);
+  if (tier === 'pro') {
     return 'pro';
   }
   
-  return 'core';
+  return 'lite'; // Default to lite
 }
 
-export function setTierOverride(tier: 'core' | 'pro' | null) {
-  if (tier) {
-    localStorage.setItem('loadmaster_tier_override', tier);
-  } else {
-    localStorage.removeItem('loadmaster_tier_override');
-  }
+export function setTier(tier: 'lite' | 'pro') {
+  localStorage.setItem(TIER_KEY, tier);
 }

@@ -5,7 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceRole = Deno.env.get('SUPABASE_SERVICE_ROLE');
-const coreLimitPerDay = parseInt(Deno.env.get('CORE_LIMIT_PER_DAY') || '10');
+const coreLimitPerDay = parseInt(Deno.env.get('CORE_LIMIT_PER_DAY') || '5');
 const proLimitPerDay = parseInt(Deno.env.get('PRO_LIMIT_PER_DAY') || '100');
 const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
   .split(',')
@@ -72,7 +72,7 @@ serve(async (req) => {
 
     // Get rate limiting headers
     const deviceId = req.headers.get('x-device-id');
-    const userTier = req.headers.get('x-user-tier') || 'core';
+    const userTier = req.headers.get('x-user-tier') || 'lite';
 
     let currentCount = 1;
     const limit = userTier === 'pro' ? proLimitPerDay : coreLimitPerDay;
@@ -103,7 +103,9 @@ serve(async (req) => {
             console.log('Rate limit exceeded for device:', deviceId);
             return new Response(JSON.stringify({ 
               error: 'rate_limit',
-              message: 'Daily free limit reached. Upgrade to Pro to continue.',
+              message: userTier === 'lite' 
+                ? 'Daily Lite OCR limit reached. Upgrade to Pro for scripts and higher limits.'
+                : 'Daily free limit reached. Upgrade to Pro to continue.',
               currentCount,
               limit,
               tier: userTier
