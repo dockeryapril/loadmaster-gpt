@@ -54,10 +54,10 @@ export function UpgradeCard({ className }: UpgradeCardProps) {
             className="w-full"
             size="sm"
           >
-            Upgrade to Pro
+            Upgrade to PRO
           </Button>
           <p className="text-xs text-center text-muted-foreground">
-            You have 5 OCR runs/day on Lite.
+            You have 5 imaging runs/day on LITE.
           </p>
         </div>
       </CardContent>
