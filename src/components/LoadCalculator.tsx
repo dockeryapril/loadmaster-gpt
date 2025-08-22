@@ -974,7 +974,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       </div>
                     </div>
 
-                    {userTier === 'pro' ? (
+                    {!isFree() ? (
                       <NegotiationPanel
                         askRate={askRate}
                         settleRate={settleRate}
