@@ -15,6 +15,7 @@ import { SmartFieldDetector } from '@/utils/SmartFieldDetector';
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { ensureMiles } from '@/utils/ensureMiles';
+import { MilesInputModal } from '@/components/MilesInputModal';
 import { recordExtractionEvent, recordError } from '@/ai/telemetry';
 import { extractVision } from '@/ai/extractVision';
 import { extractText as extractLLMText } from '@/ai/extractText';
@@ -52,6 +53,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
   const [ocrProgress, setOcrProgress] = useState(0);
+  const [showMilesModal, setShowMilesModal] = useState(false);
+  const [milesResolver, setMilesResolver] = useState<((value: string | null) => void) | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -163,23 +166,40 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         );
 
         // Ensure miles field is present
-        const ensuredFields = ensureMiles(detectionResult.detectedFields);
-        if (!ensuredFields) {
-          toast({
-            title: 'Miles required',
-            description: 'Miles are required to proceed.',
-            variant: 'destructive',
+        const handleMilesPrompt = () => {
+          return new Promise<string | null>((resolve) => {
+            setMilesResolver(() => resolve);
+            setShowMilesModal(true);
           });
-          logOCREnd('LoadEntryMethod', startTime, false, 'missing_miles');
-          recordExtractionEvent({
-            source: 'LoadEntryMethod',
-            success: false,
-            duration: Date.now() - startTime,
-            error: 'missing_miles'
-          }).catch(() => {});
-          return;
-        }
-        detectionResult.detectedFields = ensuredFields;
+        };
+
+        const ensuredFieldsResult = ensureMiles(detectionResult.detectedFields, handleMilesPrompt);
+        
+        // Handle both sync and async results
+        const processEnsuredFields = async () => {
+          const ensuredFields = await Promise.resolve(ensuredFieldsResult);
+          if (!ensuredFields) {
+            toast({
+              title: 'Miles required',
+              description: 'Miles are required to proceed.',
+              variant: 'destructive',
+            });
+            logOCREnd('LoadEntryMethod', startTime, false, 'missing_miles');
+            recordExtractionEvent({
+              source: 'LoadEntryMethod',
+              success: false,
+              duration: Date.now() - startTime,
+              error: 'missing_miles'
+            }).catch(() => {});
+            return;
+          }
+          
+          detectionResult.detectedFields = ensuredFields;
+
+          // Continue with the rest of the processing...
+        };
+
+        await processEnsuredFields();
 
         let extractionConfidence = 1;
         try {
@@ -671,6 +691,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         capture="environment"
         onChange={handleFileUpload}
         className="hidden"
+      />
+
+      <MilesInputModal
+        isOpen={showMilesModal}
+        onClose={() => {
+          setShowMilesModal(false);
+          milesResolver?.(null);
+          setMilesResolver(null);
+        }}
+        onConfirm={(miles) => {
+          setShowMilesModal(false);
+          milesResolver?.(miles);
+          setMilesResolver(null);
+        }}
       />
     </div>
   );

@@ -12,6 +12,7 @@ import { SmartFieldDetector, FieldDetectionResult } from '@/utils/SmartFieldDete
 import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
 import { logOCRStart, logOCREnd } from '@/utils/metrics';
 import { ensureMiles } from '@/utils/ensureMiles';
+import { MilesInputModal } from '@/components/MilesInputModal';
 import { recordExtractionEvent, recordError } from '@/ai/telemetry';
 import { fuse } from '@/ai/fuse';
 import { findWarnings, validateAndNormalize } from '@/lib/normalize';
@@ -59,6 +60,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
   const imageElementRef = useRef<HTMLImageElement | null>(null);
   const debug = isDebugMode();
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [showMilesModal, setShowMilesModal] = useState(false);
+  const [milesResolver, setMilesResolver] = useState<((value: string | null) => void) | null>(null);
 
   const addDebugLog = (message: string, data?: unknown) => {
     if (!debug) return;
@@ -185,23 +188,40 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
         );
 
         // Ensure miles field is present
-        const ensuredFields = ensureMiles(detectionResult.detectedFields);
-        if (!ensuredFields) {
-          toast({
-            title: 'Miles required',
-            description: 'Miles are required to proceed.',
-            variant: 'destructive',
+        const handleMilesPrompt = () => {
+          return new Promise<string | null>((resolve) => {
+            setMilesResolver(() => resolve);
+            setShowMilesModal(true);
           });
-          logOCREnd('OCRUpload', startTime, false, 'missing_miles');
-          recordExtractionEvent({
-            source: 'OCRUpload',
-            success: false,
-            duration: Date.now() - startTime,
-            error: 'missing_miles'
-          }).catch(() => {});
-          return;
-        }
-        detectionResult.detectedFields = ensuredFields;
+        };
+
+        const ensuredFieldsResult = ensureMiles(detectionResult.detectedFields, handleMilesPrompt);
+        
+        // Handle both sync and async results
+        const processEnsuredFields = async () => {
+          const ensuredFields = await Promise.resolve(ensuredFieldsResult);
+          if (!ensuredFields) {
+            toast({
+              title: 'Miles required',
+              description: 'Miles are required to proceed.',
+              variant: 'destructive',
+            });
+            logOCREnd('OCRUpload', startTime, false, 'missing_miles');
+            recordExtractionEvent({
+              source: 'OCRUpload',
+              success: false,
+              duration: Date.now() - startTime,
+              error: 'missing_miles'
+            }).catch(() => {});
+            return;
+          }
+          
+          detectionResult.detectedFields = ensuredFields;
+          
+          // Continue with the rest of the processing...
+        };
+
+        await processEnsuredFields();
 
         // Use SmartFieldDetector confidence as the main extraction confidence
         const extractionConfidence = detectionResult.confidence === 'high' ? 0.9 :
@@ -529,6 +549,20 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
           </div>
         )}
       </Card>
+      
+      <MilesInputModal
+        isOpen={showMilesModal}
+        onClose={() => {
+          setShowMilesModal(false);
+          milesResolver?.(null);
+          setMilesResolver(null);
+        }}
+        onConfirm={(miles) => {
+          setShowMilesModal(false);
+          milesResolver?.(miles);
+          setMilesResolver(null);
+        }}
+      />
     </section>
   );
 }
