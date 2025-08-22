@@ -31,6 +31,11 @@ interface NegotiationPanelProps {
   equipmentType: Equipment;
   flags?: NegotiationFlags;
   onScriptChange?: (scripts: { ask: string; settle: string; bottom: string }) => void;
+  initialChannel?: Channel;
+  initialTone?: Tone;
+  initialScripts?: { ask: string; settle: string; bottom: string };
+  onChannelChange?: (channel: Channel) => void;
+  onToneChange?: (tone: Tone) => void;
 }
 
 export function NegotiationPanel({
@@ -46,10 +51,16 @@ export function NegotiationPanel({
   equipmentType,
   flags = {},
   onScriptChange,
+  initialChannel,
+  initialTone,
+  initialScripts,
+  onChannelChange,
+  onToneChange,
 }: NegotiationPanelProps) {
-  const [channel, setChannel] = useState<Channel>('text');
-  const [tone, setTone] = useState<Tone>('professional');
-  const [scripts, setScripts] = useState({ ask: '', settle: '', bottom: '' });
+  const [channel, setChannel] = useState<Channel>(initialChannel || 'text');
+  const [tone, setTone] = useState<Tone>(initialTone || 'professional');
+  const [scripts, setScripts] = useState(initialScripts || { ask: '', settle: '', bottom: '' });
+  const initialized = useRef(false);
   const [improving, setImproving] = useState<null | keyof typeof scripts>(null);
 
   const { user } = useAuth();
@@ -59,6 +70,12 @@ export function NegotiationPanel({
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (initialScripts && !initialized.current) {
+      initialized.current = true;
+      setScripts(initialScripts);
+      onScriptChange?.(initialScripts);
+      return;
+    }
     const newScripts = generateScripts({
       ask: askRate,
       settle: settleRate,
@@ -86,7 +103,26 @@ export function NegotiationPanel({
     flags?.palletJack,
     flags?.liftGate,
     onScriptChange,
+    initialScripts,
   ]);
+
+  useEffect(() => {
+    if (initialChannel) setChannel(initialChannel);
+  }, [initialChannel]);
+
+  useEffect(() => {
+    if (initialTone) setTone(initialTone);
+  }, [initialTone]);
+
+  const handleChannelChange = (value: Channel) => {
+    setChannel(value);
+    onChannelChange?.(value);
+  };
+
+  const handleToneChange = (value: Tone) => {
+    setTone(value);
+    onToneChange?.(value);
+  };
 
   const handleCopy = (stage: keyof typeof scripts) => {
     navigator.clipboard.writeText(scripts[stage]);
@@ -131,7 +167,7 @@ export function NegotiationPanel({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4 flex-wrap">
-        <Tabs value={channel} onValueChange={setChannel} className="h-10">
+        <Tabs value={channel} onValueChange={handleChannelChange} className="h-10">
           <TabsList>
             <TabsTrigger value="text">Text</TabsTrigger>
             <TabsTrigger value="email">Email</TabsTrigger>
@@ -139,7 +175,7 @@ export function NegotiationPanel({
           </TabsList>
         </Tabs>
 
-        <Select value={tone} onValueChange={setTone}>
+        <Select value={tone} onValueChange={handleToneChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Tone" />
           </SelectTrigger>

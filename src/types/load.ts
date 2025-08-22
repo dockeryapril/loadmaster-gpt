@@ -1,4 +1,15 @@
 import type { Equipment } from './equipment';
+import type { Channel, Tone } from '../features/negotiation/templates';
+
+export interface NegotiationScript {
+  channel: Channel;
+  tone: Tone;
+  scripts: {
+    ask: string;
+    settle: string;
+    bottom: string;
+  };
+}
 
 export interface Load {
   id: string;
@@ -34,6 +45,7 @@ export interface Load {
   tags: string[];
   createdAt: Date;
   notes?: string;
+  negotiationScript?: NegotiationScript;
 }
 
 export interface UserSettings {
