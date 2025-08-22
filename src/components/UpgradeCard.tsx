@@ -27,7 +27,7 @@ export function UpgradeCard({ className }: UpgradeCardProps) {
       
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          OCR extracted your numbers. Pro adds copy-ready negotiation scripts and higher limits.
+          AI extracted your numbers. PRO adds copy-ready negotiation scripts and higher limits.
         </p>
 
         <div className="grid gap-3">
