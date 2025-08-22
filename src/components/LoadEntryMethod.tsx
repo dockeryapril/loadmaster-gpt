@@ -90,7 +90,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                   if (m.status === 'recognizing text') {
                     const progress = m.progress * 100;
                     setOcrProgress(progress);
-                    console.log(`OCR Progress: ${Math.round(progress)}%`);
+                    console.log(`Imaging Progress: ${Math.round(progress)}%`);
                   }
                 }
               }
