@@ -31,7 +31,7 @@ import { computeCalc, suggestTemplates } from '../../packages/engine/src/index';
 import { useEquipment } from '@/hooks/useEquipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
-import { getTier } from '@/utils/deviceId';
+import { usePlan } from '@/hooks/usePlan';
 import { UpgradeCard } from './UpgradeCard';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
 import { UpgradeModal } from './UpgradeModal';
@@ -69,8 +69,9 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const [saving, setSaving] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { user } = useAuth();
+  const { plan, isPro } = usePlan();
   const { advancedTemplates } = getFeatureFlags(user);
-  const userTier = getTier(user);
+  const userTier = isPro ? 'pro' : 'lite';
 
   const form = useForm<LoadFormValues>({
     defaultValues: {
