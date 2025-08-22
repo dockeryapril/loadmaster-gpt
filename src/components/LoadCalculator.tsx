@@ -22,6 +22,7 @@ import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { LoadEntryMethod } from './LoadEntryMethod';
 import { NegotiationSheet } from './NegotiationSheet';
 import { NegotiationPanel } from '@/features/negotiation/NegotiationPanel';
+import type { Channel, Tone } from '@/features/negotiation/templates';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -116,7 +117,17 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const [askRate, setAskRate] = useState(0);
   const [settleRate, setSettleRate] = useState(0);
   const [bottomRate, setBottomRate] = useState(0);
+  const [channel, setChannel] = useState<Channel>('text');
+  const [tone, setTone] = useState<Tone>('professional');
   const [scripts, setScripts] = useState({ ask: '', settle: '', bottom: '' });
+
+  useEffect(() => {
+    if (initialData?.negotiationScript) {
+      setChannel(initialData.negotiationScript.channel);
+      setTone(initialData.negotiationScript.tone);
+      setScripts(initialData.negotiationScript.scripts);
+    }
+  }, [initialData]);
 
   const negotiation = useMemo(() => {
     if (!requiredFilled || hasErrors) return null;
@@ -299,6 +310,11 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
       quality: calculation.quality,
       tags: calculation.tags,
       notes: sanitizeText(values.notes || ''),
+      negotiationScript: {
+        channel,
+        tone,
+        scripts,
+      },
     };
 
     if (onSaveLoad) {
@@ -1005,6 +1021,11 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                         palletJack: extras.palletJack || undefined,
                         liftGate: extras.liftgate || undefined,
                       }}
+                      initialChannel={channel}
+                      initialTone={tone}
+                      initialScripts={scripts}
+                      onChannelChange={setChannel}
+                      onToneChange={setTone}
                       onScriptChange={setScripts}
                     />
 
