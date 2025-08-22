@@ -299,7 +299,7 @@ export function Dashboard({
             contentVisible ? "opacity-100" : "opacity-0"
           )}
         >
-          {/* <div className="space-y-4">
+          <div className="space-y-4">
             <h2 className="text-lg font-semibold">Get Started</h2>
             <p className="text-sm text-muted-foreground">
               Use the entry options above to add your first load.
@@ -314,7 +314,7 @@ export function Dashboard({
             >
               Get Started
             </Button>
-          </div> */}
+          </div>
         </Card>
       )}
 
