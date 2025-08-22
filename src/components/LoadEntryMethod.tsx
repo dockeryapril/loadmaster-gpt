@@ -550,7 +550,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
             <div className="text-center space-y-2">
               <p className="font-medium">Processing your image</p>
               <p className="text-sm text-muted-foreground">
-                Optimizing → OCR → AI Analysis
+                Optimizing → AI Analysis
               </p>
             </div>
           </div>
