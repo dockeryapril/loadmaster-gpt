@@ -931,6 +931,13 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                   </div>
                 )}
 
+                {/* Show UpgradeCard immediately for free tier users */}
+                {isFree() && (
+                  <div className="space-y-3 pt-3 border-t">
+                    <UpgradeCard />
+                  </div>
+                )}
+
                 {negotiation && (
                   <div className="space-y-3 pt-3 border-t">
                     <div className="flex items-center justify-between">
@@ -943,29 +950,31 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                             'bg-red-500': negotiation.calc.resultColor === 'red',
                           })}
                         />
-                        <span className="font-medium">{negotiation.calc.baseRpm.toFixed(2)}</span>
+                        <span className="font-mono">
+                          ${negotiation.calc.baseRpm?.toFixed(2) || '0.00'}/mi
+                        </span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Ask</div>
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div className="text-center p-2 bg-muted/30 rounded">
+                        <div className="font-medium text-green-600">Ask</div>
                         <Input
                           type="number"
                           value={askRate}
                           onChange={(e) => setAskRate(Number(e.target.value))}
                         />
                       </div>
-                      <div>
-                        <div className="text-muted-foreground">Settle For</div>
+                      <div className="text-center p-2 bg-muted/30 rounded">
+                        <div className="font-medium text-yellow-600">Settle</div>
                         <Input
                           type="number"
                           value={settleRate}
                           onChange={(e) => setSettleRate(Number(e.target.value))}
                         />
                       </div>
-                      <div>
-                        <div className="text-muted-foreground">Bottom Line</div>
+                      <div className="text-center p-2 bg-muted/30 rounded">
+                        <div className="font-medium text-red-600">Bottom</div>
                         <Input
                           type="number"
                           value={bottomRate}
@@ -974,7 +983,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       </div>
                     </div>
 
-                    {!isFree() ? (
+                    {!isFree() && (
                       <NegotiationPanel
                         askRate={askRate}
                         settleRate={settleRate}
@@ -1008,8 +1017,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                         onToneChange={setTone}
                         onScriptChange={setScripts}
                       />
-                    ) : (
-                      <UpgradeCard />
                     )}
 
                     {negotiation.notes.length > 0 && (
