@@ -577,7 +577,8 @@ export function OCRUpload({ onTextExtracted, onFieldsDetected, onManualEntry, is
               onClick={handleCancelUpload}
               variant="outline"
               size="sm"
-              className="mt-2 text-destructive hover:text-destructive"
+              className="mt-2 text-destructive hover:text-destructive border-destructive"
+              data-testid="cancel-upload-btn"
             >
               <X className="h-4 w-4 mr-2" />
               Cancel Upload
