@@ -173,7 +173,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         try {
           detectionResult = await SmartFieldDetector.detectFields(
             text,
-            settings.enableFuelCostTracking
+            settings.enableFuelCostTracking,
+            abortSignal
           );
           
           // Check if cancelled after AI analysis

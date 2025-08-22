@@ -28,7 +28,7 @@ export class SmartFieldDetector {
   private static readonly HIGH_CONFIDENCE_THRESHOLD = 0.7;
   private static readonly MEDIUM_CONFIDENCE_THRESHOLD = 0.4;
 
-  static async detectFields(ocrText: string, enableFuelCostTracking: boolean = false): Promise<FieldDetectionResult> {
+  static async detectFields(ocrText: string, enableFuelCostTracking: boolean = false, abortSignal?: AbortSignal): Promise<FieldDetectionResult> {
     const startTime = performance.now();
     let aiResponse = '';
     const debug = isDebugMode();
@@ -81,7 +81,12 @@ export class SmartFieldDetector {
 
       const prompt = `Extract trucking load information from this OCR text:\n\n${ocrText}`;
 
-      const data = await callOpenAIWithRateLimit(prompt, systemMessage);
+      // Check if cancelled before AI call
+      if (abortSignal?.aborted) {
+        throw new Error('Upload cancelled');
+      }
+
+      const data = await callOpenAIWithRateLimit(prompt, systemMessage, undefined, abortSignal);
 
       // Parse AI response
       aiResponse = data.generatedText;
