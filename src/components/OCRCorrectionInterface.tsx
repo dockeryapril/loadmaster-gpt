@@ -128,8 +128,8 @@ export function OCRCorrectionInterface({
                 </h4>
                 <div className="space-y-2">
                   {highConfidence.map((field, index) => (
-                    <div key={`high-${index}`} className="flex items-center gap-2 p-2 bg-green-50 rounded">
-                      <Label className="text-sm min-w-[100px]">
+                    <div key={`high-${index}`} className="flex items-center gap-2 p-2 bg-green-100 text-green-900 rounded">
+                      <Label className="text-sm min-w-[100px] text-green-800 font-medium">
                         {getFieldDisplayName(field.field)}:
                       </Label>
                       <Input
@@ -152,8 +152,8 @@ export function OCRCorrectionInterface({
                 </h4>
                 <div className="space-y-2">
                   {needsReview.map((field, index) => (
-                    <div key={`review-${index}`} className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                      <Label className="text-sm min-w-[100px]">
+                    <div key={`review-${index}`} className="flex items-center gap-2 p-2 bg-red-100 text-red-900 rounded">
+                      <Label className="text-sm min-w-[100px] text-red-800 font-medium">
                         {getFieldDisplayName(field.field)}:
                       </Label>
                       <Input
