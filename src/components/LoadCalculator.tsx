@@ -944,28 +944,12 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                   </div>
                 )}
 
-                {/* Show UpgradeCard immediately for free tier users */}
-                {(() => {
-                  const shouldShowUpgrade = isFree();
-                  console.log('🔍 UPGRADE CARD DEBUG:', {
-                    shouldShowUpgrade,
-                    currentTier: getTier(),
-                    isFreeTier: isFree(),
-                    timestamp: new Date().toISOString()
-                  });
-                  
-                  if (shouldShowUpgrade) {
-                    console.log('✅ Rendering UpgradeCard for free tier user');
-                    return (
-                      <div className="space-y-3 pt-3 border-t">
-                        <UpgradeCard />
-                      </div>
-                    );
-                  }
-                  
-                  console.log('❌ NOT rendering UpgradeCard - user is pro tier');
-                  return null;
-                })()}
+                {/* Show UpgradeCard for free tier users after calculation */}
+                {isFree() && (
+                  <div className="pt-4 border-t border-border/50">
+                    <UpgradeCard className="animate-in fade-in-50 duration-300" />
+                  </div>
+                )}
 
                 {negotiation && (
                   <div className="space-y-3 pt-3 border-t">
