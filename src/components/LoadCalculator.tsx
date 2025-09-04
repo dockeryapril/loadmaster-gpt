@@ -63,17 +63,6 @@ interface LoadFormValues {
 }
 
 export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: LoadCalculatorProps) {
-  // Switch to PRO tier for testing
-  useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).tierManager) {
-      (window as any).tierManager.switchToPro();
-      // Force a small delay to let the tier change take effect
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-    }
-  }, []);
-
   // DEBUG: Tier detection logging
   const currentTier = getTier();
   const isFreeTier = isFree();
