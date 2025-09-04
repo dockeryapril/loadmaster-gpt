@@ -23,7 +23,12 @@ export function useSupabaseLoads() {
 
   const isNetworkError = (error: any) =>
     error instanceof Error &&
-    error.message?.toLowerCase().includes('failed to fetch');
+    (error.message?.toLowerCase().includes('failed to fetch') ||
+     error.message?.toLowerCase().includes('network'));
+
+  const isJWTExpiredError = (error: any) =>
+    error.message?.includes('JWT expired') || 
+    error.message?.includes('PGRST303');
 
   useEffect(() => {
     const flushQueue = async () => {
@@ -42,7 +47,7 @@ export function useSupabaseLoads() {
   }, []);
 
   // Fetch loads from Supabase
-  const fetchLoads = async () => {
+  const fetchLoads = async (retryCount = 0) => {
     if (!user) return;
 
     if (!navigator.onLine) {
@@ -62,7 +67,36 @@ export function useSupabaseLoads() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Check for JWT expiration
+        if (isJWTExpiredError(error)) {
+          console.log('🔄 JWT expired, attempting to refresh session...');
+          
+          if (retryCount < 2) {
+            // Try to refresh the session
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            
+            if (!refreshError) {
+              // Retry the request with refreshed token
+              console.log('✅ Session refreshed, retrying loads fetch...');
+              return fetchLoads(retryCount + 1);
+            } else {
+              console.error('❌ Failed to refresh session:', refreshError);
+              logError('Failed to refresh session:', refreshError);
+            }
+          } else {
+            console.error('❌ Max retries exceeded for loads fetch');
+            toast({
+              title: "Authentication expired",
+              description: "Please sign in again to continue.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+        
+        throw error;
+      }
 
       // Transform database data to match Load interface
       const transformedLoads: Load[] = (data || []).map(load => ({
@@ -88,12 +122,20 @@ export function useSupabaseLoads() {
       }));
 
       setLoads(transformedLoads);
+      console.log('✅ Loads fetched successfully');
     } catch (error: any) {
       logError('Error fetching loads:', error);
+      
       if (isNetworkError(error)) {
         toast({
           title: "Connection lost",
           description: "Failed to load your saved loads.",
+          variant: "destructive",
+        });
+      } else if (isJWTExpiredError(error)) {
+        toast({
+          title: "Authentication expired",
+          description: "Please refresh the page or sign in again.",
           variant: "destructive",
         });
       } else {

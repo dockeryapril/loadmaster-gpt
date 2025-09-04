@@ -18,9 +18,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log('🔐 Auth event:', event, 'Session:', !!session);
+        
+        if (!mounted) return;
+
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -30,18 +36,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           setSession(null);
         }
+        
+        // Handle token refresh
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token refreshed successfully');
+        }
+        
+        // Handle sign in success
+        if (event === 'SIGNED_IN') {
+          console.log('✅ User signed in successfully');
+        }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // THEN check for existing session with retry logic
+    const initializeSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ Error getting session:', error);
+          logError('Error getting initial session:', error);
+        }
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          
+          // If we have a session but it's expired, try to refresh
+          if (session && isTokenExpired(session)) {
+            console.log('🔄 Session token expired, attempting refresh...');
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) {
+              console.error('❌ Failed to refresh session:', refreshError);
+              logError('Failed to refresh session:', refreshError);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to initialize session:', error);
+        logError('Failed to initialize session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-    return () => subscription.unsubscribe();
+    initializeSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
+
+  // Helper function to check if token is expired
+  const isTokenExpired = (session: Session): boolean => {
+    if (!session.expires_at) return false;
+    const expiryTime = session.expires_at * 1000; // Convert to milliseconds
+    const currentTime = Date.now();
+    const timeUntilExpiry = expiryTime - currentTime;
+    
+    // Consider expired if less than 5 minutes remaining
+    return timeUntilExpiry < 5 * 60 * 1000;
+  };
 
   const signOut = async () => {
     try {

@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RateLimitProvider } from "@/contexts/RateLimitContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DebugBanner } from "@/components/DebugBanner";
+import { SessionMonitor } from "@/components/SessionMonitor";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Core from "./pages/Core";
@@ -64,6 +65,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <RateLimitProvider>
+            <SessionMonitor />
             <AppContent />
           </RateLimitProvider>
         </AuthProvider>

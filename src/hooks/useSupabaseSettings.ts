@@ -12,7 +12,7 @@ export function useSupabaseSettings() {
   const { toast } = useToast();
 
   // Fetch settings from Supabase
-  const fetchSettings = async () => {
+  const fetchSettings = async (retryCount = 0) => {
     if (!user) return;
 
     if (!navigator.onLine) {
@@ -32,7 +32,36 @@ export function useSupabaseSettings() {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        // Check for JWT expiration
+        if (error.message?.includes('JWT expired') || error.message?.includes('PGRST303')) {
+          console.log('🔄 JWT expired, attempting to refresh session...');
+          
+          if (retryCount < 2) {
+            // Try to refresh the session
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            
+            if (!refreshError) {
+              // Retry the request with refreshed token
+              console.log('✅ Session refreshed, retrying settings fetch...');
+              return fetchSettings(retryCount + 1);
+            } else {
+              console.error('❌ Failed to refresh session:', refreshError);
+              logError('Failed to refresh session:', refreshError);
+            }
+          } else {
+            console.error('❌ Max retries exceeded for settings fetch');
+            toast({
+              title: "Authentication expired",
+              description: "Please sign in again to continue.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+        
+        throw error;
+      }
 
       if (data) {
         // Transform database data to UserSettings interface
@@ -53,16 +82,28 @@ export function useSupabaseSettings() {
           setupCompletionPercentage: Number(data.setup_completion_percentage) || 0,
         };
         setSettings(userSettings);
+        console.log('✅ Settings loaded successfully');
       } else {
         // No settings found, use defaults (they will be created by trigger)
         setSettings(defaultUserSettings);
+        console.log('ℹ️ No settings found, using defaults');
       }
     } catch (error: any) {
       logError('Error fetching settings:', error);
-      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+      
+      if (error instanceof Error && (
+        error.message.toLowerCase().includes('failed to fetch') ||
+        error.message.toLowerCase().includes('network')
+      )) {
         toast({
           title: "Connection lost",
           description: "Failed to load your settings.",
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('JWT expired') || error.message?.includes('PGRST303')) {
+        toast({
+          title: "Authentication expired",
+          description: "Please refresh the page or sign in again.",
           variant: "destructive",
         });
       } else {
@@ -79,7 +120,7 @@ export function useSupabaseSettings() {
   };
 
   // Update settings in Supabase (partial updates supported)
-  const updateSettings = async (partialSettings: Partial<UserSettings>) => {
+  const updateSettings = async (partialSettings: Partial<UserSettings>, retryCount = 0) => {
     if (!user) return;
 
     if (!navigator.onLine) {
@@ -120,7 +161,36 @@ export function useSupabaseSettings() {
           onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        // Check for JWT expiration
+        if (error.message?.includes('JWT expired') || error.message?.includes('PGRST303')) {
+          console.log('🔄 JWT expired during update, attempting to refresh session...');
+          
+          if (retryCount < 2) {
+            // Try to refresh the session
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            
+            if (!refreshError) {
+              // Retry the request with refreshed token
+              console.log('✅ Session refreshed, retrying settings update...');
+              return updateSettings(partialSettings, retryCount + 1);
+            } else {
+              console.error('❌ Failed to refresh session during update:', refreshError);
+              logError('Failed to refresh session during update:', refreshError);
+            }
+          } else {
+            console.error('❌ Max retries exceeded for settings update');
+            toast({
+              title: "Authentication expired",
+              description: "Please sign in again to save your settings.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+        
+        throw error;
+      }
 
       setSettings(mergedSettings);
 
@@ -130,10 +200,20 @@ export function useSupabaseSettings() {
       });
     } catch (error: any) {
       logError('Error updating settings:', error);
-      if (error instanceof Error && error.message.toLowerCase().includes('failed to fetch')) {
+      
+      if (error instanceof Error && (
+        error.message.toLowerCase().includes('failed to fetch') ||
+        error.message.toLowerCase().includes('network')
+      )) {
         toast({
           title: "Connection lost",
           description: "Save will retry when online",
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('JWT expired') || error.message?.includes('PGRST303')) {
+        toast({
+          title: "Authentication expired",
+          description: "Please refresh the page or sign in again.",
           variant: "destructive",
         });
       } else {
