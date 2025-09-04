@@ -32,7 +32,7 @@ import { useEquipment } from '@/hooks/useEquipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
 import { usePlan } from '@/hooks/usePlan';
-import { isPro, isFree } from '@/utils/tier';
+import { isPro, isFree, getTier } from '@/utils/tier';
 import { UpgradeCard } from './UpgradeCard';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
 import { UpgradeModal } from './UpgradeModal';
@@ -63,6 +63,19 @@ interface LoadFormValues {
 }
 
 export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: LoadCalculatorProps) {
+  // DEBUG: Tier detection logging
+  const currentTier = getTier();
+  const isFreeTier = isFree();
+  const isProUser = isPro();
+  
+  console.log('🔍 TIER DEBUG - LoadCalculator render:', {
+    currentTier,
+    isFreeTier,
+    isProUser,
+    localStorage_tier: typeof window !== 'undefined' ? localStorage.getItem('lm_tier') : 'undefined',
+    url_tier: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tier') : 'undefined'
+  });
+
   const { settings, loading: settingsLoading } = useSupabaseSettings();
   const { toast } = useToast();
   const [showLoadEntry, setShowLoadEntry] = useState(false);
@@ -932,11 +945,27 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                 )}
 
                 {/* Show UpgradeCard immediately for free tier users */}
-                {isFree() && (
-                  <div className="space-y-3 pt-3 border-t">
-                    <UpgradeCard />
-                  </div>
-                )}
+                {(() => {
+                  const shouldShowUpgrade = isFree();
+                  console.log('🔍 UPGRADE CARD DEBUG:', {
+                    shouldShowUpgrade,
+                    currentTier: getTier(),
+                    isFreeTier: isFree(),
+                    timestamp: new Date().toISOString()
+                  });
+                  
+                  if (shouldShowUpgrade) {
+                    console.log('✅ Rendering UpgradeCard for free tier user');
+                    return (
+                      <div className="space-y-3 pt-3 border-t">
+                        <UpgradeCard />
+                      </div>
+                    );
+                  }
+                  
+                  console.log('❌ NOT rendering UpgradeCard - user is pro tier');
+                  return null;
+                })()}
 
                 {negotiation && (
                   <div className="space-y-3 pt-3 border-t">
@@ -983,41 +1012,57 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                       </div>
                     </div>
 
-                    {!isFree() && (
-                      <NegotiationPanel
-                        askRate={askRate}
-                        settleRate={settleRate}
-                        bottomRate={bottomRate}
-                        miles={parseFloat(miles) || 0}
-                        weightLbs={weight ? parseFloat(weight) : undefined}
-                        offerTotal={
-                          (parseFloat(rate) || 0) +
-                          (parseFloat(fsc) || 0) +
-                          (parseFloat(tolls) || 0)
-                        }
-                        rpm={calculation.rpm}
-                        pickupCity={origin}
-                        deliveryCity={destination}
-                        equipmentType={equipment}
-                        flags={{
-                          isRush: extras.afterHours || extras.weekend || undefined,
-                          tarpRequired: extras.tarp || undefined,
-                          extraStops:
-                            extras.stops && extras.stops > 1
-                              ? extras.stops - 1
-                              : undefined,
-                          fuelSurchargeMentioned: !!fsc,
-                          palletJack: extras.palletJack || undefined,
-                          liftGate: extras.liftgate || undefined,
-                        }}
-                        initialChannel={channel}
-                        initialTone={tone}
-                        initialScripts={scripts}
-                        onChannelChange={setChannel}
-                        onToneChange={setTone}
-                        onScriptChange={setScripts}
-                      />
-                    )}
+                    {(() => {
+                      const shouldShowNegotiation = !isFree();
+                      console.log('🔍 NEGOTIATION PANEL DEBUG:', {
+                        shouldShowNegotiation,
+                        currentTier: getTier(),
+                        isProTier: isPro(),
+                        timestamp: new Date().toISOString()
+                      });
+                      
+                      if (shouldShowNegotiation) {
+                        console.log('✅ Rendering NegotiationPanel for pro tier user');
+                        return (
+                          <NegotiationPanel
+                            askRate={askRate}
+                            settleRate={settleRate}
+                            bottomRate={bottomRate}
+                            miles={parseFloat(miles) || 0}
+                            weightLbs={weight ? parseFloat(weight) : undefined}
+                            offerTotal={
+                              (parseFloat(rate) || 0) +
+                              (parseFloat(fsc) || 0) +
+                              (parseFloat(tolls) || 0)
+                            }
+                            rpm={calculation.rpm}
+                            pickupCity={origin}
+                            deliveryCity={destination}
+                            equipmentType={equipment}
+                            flags={{
+                              isRush: extras.afterHours || extras.weekend || undefined,
+                              tarpRequired: extras.tarp || undefined,
+                              extraStops:
+                                extras.stops && extras.stops > 1
+                                  ? extras.stops - 1
+                                  : undefined,
+                              fuelSurchargeMentioned: !!fsc,
+                              palletJack: extras.palletJack || undefined,
+                              liftGate: extras.liftgate || undefined,
+                            }}
+                            initialChannel={channel}
+                            initialTone={tone}
+                            initialScripts={scripts}
+                            onChannelChange={setChannel}
+                            onToneChange={setTone}
+                            onScriptChange={setScripts}
+                          />
+                        );
+                      }
+                      
+                      console.log('❌ NOT rendering NegotiationPanel - user is free tier');
+                      return null;
+                    })()}
 
                     {negotiation.notes.length > 0 && (
                       <div className="space-y-1 text-sm">
