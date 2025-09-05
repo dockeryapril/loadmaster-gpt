@@ -383,10 +383,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       // Check if this was a cancellation
       if (error instanceof Error && error.message === 'Upload cancelled') {
         console.log('OCR process was cancelled by user');
-        toast({
-          title: "Upload cancelled",
-          description: "Image processing was cancelled.",
-        });
         logOCREnd('LoadEntryMethod', startTime, false, 'cancelled');
         recordExtractionEvent({
           source: 'LoadEntryMethod',
@@ -394,7 +390,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           duration: Date.now() - startTime,
           error: 'cancelled'
         }).catch(() => {});
-        resetProcessingState();
+        // Don't reset state here - let the finally block handle it or the immediate cancel reset
         return;
       }
       
@@ -419,7 +415,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       }
     } finally {
       console.log('OCR process completed, cleaning up');
-      if (!isCancelling) {
+      // Always reset processing state in finally block unless it was already reset
+      if (isProcessing) {
         resetProcessingState();
       }
     }
@@ -547,19 +544,29 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     // Immediately show cancelling state to user
     setProcessingStage('Cancelling...');
     
+    // Immediately reset processing state to get user back to main UI
+    setTimeout(() => {
+      console.log('Immediate UI reset after cancellation');
+      resetProcessingState();
+    }, 100);
+    
     // Abort the operation if controller exists
     if (abortControllerRef.current) {
       console.log('Aborting operation...');
       abortControllerRef.current.abort();
-    } else {
-      console.log('No abort controller found, resetting UI state');
-      // If no abort controller, force reset UI state
-      resetProcessingState();
     }
     
+    // Add timeout fallback in case abort signal doesn't work
+    setTimeout(() => {
+      if (isCancelling) {
+        console.log('Timeout fallback: forcing processing state reset');
+        resetProcessingState();
+      }
+    }, 1000);
+    
     toast({
-      title: "Cancelling upload",
-      description: "Stopping image processing...",
+      title: "Upload cancelled",
+      description: "Image processing stopped.",
     });
   };
 
