@@ -4,7 +4,7 @@ import type { Equipment } from '@/types/equipment';
 const DEFAULT_EQUIPMENT: Equipment = 'cargo_van';
 
 export function useEquipment() {
-  const [equipment, setEquipment] = useLocalStorage<Equipment>('lm_equipment', DEFAULT_EQUIPMENT);
+  const [equipment, setEquipment] = useLocalStorage<Equipment | undefined>('lm_equipment', DEFAULT_EQUIPMENT);
 
   return {
     equipment,

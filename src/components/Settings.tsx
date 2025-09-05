@@ -98,14 +98,30 @@ export function Settings({ onClose }: SettingsProps) {
   };
 
   const handleReset = async () => {
-    await updateSettings(defaultUserSettings);
-    setFuelPrice(defaultUserSettings.fuelPrice.toString());
-    setMpg(defaultUserSettings.mpg.toString());
-    setExcellentRpm(defaultUserSettings.rpmThresholds.excellent.toString());
-    setGoodRpm(defaultUserSettings.rpmThresholds.good.toString());
-    setFairRpm(defaultUserSettings.rpmThresholds.fair.toString());
-    setWeightLimit(defaultUserSettings.weightLimit.toString());
-    setEnableFuelCostTracking(defaultUserSettings.enableFuelCostTracking);
+    // Custom reset values - all numbers to 0
+    const resetSettings = {
+      ...defaultUserSettings,
+      fuelPrice: 0,
+      mpg: 0,
+      rpmThresholds: {
+        excellent: 0,
+        good: 0,
+        fair: 0
+      },
+      weightLimit: 0
+    };
+    
+    await updateSettings(resetSettings);
+    setFuelPrice('0');
+    setMpg('0');
+    setExcellentRpm('0');
+    setGoodRpm('0');
+    setFairRpm('0');
+    setWeightLimit('0');
+    setEnableFuelCostTracking(resetSettings.enableFuelCostTracking);
+    
+    // Reset equipment to unselected state
+    setEquipment(undefined);
   };
 
   return (
@@ -155,9 +171,9 @@ export function Settings({ onClose }: SettingsProps) {
           <h3 className="text-lg font-semibold">Equipment</h3>
           <div className="space-y-2">
             <Label htmlFor="equipment">Equipment Type</Label>
-            <Select value={equipment} onValueChange={(value) => setEquipment(value as Equipment)}>
+            <Select value={equipment || ""} onValueChange={(value) => setEquipment(value as Equipment)}>
               <SelectTrigger id="equipment">
-                <SelectValue />
+                <SelectValue placeholder="Select Equipment Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="cargo_van">Cargo Van</SelectItem>
