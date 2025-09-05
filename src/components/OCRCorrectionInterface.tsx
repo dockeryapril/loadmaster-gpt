@@ -153,7 +153,7 @@ export function OCRCorrectionInterface({
                 <div className="space-y-2">
                   {needsReview.map((field, index) => (
                     <div key={`review-${index}`} className="flex items-center gap-2 p-2 border border-red-500 bg-gray-800/50 text-white rounded-md transition-colors">
-                      <Label className="text-sm min-w-[100px] text-red-400 font-medium">
+                      <Label className="text-sm min-w-[100px] text-red-600 font-medium">
                         {getFieldDisplayName(field.field)}:
                       </Label>
                       <Input
