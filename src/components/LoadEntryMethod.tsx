@@ -54,6 +54,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const [ocrProgress, setOcrProgress] = useState(0);
   const [showMilesModal, setShowMilesModal] = useState(false);
   const [milesResolver, setMilesResolver] = useState<((value: string | null) => void) | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   // Add cancellation support
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -70,13 +71,16 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const { handleRateLimitError } = useRateLimit();
 
   const handleOCR = async (file: File) => {
+    console.log('Starting OCR process for file:', file.name);
     setIsProcessing(true);
+    setIsCancelling(false);
     setOcrProgress(0);
     setProcessingStage('Initializing...');
     
     // Create new abort controller for this upload
     abortControllerRef.current = new AbortController();
     const abortSignal = abortControllerRef.current.signal;
+    console.log('Created new abort controller');
     
     const startTime = logOCRStart('LoadEntryMethod');
     try {
@@ -118,6 +122,11 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
               'eng',
               {
                 logger: m => {
+                  // Check for cancellation during OCR progress
+                  if (abortSignal.aborted) {
+                    console.log('OCR cancelled during progress update');
+                    throw new Error('Upload cancelled');
+                  }
                   if (m.status === 'recognizing text') {
                     const progress = m.progress * 100;
                     setOcrProgress(progress);
@@ -373,6 +382,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     } catch (error) {
       // Check if this was a cancellation
       if (error instanceof Error && error.message === 'Upload cancelled') {
+        console.log('OCR process was cancelled by user');
         toast({
           title: "Upload cancelled",
           description: "Image processing was cancelled.",
@@ -384,6 +394,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           duration: Date.now() - startTime,
           error: 'cancelled'
         }).catch(() => {});
+        resetProcessingState();
         return;
       }
       
@@ -407,26 +418,9 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
         }).catch(() => {});
       }
     } finally {
-      setIsProcessing(false);
-      setOcrProgress(0);
-      setProcessingStage('');
-      abortControllerRef.current = null;
-      
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = null;
-      }
-      if (imageElementRef.current) {
-        imageElementRef.current.src = '';
-        imageElementRef.current = null;
-      }
-      if (canvasRef.current) {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        ctx?.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.width = 0;
-        canvas.height = 0;
-        canvasRef.current = null;
+      console.log('OCR process completed, cleaning up');
+      if (!isCancelling) {
+        resetProcessingState();
       }
     }
   };
@@ -541,8 +535,58 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   };
 
   const handleCancelUpload = () => {
+    console.log('Cancel button clicked, abort controller exists:', !!abortControllerRef.current);
+    
+    if (isCancelling) {
+      console.log('Already cancelling, ignoring duplicate cancel request');
+      return;
+    }
+    
+    setIsCancelling(true);
+    
+    // Immediately show cancelling state to user
+    setProcessingStage('Cancelling...');
+    
+    // Abort the operation if controller exists
     if (abortControllerRef.current) {
+      console.log('Aborting operation...');
       abortControllerRef.current.abort();
+    } else {
+      console.log('No abort controller found, resetting UI state');
+      // If no abort controller, force reset UI state
+      resetProcessingState();
+    }
+    
+    toast({
+      title: "Cancelling upload",
+      description: "Stopping image processing...",
+    });
+  };
+
+  const resetProcessingState = () => {
+    console.log('Resetting processing state');
+    setIsProcessing(false);
+    setOcrProgress(0);
+    setProcessingStage('');
+    setIsCancelling(false);
+    abortControllerRef.current = null;
+    
+    // Clean up resources
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    if (imageElementRef.current) {
+      imageElementRef.current.src = '';
+      imageElementRef.current = null;
+    }
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.width = 0;
+      canvas.height = 0;
+      canvasRef.current = null;
     }
   };
 
@@ -653,10 +697,11 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
               onClick={handleCancelUpload}
               variant="outline"
               size="sm"
-              className="mt-2 text-destructive hover:text-destructive border-destructive"
+              disabled={isCancelling}
+              className="mt-2 text-destructive hover:text-destructive border-destructive disabled:opacity-50"
             >
               <X className="h-4 w-4 mr-2" />
-              Cancel Upload
+              {isCancelling ? 'Cancelling...' : 'Cancel Upload'}
             </Button>
           </div>
         </Card>
