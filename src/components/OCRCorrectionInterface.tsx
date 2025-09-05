@@ -159,7 +159,7 @@ export function OCRCorrectionInterface({
                       <Input
                         value={field.value}
                         onChange={(e) => onFieldCorrection(field.field, e.target.value)}
-                        className="flex-1 border-red-200 focus:border-red-300 text-white"
+                        className="flex-1 border-red-200 focus:border-red-0 text-white"
                         placeholder={`Enter ${getFieldDisplayName(field.field).toLowerCase()}`}
                       />
                       {getConfidenceBadge(field.confidence)}
