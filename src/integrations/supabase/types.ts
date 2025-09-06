@@ -512,6 +512,7 @@ export type Database = {
           mpg: number
           plan: string
           preferred_lanes: string[] | null
+          revenue_split_percentage: number | null
           rpm_threshold_excellent: number
           rpm_threshold_fair: number
           rpm_threshold_good: number
@@ -520,6 +521,7 @@ export type Database = {
           updated_at: string
           use_equipment_defaults: boolean | null
           user_id: string
+          weekly_fixed_costs: number | null
           weight_limit: number
         }
         Insert: {
@@ -534,6 +536,7 @@ export type Database = {
           mpg?: number
           plan?: string
           preferred_lanes?: string[] | null
+          revenue_split_percentage?: number | null
           rpm_threshold_excellent?: number
           rpm_threshold_fair?: number
           rpm_threshold_good?: number
@@ -542,6 +545,7 @@ export type Database = {
           updated_at?: string
           use_equipment_defaults?: boolean | null
           user_id: string
+          weekly_fixed_costs?: number | null
           weight_limit?: number
         }
         Update: {
@@ -556,6 +560,7 @@ export type Database = {
           mpg?: number
           plan?: string
           preferred_lanes?: string[] | null
+          revenue_split_percentage?: number | null
           rpm_threshold_excellent?: number
           rpm_threshold_fair?: number
           rpm_threshold_good?: number
@@ -564,6 +569,7 @@ export type Database = {
           updated_at?: string
           use_equipment_defaults?: boolean | null
           user_id?: string
+          weekly_fixed_costs?: number | null
           weight_limit?: number
         }
         Relationships: []

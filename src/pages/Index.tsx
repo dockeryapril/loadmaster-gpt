@@ -21,9 +21,10 @@ import { exportLoadsToCSV } from '@/utils/csvExport';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
+import { SimpleBusinessSetup } from '@/components/SimpleBusinessSetup';
 
 
-type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
+type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings' | 'business-setup';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -33,7 +34,7 @@ const Index = () => {
   const { toast } = useToast();
   const { user, signOut } = useAuth();
   const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, archiveAllLoads, refetch } = useSupabaseLoads();
-  const { settings } = useSupabaseSettings();
+  const { settings, updateSettings } = useSupabaseSettings();
   const { hasCoreData } = useCoreDataMigration();
   const { showRateLimitBanner, dismissBanner } = useRateLimit();
   const featureFlags = getFeatureFlags(user);
@@ -45,6 +46,31 @@ const Index = () => {
     }
     // No state value needed
   }, []);
+
+  // Business setup handlers
+  const handleBusinessSetup = (revenueSplit: number, weeklyCosts: number) => {
+    updateSettings({
+      revenueSplitPercentage: revenueSplit,
+      weeklyFixedCosts: weeklyCosts,
+    });
+    setCurrentView('dashboard');
+    toast({
+      title: "Business setup saved!",
+      description: "Your load calculations will now reflect your business arrangement.",
+    });
+  };
+
+  // Show business setup for new users
+  const shouldShowSetup = user && settings && 
+    settings.revenueSplitPercentage === 100 && 
+    settings.weeklyFixedCosts === 0 &&
+    currentView === 'dashboard';
+
+  useEffect(() => {
+    if (shouldShowSetup) {
+      setCurrentView('business-setup');
+    }
+  }, [shouldShowSetup]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -253,6 +279,17 @@ const Index = () => {
             }}
             isPro={true} // Index page is always PRO
           />
+        );
+
+      case 'business-setup':
+        return (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <SimpleBusinessSetup
+              onSave={handleBusinessSetup}
+              initialRevenueSplit={settings?.revenueSplitPercentage || 100}
+              initialWeeklyCosts={settings?.weeklyFixedCosts || 0}
+            />
+          </div>
         );
 
       case 'settings':

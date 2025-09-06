@@ -6,6 +6,7 @@ import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, Bar
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
@@ -21,32 +22,53 @@ import { MilesInputModal } from '@/components/MilesInputModal';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, X, Upload } from 'lucide-react';
 import type { Equipment } from '@/types/equipment';
+import { SimpleBusinessSetup } from '@/components/SimpleBusinessSetup';
 
 
-// Equipment-aware negotiation logic for LITE version
-const calculateNegotiation = (miles: number, rate: number, weight?: number, equipment: Equipment = 'cargo_van') => {
-  const ratePerMile = rate / miles;
-  const anchor = rate * 1.15; // 15% above offer
-  const target = rate * 1.08; // 8% above offer
-  const floor = rate * 0.98; // 2% below offer
+// Equipment-aware negotiation logic with business setup integration
+const calculateNegotiation = (
+  miles: number, 
+  rate: number, 
+  weight?: number, 
+  equipment: Equipment = 'cargo_van',
+  revenueSplitPercentage: number = 100,
+  weeklyFixedCosts: number = 0
+) => {
+  // Calculate gross RPM
+  const grossRpm = rate / miles;
+  
+  // Apply revenue split
+  const netRevenue = rate * (revenueSplitPercentage / 100);
+  
+  // Estimate weekly miles for cost distribution (industry average: 2500 miles/week)
+  const estimatedWeeklyMiles = 2500;
+  const fixedCostPerMile = weeklyFixedCosts / estimatedWeeklyMiles;
+  
+  // Calculate net RPM after business costs
+  const netRpm = (netRevenue / miles) - fixedCostPerMile;
+  
+  // Use net RPM for negotiation targets
+  const anchor = netRevenue * 1.15; // 15% above net offer
+  const target = netRevenue * 1.08; // 8% above net offer  
+  const floor = netRevenue * 0.98; // 2% below net offer
   
   const premiums = [];
   if (weight && weight > 45000) premiums.push('Heavy Load');
-  if (ratePerMile < 1.5) premiums.push('Low Rate Lane');
+  if (grossRpm < 1.5) premiums.push('Low Rate Lane');
   
-  // Get equipment-specific RPM targets for quality assessment
+  // Get equipment-specific RPM targets for quality assessment (use net RPM)
   const rpmTargets = getEquipmentRPMTargets(equipment);
   const equipmentInfo = equipmentDefaults[equipment];
   
   let qualityNote = '';
-  if (ratePerMile >= rpmTargets.green) {
-    qualityNote = 'Excellent rate for your equipment';
-  } else if (ratePerMile >= rpmTargets.yellow) {
-    qualityNote = 'Good rate - above industry average';
-  } else if (ratePerMile >= rpmTargets.red) {
-    qualityNote = 'Fair rate - consider negotiating higher';
+  if (netRpm >= rpmTargets.green) {
+    qualityNote = 'Excellent net rate for your setup';
+  } else if (netRpm >= rpmTargets.yellow) {
+    qualityNote = 'Good net rate - above industry average';
+  } else if (netRpm >= rpmTargets.red) {
+    qualityNote = 'Fair net rate - consider negotiating higher';
   } else {
-    qualityNote = 'Below average - negotiate strongly';
+    qualityNote = 'Below average net rate - negotiate strongly';
   }
   
   return {
@@ -56,7 +78,11 @@ const calculateNegotiation = (miles: number, rate: number, weight?: number, equi
     premiums_applied: premiums,
     suggested_strategy: 'Negotiate higher',
     quality_note: qualityNote,
-    equipment_context: `${equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} avg: $${equipmentInfo.rpmTargets.yellow.toFixed(2)}/mi`
+    equipment_context: `${equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} avg: $${equipmentInfo.rpmTargets.yellow.toFixed(2)}/mi`,
+    gross_rpm: grossRpm,
+    net_rpm: netRpm,
+    revenue_impact: revenueSplitPercentage < 100 ? `${100 - revenueSplitPercentage}% to company` : null,
+    fixed_cost_impact: weeklyFixedCosts > 0 ? `$${fixedCostPerMile.toFixed(3)}/mi fixed costs` : null
   };
 };
 
@@ -102,8 +128,10 @@ const Core = () => {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [ocrJustCompleted, setOcrJustCompleted] = useState(false);
   const [populatedFields, setPopulatedFields] = useState<string[]>([]);
+  const [showBusinessSetup, setShowBusinessSetup] = useState(false);
   
   const { user, loading: authLoading } = useAuth();
+  const { settings, loading: settingsLoading, updateSettings } = useSupabaseSettings();
   const { equipment, setEquipment } = useEquipment();
   // This is the LITE page - always LITE tier
   const plan = 'free' as const;
@@ -126,7 +154,18 @@ const Core = () => {
 
     if (!milesNum || !offerNum) return null;
 
-    const calculation = calculateNegotiation(milesNum, offerNum, weightNum, equipment);
+    // Use business setup values from settings
+    const revenueSplit = settings?.revenueSplitPercentage || 100;
+    const weeklyCosts = settings?.weeklyFixedCosts || 0;
+
+    const calculation = calculateNegotiation(
+      milesNum, 
+      offerNum, 
+      weightNum, 
+      equipment, 
+      revenueSplit, 
+      weeklyCosts
+    );
     const message = generateMessage(milesNum, offerNum, calculation.anchor_rate);
 
     const historyItem: HistoryItem = {
@@ -330,7 +369,31 @@ const Core = () => {
     navigate('/');
   };
 
-  if (authLoading) {
+  // Business setup handlers
+  const handleBusinessSetup = (revenueSplit: number, weeklyCosts: number) => {
+    updateSettings({
+      revenueSplitPercentage: revenueSplit,
+      weeklyFixedCosts: weeklyCosts,
+    });
+    setShowBusinessSetup(false);
+    toast({
+      title: "Business setup saved!",
+      description: "Your RPM calculations will now reflect your business arrangement.",
+    });
+  };
+
+  const handleSkipSetup = () => {
+    setShowBusinessSetup(false);
+  };
+
+  // Show business setup for new users
+  const shouldShowSetup = user && settings && 
+    settings.revenueSplitPercentage === 100 && 
+    settings.weeklyFixedCosts === 0 &&
+    !showResult &&
+    !showHistory;
+
+  if (authLoading || settingsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -401,6 +464,40 @@ const Core = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Simple Business Setup */}
+        {(shouldShowSetup || showBusinessSetup) && (
+          <div className="mb-6">
+            <SimpleBusinessSetup
+              onSave={handleBusinessSetup}
+              onSkip={handleSkipSetup}
+              initialRevenueSplit={settings?.revenueSplitPercentage || 100}
+              initialWeeklyCosts={settings?.weeklyFixedCosts || 0}
+            />
+          </div>
+        )}
+
+        {/* Business Setup Button for existing users */}
+        {user && !shouldShowSetup && !showBusinessSetup && (
+          <Card className="mb-6">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Business Setup</p>
+                  <p className="text-xs text-muted-foreground">
+                    {settings?.revenueSplitPercentage !== 100 || settings?.weeklyFixedCosts !== 0
+                      ? `${settings?.revenueSplitPercentage}% split • $${settings?.weeklyFixedCosts}/week`
+                      : 'Set your revenue split and costs'
+                    }
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setShowBusinessSetup(true)}>
+                  {settings?.revenueSplitPercentage !== 100 || settings?.weeklyFixedCosts !== 0 ? 'Edit' : 'Setup'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Navigation */}
         <div className="flex gap-2 mb-6">
@@ -520,6 +617,32 @@ const Core = () => {
                   <div className="bg-primary/5 border border-primary/20 p-3 rounded">
                     <p className="text-sm font-medium text-primary">{result.calculation.quality_note}</p>
                   </div>
+                </div>
+
+                {/* RPM Breakdown */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="p-3 bg-muted rounded">
+                      <p className="text-xs text-muted-foreground">Gross RPM</p>
+                      <p className="text-lg font-bold">${result.calculation.gross_rpm.toFixed(2)}</p>
+                    </div>
+                    <div className="p-3 bg-primary/10 rounded">
+                      <p className="text-xs text-muted-foreground">Net Take-Home RPM</p>
+                      <p className="text-lg font-bold text-primary">${result.calculation.net_rpm.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Business Impact Display */}
+                  {(result.calculation.revenue_impact || result.calculation.fixed_cost_impact) && (
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      {result.calculation.revenue_impact && (
+                        <div>• {result.calculation.revenue_impact}</div>
+                      )}
+                      {result.calculation.fixed_cost_impact && (
+                        <div>• {result.calculation.fixed_cost_impact}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">

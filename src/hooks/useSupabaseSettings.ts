@@ -83,6 +83,8 @@ export function useSupabaseSettings() {
           useEquipmentDefaults: data.use_equipment_defaults !== false, // default to true
           equipmentRpmOverrides: data.equipment_rpm_overrides || {},
           equipmentMpgOverrides: data.equipment_mpg_overrides || {},
+          revenueSplitPercentage: Number(data.revenue_split_percentage) || 100,
+          weeklyFixedCosts: Number(data.weekly_fixed_costs) || 0,
         };
         setSettings(userSettings);
         console.log('✅ Settings loaded successfully');
@@ -160,6 +162,8 @@ export function useSupabaseSettings() {
         if (partialSettings.useEquipmentDefaults !== undefined) updateData.use_equipment_defaults = partialSettings.useEquipmentDefaults;
         if (partialSettings.equipmentRpmOverrides !== undefined) updateData.equipment_rpm_overrides = partialSettings.equipmentRpmOverrides;
         if (partialSettings.equipmentMpgOverrides !== undefined) updateData.equipment_mpg_overrides = partialSettings.equipmentMpgOverrides;
+        if (partialSettings.revenueSplitPercentage !== undefined) updateData.revenue_split_percentage = partialSettings.revenueSplitPercentage;
+        if (partialSettings.weeklyFixedCosts !== undefined) updateData.weekly_fixed_costs = partialSettings.weeklyFixedCosts;
 
       const { error } = await supabase
         .from('user_settings')

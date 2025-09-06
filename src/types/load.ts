@@ -85,6 +85,9 @@ export interface UserSettings {
   businessSetupCompletedAt?: string;
   showSetupReminders?: boolean;
   setupCompletionPercentage?: number;
+  // Simplified Business Setup
+  revenueSplitPercentage?: number; // percentage of gross revenue driver keeps
+  weeklyFixedCosts?: number; // total weekly fixed costs
 }
 
 export interface LoadCalculationResult {
@@ -173,5 +176,7 @@ export const defaultUserSettings: UserSettings = {
   enableFuelCostTracking: false,
   businessSetupCompleted: false,
   showSetupReminders: true,
-  setupCompletionPercentage: 0
+  setupCompletionPercentage: 0,
+  revenueSplitPercentage: 100, // Default: 100% (independent contractor)
+  weeklyFixedCosts: 0, // Default: $0 fixed costs
 };
