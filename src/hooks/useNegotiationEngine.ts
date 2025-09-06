@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { computeCalc, suggestTemplates, type LoadFields } from '../../packages/engine/src/index';
+import { computeCalc, suggestTemplates, selectProfile, type LoadFields } from '../../packages/engine/src/index';
 import { NegotiationCalculation } from '@/types/negotiation';
 import { Load } from '@/types/load';
 import { useEquipment } from '@/hooks/useEquipment';
@@ -36,7 +36,11 @@ export function useNegotiationEngine({ load, laneBaselineRpm }: UseNegotiationEn
     };
 
     const margins = { anchorPct: 0.18, targetPct: 0.10, floorPct: 0.00 };
-    const calc = computeCalc(fields, margins);
+    
+    // Use equipment-specific profile with updated RPM targets
+    const profile = selectProfile(eq);
+    const calc = computeCalc(fields, margins, profile);
+    
     const notes = (advancedTemplates && isProTier) ? suggestTemplates(fields, calc, 3) : [];
     const calculation: NegotiationCalculation = {
       anchor_rate: calc.negotiation.anchor,

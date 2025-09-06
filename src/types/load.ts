@@ -54,14 +54,30 @@ export interface Load {
   };
 }
 
+export interface EquipmentRPMOverrides {
+  cargo_van?: { green: number; yellow: number; red: number; };
+  straight_truck?: { green: number; yellow: number; red: number; };
+  hotshot?: { green: number; yellow: number; red: number; };
+}
+
+export interface EquipmentMPGOverrides {
+  cargo_van?: number;
+  straight_truck?: number;
+  hotshot?: number;
+}
+
 export interface UserSettings {
   fuelPrice: number; // per gallon
-  mpg: number; // miles per gallon
+  mpg: number; // miles per gallon - legacy/fallback
   rpmThresholds: {
     excellent: number;
     good: number;
     fair: number;
   };
+  // New equipment-specific overrides
+  equipmentRpmOverrides?: EquipmentRPMOverrides;
+  equipmentMpgOverrides?: EquipmentMPGOverrides;
+  useEquipmentDefaults?: boolean; // whether to use smart defaults
   weightLimit: number; // in pounds
   preferredLanes: string[];
   enableFuelCostTracking: boolean;
@@ -142,13 +158,16 @@ export const calculateProfit = (
 };
 
 export const defaultUserSettings: UserSettings = {
-  fuelPrice: 3.50,
-  mpg: 6.5,
+  fuelPrice: 3.89, // Updated 2024 national average
+  mpg: 6.5, // Legacy fallback
   rpmThresholds: {
     excellent: 2.5,
     good: 2.0,
     fair: 1.5
   },
+  equipmentRpmOverrides: {}, // Empty - use industry defaults
+  equipmentMpgOverrides: {}, // Empty - use industry defaults  
+  useEquipmentDefaults: true, // Use smart equipment-specific defaults
   weightLimit: 80000,
   preferredLanes: [],
   enableFuelCostTracking: false,

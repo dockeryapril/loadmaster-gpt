@@ -80,6 +80,9 @@ export function useSupabaseSettings() {
           businessSetupCompletedAt: data.business_setup_completed_at,
           showSetupReminders: Boolean(data.show_setup_reminders),
           setupCompletionPercentage: Number(data.setup_completion_percentage) || 0,
+          useEquipmentDefaults: data.use_equipment_defaults !== false, // default to true
+          equipmentRpmOverrides: data.equipment_rpm_overrides || {},
+          equipmentMpgOverrides: data.equipment_mpg_overrides || {},
         };
         setSettings(userSettings);
         console.log('✅ Settings loaded successfully');
@@ -153,7 +156,10 @@ export function useSupabaseSettings() {
       if (partialSettings.businessSetupCompleted !== undefined) updateData.business_setup_completed = partialSettings.businessSetupCompleted;
       if (partialSettings.businessSetupCompletedAt !== undefined) updateData.business_setup_completed_at = partialSettings.businessSetupCompletedAt;
       if (partialSettings.showSetupReminders !== undefined) updateData.show_setup_reminders = partialSettings.showSetupReminders;
-      if (partialSettings.setupCompletionPercentage !== undefined) updateData.setup_completion_percentage = partialSettings.setupCompletionPercentage;
+        if (partialSettings.setupCompletionPercentage !== undefined) updateData.setup_completion_percentage = partialSettings.setupCompletionPercentage;
+        if (partialSettings.useEquipmentDefaults !== undefined) updateData.use_equipment_defaults = partialSettings.useEquipmentDefaults;
+        if (partialSettings.equipmentRpmOverrides !== undefined) updateData.equipment_rpm_overrides = partialSettings.equipmentRpmOverrides;
+        if (partialSettings.equipmentMpgOverrides !== undefined) updateData.equipment_mpg_overrides = partialSettings.equipmentMpgOverrides;
 
       const { error } = await supabase
         .from('user_settings')

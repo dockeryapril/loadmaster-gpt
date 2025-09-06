@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings as SettingsIcon, Save, RotateCcw } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Info, Zap } from 'lucide-react';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { defaultUserSettings } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +17,9 @@ import {
   validateRPM, 
   validateWeightLimit 
 } from '@/utils/inputValidation';
+import { getIndustryContext, getEffectiveMPG, getEffectiveRPMTargets } from '@/utils/equipmentDefaults';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 interface SettingsProps {
   onClose?: () => void;
@@ -34,6 +37,12 @@ export function Settings({ onClose }: SettingsProps) {
   const [fairRpm, setFairRpm] = useState(settings.rpmThresholds.fair.toString());
   const [weightLimit, setWeightLimit] = useState(settings.weightLimit.toString());
   const [enableFuelCostTracking, setEnableFuelCostTracking] = useState(settings.enableFuelCostTracking);
+  const [useEquipmentDefaults, setUseEquipmentDefaults] = useState(settings.useEquipmentDefaults ?? true);
+
+  // Get industry context for current equipment
+  const industryContext = equipment ? getIndustryContext(equipment) : null;
+  const effectiveMPG = equipment ? getEffectiveMPG(equipment, settings) : settings.mpg;
+  const effectiveRPM = equipment ? getEffectiveRPMTargets(equipment, settings) : null;
 
   const handleSave = async () => {
     // Validate all inputs before saving
@@ -85,6 +94,7 @@ export function Settings({ onClose }: SettingsProps) {
       },
       weightLimit: parseFloat(weightLimit),
       enableFuelCostTracking,
+      useEquipmentDefaults,
     };
     
     await updateSettings(newSettings);
@@ -119,6 +129,7 @@ export function Settings({ onClose }: SettingsProps) {
     setFairRpm('0');
     setWeightLimit('0');
     setEnableFuelCostTracking(resetSettings.enableFuelCostTracking);
+    setUseEquipmentDefaults(true);
     
     // Reset equipment to unselected state
     setEquipment(undefined);
@@ -150,10 +161,18 @@ export function Settings({ onClose }: SettingsProps) {
                 onChange={(e) => setFuelPrice(e.target.value)}
                 placeholder="0"
               />
+              <div className="text-sm text-muted-foreground">
+                National average: $3.89
+              </div>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="mpg">Miles Per Gallon</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="mpg">Miles Per Gallon</Label>
+                {equipment && <Badge variant="secondary" className="text-xs">
+                  {industryContext?.equipmentType}: {industryContext?.recommendedMPG} MPG
+                </Badge>}
+              </div>
               <Input
                 id="mpg"
                 type="number"
@@ -162,7 +181,28 @@ export function Settings({ onClose }: SettingsProps) {
                 onChange={(e) => setMpg(e.target.value)}
                 placeholder="0"
               />
+              {equipment && effectiveMPG !== parseFloat(mpg) && (
+                <div className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Zap className="h-3 w-3" />
+                  Smart default: {effectiveMPG} MPG
+                </div>
+              )}
             </div>
+          </div>
+          
+          {/* Smart Defaults Toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50">
+            <div className="space-y-1">
+              <Label htmlFor="useEquipmentDefaults">Use Equipment-Specific Defaults</Label>
+              <div className="text-sm text-muted-foreground">
+                Automatically use industry-researched MPG and RPM targets for your equipment type
+              </div>
+            </div>
+            <Switch
+              id="useEquipmentDefaults"
+              checked={useEquipmentDefaults}
+              onCheckedChange={setUseEquipmentDefaults}
+            />
           </div>
         </div>
 
@@ -186,7 +226,31 @@ export function Settings({ onClose }: SettingsProps) {
 
         {/* RPM Thresholds */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">RPM Quality Thresholds</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">RPM Quality Thresholds</h3>
+            {equipment && industryContext && (
+              <Badge variant="outline" className="text-xs">
+                Market avg: ${industryContext.marketAverageRPM}/mi
+              </Badge>
+            )}
+          </div>
+          
+          {effectiveRPM && useEquipmentDefaults && (
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">
+                  Using {industryContext?.equipmentType} Industry Standards
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div>Great: ${effectiveRPM.green}/mi</div>
+                <div>Good: ${effectiveRPM.yellow}/mi</div>
+                <div>Fair: ${effectiveRPM.red}/mi</div>
+              </div>
+            </div>
+          )}
+          
           <div className="space-y-3">
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
@@ -199,6 +263,7 @@ export function Settings({ onClose }: SettingsProps) {
                   onChange={(e) => setExcellentRpm(e.target.value)}
                   placeholder="0"
                   className="h-10"
+                  disabled={useEquipmentDefaults && !!equipment}
                 />
               </div>
               
@@ -212,6 +277,7 @@ export function Settings({ onClose }: SettingsProps) {
                   onChange={(e) => setGoodRpm(e.target.value)}
                   placeholder="0"
                   className="h-10"
+                  disabled={useEquipmentDefaults && !!equipment}
                 />
               </div>
               
@@ -225,11 +291,15 @@ export function Settings({ onClose }: SettingsProps) {
                   onChange={(e) => setFairRpm(e.target.value)}
                   placeholder="0"
                   className="h-10"
+                  disabled={useEquipmentDefaults && !!equipment}
                 />
               </div>
             </div>
             <div className="text-sm text-muted-foreground">
-              Loads below the Fair threshold will be marked as Poor quality.
+              {useEquipmentDefaults && equipment ? 
+                "Using equipment-specific industry standards. Disable smart defaults to customize." :
+                "Loads below the Fair threshold will be marked as Poor quality."
+              }
             </div>
           </div>
         </div>
