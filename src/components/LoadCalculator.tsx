@@ -22,6 +22,7 @@ import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { LoadEntryMethod } from './LoadEntryMethod';
 import { NegotiationSheet } from './NegotiationSheet';
 import { NegotiationPanel } from '@/features/negotiation/NegotiationPanel';
+import { NegotiationHelpCard } from './NegotiationHelpCard';
 import type { Channel, Tone } from '@/features/negotiation/templates';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +33,7 @@ import { useEquipment } from '@/hooks/useEquipment';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
 import { usePlan } from '@/hooks/usePlan';
+import { useTierDetection } from '@/hooks/useTierDetection';
 import { isPro, isFree, getTier } from '@/utils/tier';
 import { UpgradeCard } from './UpgradeCard';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
@@ -63,15 +65,22 @@ interface LoadFormValues {
 }
 
 export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: LoadCalculatorProps) {
-  // DEBUG: Tier detection logging
-  const currentTier = getTier();
-  const isFreeTier = isFree();
-  const isProUser = isPro();
+  // Unified tier detection
+  const { isPro: isProTier, tier, loading: tierLoading } = useTierDetection();
+  const { plan, isPro: isPlanPro, loading: planLoading } = usePlan(); // Keep for transition
+  const { user } = useAuth();
+  const { advancedTemplates, ocrExtraction } = getFeatureFlags(user);
   
-  console.log('🔍 TIER DEBUG - LoadCalculator render:', {
-    currentTier,
-    isFreeTier,
-    isProUser,
+  // DEBUG: Enhanced tier detection logging
+  console.log('🔍 TIER DEBUG - LoadCalculator unified:', {
+    tier,
+    isProTier,
+    tierLoading,
+    plan,
+    isPlanPro,
+    planLoading,
+    userHasAuth: !!user,
+    advancedTemplates,
     localStorage_tier: typeof window !== 'undefined' ? localStorage.getItem('lm_tier') : 'undefined',
     url_tier: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tier') : 'undefined'
   });
@@ -82,11 +91,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
   const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const { user } = useAuth();
-  const { plan, isPro: isPlanPro } = usePlan();
-  const { advancedTemplates, ocrExtraction } = getFeatureFlags(user);
-  const isProTier = isPro() || isPlanPro; // Use centralized tier system with fallback
-  const userTier = isProTier ? 'pro' : 'lite';
 
   const form = useForm<LoadFormValues>({
     defaultValues: {
@@ -944,10 +948,12 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                   </div>
                 )}
 
-                {/* Show UpgradeCard for free tier users after calculation */}
-                {isFree() && (
-                  <div className="pt-4 border-t border-border/50">
-                    <UpgradeCard className="animate-in fade-in-50 duration-300" />
+                {!isProTier && !tierLoading && (
+                  <div className="space-y-4">
+                    <div className="pt-4 border-t border-border/50">
+                      <UpgradeCard className="animate-in fade-in-50 duration-300" />
+                    </div>
+                    <NegotiationHelpCard className="animate-in fade-in-50 duration-300 delay-100" />
                   </div>
                 )}
 
@@ -997,55 +1003,79 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                     </div>
 
                     {(() => {
-                      const shouldShowNegotiation = !isFree();
+                      // Use unified tier detection
+                      const shouldShowNegotiation = isProTier;
                       console.log('🔍 NEGOTIATION PANEL DEBUG:', {
                         shouldShowNegotiation,
-                        currentTier: getTier(),
-                        isProTier: isPro(),
+                        isProTier,
+                        tier,
+                        tierLoading,
                         timestamp: new Date().toISOString()
                       });
                       
                       if (shouldShowNegotiation) {
                         console.log('✅ Rendering NegotiationPanel for pro tier user');
                         return (
-                          <NegotiationPanel
-                            askRate={askRate}
-                            settleRate={settleRate}
-                            bottomRate={bottomRate}
-                            miles={parseFloat(miles) || 0}
-                            weightLbs={weight ? parseFloat(weight) : undefined}
-                            offerTotal={
-                              (parseFloat(rate) || 0) +
-                              (parseFloat(fsc) || 0) +
-                              (parseFloat(tolls) || 0)
-                            }
-                            rpm={calculation.rpm}
-                            pickupCity={origin}
-                            deliveryCity={destination}
-                            equipmentType={equipment}
-                            flags={{
-                              isRush: extras.afterHours || extras.weekend || undefined,
-                              tarpRequired: extras.tarp || undefined,
-                              extraStops:
-                                extras.stops && extras.stops > 1
-                                  ? extras.stops - 1
-                                  : undefined,
-                              fuelSurchargeMentioned: !!fsc,
-                              palletJack: extras.palletJack || undefined,
-                              liftGate: extras.liftgate || undefined,
-                            }}
-                            initialChannel={channel}
-                            initialTone={tone}
-                            initialScripts={scripts}
-                            onChannelChange={setChannel}
-                            onToneChange={setTone}
-                            onScriptChange={setScripts}
-                          />
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm font-medium">Quick Scripts</div>
+                                <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                                  Pro
+                                </Badge>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Need more? Click "Negotiate" below
+                              </div>
+                            </div>
+                            <NegotiationPanel
+                              askRate={askRate}
+                              settleRate={settleRate}
+                              bottomRate={bottomRate}
+                              miles={parseFloat(miles) || 0}
+                              weightLbs={weight ? parseFloat(weight) : undefined}
+                              offerTotal={
+                                (parseFloat(rate) || 0) +
+                                (parseFloat(fsc) || 0) +
+                                (parseFloat(tolls) || 0)
+                              }
+                              rpm={calculation.rpm}
+                              pickupCity={origin}
+                              deliveryCity={destination}
+                              equipmentType={equipment}
+                              flags={{
+                                isRush: extras.afterHours || extras.weekend || undefined,
+                                tarpRequired: extras.tarp || undefined,
+                                extraStops:
+                                  extras.stops && extras.stops > 1
+                                    ? extras.stops - 1
+                                    : undefined,
+                                fuelSurchargeMentioned: !!fsc,
+                                palletJack: extras.palletJack || undefined,
+                                liftGate: extras.liftgate || undefined,
+                              }}
+                              initialChannel={channel}
+                              initialTone={tone}
+                              initialScripts={scripts}
+                              onChannelChange={setChannel}
+                              onToneChange={setTone}
+                              onScriptChange={setScripts}
+                            />
+                          </div>
                         );
                       }
                       
                       console.log('❌ NOT rendering NegotiationPanel - user is free tier');
-                      return null;
+                      return (
+                        <div className="text-center py-3 px-4 bg-muted/30 rounded-lg border border-dashed">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Quick script generation available with Pro
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Click "Negotiate" below for basic negotiation tools
+                          </p>
+                        </div>
+                      );
                     })()}
 
                     {negotiation.notes.length > 0 && (
@@ -1072,10 +1102,14 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                   variant="outline"
                   onClick={() => setShowNegotiationSheet(true)}
                   disabled={!requiredFilled || hasErrors}
-                  className="flex-1"
+                  className="flex-1 relative"
+                  title="Open full negotiation workspace with advanced templates, outcome tracking, and detailed load analysis"
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Negotiate
+                  <Badge variant="secondary" className="ml-2 text-xs px-1.5 py-0.5">
+                    Full Workspace
+                  </Badge>
                 </Button>
 
                 <Button

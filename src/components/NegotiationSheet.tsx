@@ -14,6 +14,7 @@ import { MESSAGE_TEMPLATES, Negotiation } from '@/types/negotiation';
 import { Copy, TrendingUp, Target, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
+import { useTierDetection } from '@/hooks/useTierDetection';
 
 interface NegotiationSheetProps {
   open: boolean;
@@ -26,7 +27,11 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
   const { calculation, notes, resultColor } = useNegotiationEngine({ load });
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isPro } = useTierDetection();
   const { advancedTemplates } = getFeatureFlags(user);
+  
+  // DEBUG: Log tier detection in NegotiationSheet
+  console.log('🔍 TIER DEBUG - NegotiationSheet:', { isPro, advancedTemplates });
   
   const [selectedStrategy, setSelectedStrategy] = useState<string>(calculation?.suggested_strategy || 'standard');
   const [customMessage, setCustomMessage] = useState('');
@@ -246,7 +251,7 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: Neg
         )}
 
           {/* Message Templates */}
-          {advancedTemplates && (
+          {(advancedTemplates || isPro) && (
             <Card>
               <CardHeader>
                 <CardTitle>Negotiation Message</CardTitle>

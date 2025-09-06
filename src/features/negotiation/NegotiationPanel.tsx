@@ -5,7 +5,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { usePlan } from '@/hooks/usePlan';
+import { useTierDetection } from '@/hooks/useTierDetection';
 import generateScripts, { Channel, Tone, Equipment } from './templates';
 import enhanceWithAI from './enhanceWithAI';
 
@@ -64,7 +64,10 @@ export function NegotiationPanel({
   const [improving, setImproving] = useState<null | keyof typeof scripts>(null);
 
   const { toast } = useToast();
-  const { isPro } = usePlan();
+  const { isPro } = useTierDetection();
+  
+  // DEBUG: Log tier detection in NegotiationPanel
+  console.log('🔍 TIER DEBUG - NegotiationPanel:', { isPro });
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
