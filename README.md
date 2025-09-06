@@ -73,6 +73,26 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
 
+## Testing
+
+Comprehensive automated test suite covering ~85% of critical functionality:
+
+```bash
+# Run all tests
+npm run test
+
+# Run tests in watch mode  
+npm run test:watch
+
+# Run with coverage
+npm run test:coverage
+```
+
+**Test Coverage:**
+- ✅ Business setup calculations, OCR processing, integration flows, error handling
+- ⚠️ Semi-automated: OCR accuracy (requires sample images)
+- 🔧 Manual: UI/UX, camera integration, cross-browser compatibility
+
 ## Environment Variables
 
 The project requires the following environment variables:
