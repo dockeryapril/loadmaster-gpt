@@ -74,6 +74,9 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
   // Use prop first, then tier detection as fallback
   const isPro = propIsPro !== undefined ? propIsPro : isProTier;
   
+  // Feature flags
+  const SHOW_FULL_NEGOTIATION = false; // Temporarily disabled - can be re-enabled later
+  
   const { advancedTemplates, ocrExtraction } = getFeatureFlags(user);
   
   // DEBUG: Enhanced tier detection logging
@@ -1009,18 +1012,18 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                     </div>
 
                     {(() => {
-                      // Use unified tier detection
-                      const shouldShowNegotiation = isProTier;
-                      console.log('🔍 NEGOTIATION PANEL DEBUG:', {
+                      // Use prop-based tier detection for Quick Scripts
+                      const shouldShowNegotiation = isPro;
+                      console.log('🔍 QUICK SCRIPTS DEBUG:', {
                         shouldShowNegotiation,
-                        isProTier,
+                        isPro,
                         tier,
                         tierLoading,
                         timestamp: new Date().toISOString()
                       });
                       
                       if (shouldShowNegotiation) {
-                        console.log('✅ Rendering NegotiationPanel for pro tier user');
+                        console.log('✅ Rendering Quick Scripts for PRO user');
                         return (
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
@@ -1029,9 +1032,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                                 <Badge variant="secondary" className="text-xs px-2 py-0.5">
                                   Pro
                                 </Badge>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Need more? Click "Negotiate" below
                               </div>
                             </div>
                             <NegotiationPanel
@@ -1072,17 +1072,9 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                         );
                       }
                       
-                      console.log('❌ NOT rendering NegotiationPanel - user is free tier');
-                      return (
-                        <div className="text-center py-3 px-4 bg-muted/30 rounded-lg border border-dashed">
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Quick script generation available with Pro
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Click "Negotiate" below for basic negotiation tools
-                          </p>
-                        </div>
-                      );
+                      // LITE users see nothing - completely hidden
+                      console.log('❌ Quick Scripts hidden for LITE users');
+                      return null;
                     })()}
 
                     {negotiation.notes.length > 0 && (
@@ -1104,17 +1096,20 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                   </Button>
                 )}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowNegotiationSheet(true)}
-                  disabled={!requiredFilled || hasErrors}
-                  className="flex-1"
-                  title="Open full negotiation workspace with advanced templates, outcome tracking, and detailed load analysis"
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Full Negotiation
-                </Button>
+                {/* Full Negotiation button temporarily hidden - can be restored by setting SHOW_FULL_NEGOTIATION to true */}
+                {SHOW_FULL_NEGOTIATION && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowNegotiationSheet(true)}
+                    disabled={!requiredFilled || hasErrors}
+                    className="flex-1"
+                    title="Open full negotiation workspace with advanced templates, outcome tracking, and detailed load analysis"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Full Negotiation
+                  </Button>
+                )}
 
                 <Button
                   type="submit"
