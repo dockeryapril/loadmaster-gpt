@@ -195,7 +195,7 @@ export function Settings({ onClose }: SettingsProps) {
             <div className="space-y-1">
               <Label htmlFor="useEquipmentDefaults">Use Equipment-Specific Defaults</Label>
               <div className="text-sm text-muted-foreground">
-                Automatically use industry-researched MPG and RPM targets for your equipment type
+                Automatically use industry-researched MPG/RPM targets for your equipment type
               </div>
             </div>
             <Switch
