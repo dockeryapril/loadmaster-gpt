@@ -47,7 +47,7 @@ const calculateNegotiation = (miles: number, rate: number, weight?: number, equi
     premiums_applied: premiums,
     suggested_strategy: 'Negotiate higher',
     quality_note: qualityNote,
-    equipment_context: `${equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} avg: $${equipmentInfo.rpmTargets.yellow}/mi`
+    equipment_context: `${equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} avg: $${equipmentInfo.rpmTargets.yellow.toFixed(2)}/mi`
   };
 };
 
@@ -247,7 +247,7 @@ const Core = () => {
                   >
                     <span className="font-medium text-xs">{displayName}</span>
                     <span className="text-xs opacity-80">
-                      Avg: ${info.rpmTargets.yellow}/mi
+                      Avg: ${info.rpmTargets.yellow.toFixed(2)}/mi
                     </span>
                   </Button>
                 );
@@ -297,20 +297,20 @@ const Core = () => {
                     <CardContent className="pt-4">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-semibold">{item.miles} miles @ ${item.offerAllIn}</p>
+                          <p className="font-semibold">{item.miles} miles @ ${item.offerAllIn.toFixed(2)}</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(item.timestamp).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-muted-foreground">Settle For</p>
-                          <p className="font-semibold text-primary">${item.targetAllIn}</p>
+                          <p className="font-semibold text-primary">${item.targetAllIn.toFixed(2)}</p>
                         </div>
                       </div>
-                      <div className="flex gap-4 text-xs text-muted-foreground">
-                        <span>Ask: ${item.anchorAllIn}</span>
-                        <span>Bottom Line: ${item.floorAllIn}</span>
-                      </div>
+                       <div className="flex gap-4 text-xs text-muted-foreground">
+                         <span>Ask: ${item.anchorAllIn.toFixed(2)}</span>
+                         <span>Bottom Line: ${item.floorAllIn.toFixed(2)}</span>
+                       </div>
                       {item.premiums.length > 0 && (
                         <div className="mt-2">
                           <div className="flex flex-wrap gap-1">
@@ -338,20 +338,20 @@ const Core = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Ask</p>
-                    <p className="text-xl font-bold text-primary">${result.calculation.anchor_rate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Settle For</p>
-                    <p className="text-xl font-bold">${result.calculation.target_rate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Bottom Line</p>
-                    <p className="text-xl font-bold text-muted-foreground">${result.calculation.floor_rate}</p>
-                  </div>
-                </div>
+                 <div className="grid grid-cols-3 gap-4 text-center">
+                   <div>
+                     <p className="text-sm text-muted-foreground">Ask</p>
+                     <p className="text-xl font-bold text-primary">${result.calculation.anchor_rate.toFixed(2)}</p>
+                   </div>
+                   <div>
+                     <p className="text-sm text-muted-foreground">Settle For</p>
+                     <p className="text-xl font-bold">${result.calculation.target_rate.toFixed(2)}</p>
+                   </div>
+                   <div>
+                     <p className="text-sm text-muted-foreground">Bottom Line</p>
+                     <p className="text-xl font-bold text-muted-foreground">${result.calculation.floor_rate.toFixed(2)}</p>
+                   </div>
+                 </div>
                 
                 {result.calculation.premiums_applied.length > 0 && (
                   <div>
