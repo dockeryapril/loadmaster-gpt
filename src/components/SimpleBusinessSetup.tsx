@@ -4,13 +4,16 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Truck, DollarSign } from 'lucide-react';
+import type { Equipment } from '@/types/equipment';
 
 interface SimpleBusinessSetupProps {
-  onSave: (revenueSplit: number, weeklyCosts: number) => void;
+  onSave: (revenueSplit: number, weeklyCosts: number, equipment?: Equipment) => void;
   onSkip?: () => void;
   initialRevenueSplit?: number;
   initialWeeklyCosts?: number;
+  initialEquipment?: Equipment;
 }
 
 // Quick setup templates
@@ -39,14 +42,22 @@ export function SimpleBusinessSetup({
   onSave, 
   onSkip, 
   initialRevenueSplit = 100, 
-  initialWeeklyCosts = 0 
+  initialWeeklyCosts = 0,
+  initialEquipment = 'straight_truck' 
 }: SimpleBusinessSetupProps) {
   const [revenueSplit, setRevenueSplit] = useState(initialRevenueSplit);
   const [weeklyCosts, setWeeklyCosts] = useState(initialWeeklyCosts);
+  const [equipment, setEquipment] = useState<Equipment>(initialEquipment);
 
   const handleSave = () => {
-    onSave(revenueSplit, weeklyCosts);
+    onSave(revenueSplit, weeklyCosts, equipment);
   };
+
+  const equipmentOptions = [
+    { value: 'cargo_van', label: 'Cargo Van' },
+    { value: 'straight_truck', label: 'Straight Truck' },
+    { value: 'hotshot', label: 'Hotshot/Pickup' }
+  ];
 
   const applyTemplate = (template: typeof SETUP_TEMPLATES[0]) => {
     setRevenueSplit(template.revenueSplit);
@@ -96,6 +107,27 @@ export function SimpleBusinessSetup({
         {/* Manual Setup */}
         <div className="space-y-4">
           <Label className="text-sm font-medium">Custom Setup</Label>
+          
+          <div className="space-y-2">
+            <Label htmlFor="equipment-type" className="text-sm">
+              Equipment Type
+            </Label>
+            <Select value={equipment} onValueChange={(value) => setEquipment(value as Equipment)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select equipment type" />
+              </SelectTrigger>
+              <SelectContent>
+                {equipmentOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Your primary equipment type for load calculations
+            </p>
+          </div>
           
           <div className="space-y-2">
             <Label htmlFor="revenue-split" className="text-sm">

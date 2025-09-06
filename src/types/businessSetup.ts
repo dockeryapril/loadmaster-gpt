@@ -12,6 +12,9 @@ export interface BusinessSetup {
   id: string;
   user_id: string;
   
+  // Equipment Information
+  equipment_type?: 'cargo_van' | 'straight_truck' | 'hotshot';
+  
   // Revenue and Pay Structure
   revenue_split_percentage?: number; // percentage kept by driver (e.g., 75.00 for 75%)
   pay_structure_type?: 'gross_revenue' | 'linehaul_only' | 'percentage_split' | 'flat_rate';
@@ -107,6 +110,25 @@ export interface BusinessQuestion {
 
 // Question sections for the onboarding flow
 export const businessSetupSections: QuestionSection[] = [
+  {
+    id: 'equipment-info',
+    title: 'Equipment Information',
+    description: 'Tell us about your truck or van for accurate calculations',
+    questions: [
+      {
+        id: 'equipment_type',
+        type: 'select',
+        label: 'What type of equipment do you drive?',
+        description: 'This helps us provide accurate RPM targets and fuel calculations',
+        options: [
+          { value: 'cargo_van', label: 'Cargo Van' },
+          { value: 'straight_truck', label: 'Straight Truck' },
+          { value: 'hotshot', label: 'Hotshot/Pickup' }
+        ],
+        required: true
+      }
+    ]
+  },
   {
     id: 'revenue-structure',
     title: 'Revenue & Pay Structure',
