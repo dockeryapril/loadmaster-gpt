@@ -728,14 +728,14 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       <div className="text-center">
         <h2 className="text-xl font-semibold mb-2">Add New Load</h2>
         <p className="text-sm text-muted-foreground">
-          Use OCR image processing to extract load details automatically, or enter details manually.
+          Upload image for processing to extract load details automatically, or enter details manually.
         </p>
         
         {/* OCR Usage Display - Only show for LITE users */}
         {!isPro && (
           <div className={`bg-card rounded-lg p-3 border mt-4 ${!ocrUsage.canUseOCR ? 'bg-destructive/5 border-destructive/20' : ''}`}>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">OCR scans today:</span>
+              <span className="text-muted-foreground">Image scans today:</span>
               <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
                 {ocrUsage.daily}/{ocrUsage.dailyLimit}
               </span>
@@ -743,15 +743,15 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
             {!ocrUsage.canUseOCR ? (
               <div className="mt-2 space-y-1">
                 <p className="text-xs text-destructive font-medium">
-                  Daily OCR limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  Daily image upload limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Upgrade to PRO for unlimited OCR processing • Manual entry is always unlimited
+                  Upgrade to PRO for unlimited image processing • Manual entry is always unlimited
                 </p>
               </div>
             ) : (
               <p className="text-xs text-muted-foreground mt-1">
-                {ocrUsage.remaining} OCR scans remaining today • Manual entry is unlimited
+                {ocrUsage.remaining} Image scans remaining today • Manual entry is unlimited
               </p>
             )}
           </div>
