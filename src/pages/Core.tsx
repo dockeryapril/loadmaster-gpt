@@ -8,10 +8,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
+import { useEquipment } from '@/hooks/useEquipment';
+import { getEquipmentRPMTargets, equipmentDefaults } from '../../packages/engine/src/equipmentProfiles';
+import { UpgradeCard } from '@/components/UpgradeCard';
+import type { Equipment } from '@/types/equipment';
 
 
-// Simple negotiation logic for Core version
-const calculateNegotiation = (miles: number, rate: number, weight?: number) => {
+// Equipment-aware negotiation logic for LITE version
+const calculateNegotiation = (miles: number, rate: number, weight?: number, equipment: Equipment = 'cargo_van') => {
   const ratePerMile = rate / miles;
   const anchor = rate * 1.15; // 15% above offer
   const target = rate * 1.08; // 8% above offer
@@ -21,12 +25,29 @@ const calculateNegotiation = (miles: number, rate: number, weight?: number) => {
   if (weight && weight > 45000) premiums.push('Heavy Load');
   if (ratePerMile < 1.5) premiums.push('Low Rate Lane');
   
+  // Get equipment-specific RPM targets for quality assessment
+  const rpmTargets = getEquipmentRPMTargets(equipment);
+  const equipmentInfo = equipmentDefaults[equipment];
+  
+  let qualityNote = '';
+  if (ratePerMile >= rpmTargets.green) {
+    qualityNote = 'Excellent rate for your equipment';
+  } else if (ratePerMile >= rpmTargets.yellow) {
+    qualityNote = 'Good rate - above industry average';
+  } else if (ratePerMile >= rpmTargets.red) {
+    qualityNote = 'Fair rate - consider negotiating higher';
+  } else {
+    qualityNote = 'Below average - negotiate strongly';
+  }
+  
   return {
     anchor_rate: Math.round(anchor),
     target_rate: Math.round(target),
     floor_rate: Math.round(floor),
     premiums_applied: premiums,
-    suggested_strategy: 'Negotiate higher'
+    suggested_strategy: 'Negotiate higher',
+    quality_note: qualityNote,
+    equipment_context: `${equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} avg: $${equipmentInfo.rpmTargets.yellow}/mi`
   };
 };
 
@@ -70,6 +91,7 @@ const Core = () => {
   const [showHistory, setShowHistory] = useState(false);
   
   const { user, loading: authLoading } = useAuth();
+  const { equipment, setEquipment } = useEquipment();
   // This is the LITE page - always LITE tier
   const plan = 'free' as const;
   const isPro = false;
@@ -90,8 +112,8 @@ const Core = () => {
       notes: weekend ? 'weekend pickup' : ''
     };
 
-    const calculation = calculateNegotiation(milesNum, offerNum, weightNum);
-    const message = generateMessage(milesNum, offerNum, calculation.target_rate);
+    const calculation = calculateNegotiation(milesNum, offerNum, weightNum, equipment);
+    const message = generateMessage(milesNum, offerNum, calculation.anchor_rate);
 
     const historyItem: HistoryItem = {
       id: Date.now().toString(),
@@ -204,6 +226,36 @@ const Core = () => {
           </div>
         </div>
 
+        {/* Quick Equipment Setup */}
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Equipment Type</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-3 gap-2">
+              {(['cargo_van', 'straight_truck', 'hotshot'] as Equipment[]).map((type) => {
+                const isSelected = equipment === type;
+                const info = equipmentDefaults[type];
+                const displayName = type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return (
+                  <Button
+                    key={type}
+                    variant={isSelected ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setEquipment(type)}
+                    className="h-auto p-3 flex flex-col gap-1"
+                  >
+                    <span className="font-medium text-xs">{displayName}</span>
+                    <span className="text-xs opacity-80">
+                      Avg: ${info.rpmTargets.yellow}/mi
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Navigation */}
         <div className="flex gap-2 mb-6">
           <Button
@@ -314,6 +366,14 @@ const Core = () => {
                   </div>
                 )}
                 
+                {/* Equipment Context & Quality */}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">{result.calculation.equipment_context}</p>
+                  <div className="bg-primary/5 border border-primary/20 p-3 rounded">
+                    <p className="text-sm font-medium text-primary">{result.calculation.quality_note}</p>
+                  </div>
+                </div>
+                
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Suggested Message:</p>
                   <div className="bg-muted p-3 rounded text-sm">
@@ -399,6 +459,13 @@ const Core = () => {
               </Button>
             </CardContent>
           </Card>
+        )}
+
+        {/* Upgrade Card - shown when not in history and not showing results */}
+        {!showHistory && !showResult && (
+          <div className="mt-6">
+            <UpgradeCard />
+          </div>
         )}
         
         {/* Footer */}
