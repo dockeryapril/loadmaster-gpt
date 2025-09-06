@@ -9,9 +9,9 @@ interface UpgradeModalProps {
 }
 
 const upgradeMessages = [
-  "You've hit today's 10 free load checks. Upgrade to Pro and keep rolling with unlimited AI insights.",
-  "That's 10 free inquiries for today. Pro drivers unlock 100/day plus smarter negotiation tools. Ready to upgrade?",
-  "Daily limit reached. Don't miss your next high-paying load — go Pro for more checks and advanced tools."
+  "You've hit today's 5 free load checks. Upgrade to PRO and keep rolling with plenty of AI insights to improve your cashflow.",
+  "That's 5 free inquiries for today. PRO drivers unlock up to 100/day plus smarter negotiation tools. Ready to upgrade?",
+  "Daily limit reached. Don't miss your next high-paying load — go PRO for more checks and advanced tools."
 ];
 
 export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
