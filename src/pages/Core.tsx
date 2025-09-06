@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard } from 'lucide-react';
+import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard, Upload, ArrowLeft } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,6 +11,8 @@ import { logEvent } from '@/utils/metrics';
 import { useEquipment } from '@/hooks/useEquipment';
 import { getEquipmentRPMTargets, equipmentDefaults } from '../../packages/engine/src/equipmentProfiles';
 import { UpgradeCard } from '@/components/UpgradeCard';
+import { LoadEntryMethod } from '@/components/LoadEntryMethod';
+import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import type { Equipment } from '@/types/equipment';
 
 
@@ -89,6 +91,7 @@ const Core = () => {
   const [result, setResult] = useState<any>(null);
   const [history, setHistory] = useLocalStorage<HistoryItem[]>('lm_core_history_v1', []);
   const [showHistory, setShowHistory] = useState(false);
+  const [entryMethod, setEntryMethod] = useState<'select' | 'ocr' | 'manual'>('select');
   
   const { user, loading: authLoading } = useAuth();
   const { equipment, setEquipment } = useEquipment();
@@ -143,6 +146,30 @@ const Core = () => {
     setWeekend(false);
     setShowResult(false);
     setResult(null);
+    setEntryMethod('select');
+  };
+
+  const handleFieldsDetected = (detectionResult: FieldDetectionResult) => {
+    // Populate form fields from OCR results
+    detectionResult.detectedFields.forEach(field => {
+      switch (field.field) {
+        case 'miles':
+          setMiles(field.value.replace(/[^0-9.]/g, ''));
+          break;
+        case 'rate':
+          setOfferAllIn(field.value.replace(/[^0-9.]/g, ''));
+          break;
+        case 'weight':
+          setWeightLbs(field.value.replace(/[^0-9.]/g, ''));
+          break;
+        // Add other fields as needed
+      }
+    });
+    setEntryMethod('manual'); // Switch to manual form after OCR
+  };
+
+  const handleManualEntry = () => {
+    setEntryMethod('manual');
   };
 
   const handleSignIn = () => {
@@ -260,7 +287,10 @@ const Core = () => {
         <div className="flex gap-2 mb-6">
           <Button
             variant={!showHistory ? "default" : "outline"}
-            onClick={() => setShowHistory(false)}
+            onClick={() => {
+              setShowHistory(false);
+              setEntryMethod('select');
+            }}
             className="flex-1"
           >
             <Calculator className="h-4 w-4 mr-2" />
@@ -388,77 +418,146 @@ const Core = () => {
               Calculate Another Load
             </Button>
           </div>
-        ) : (
+        ) : entryMethod === 'select' ? (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calculator className="h-5 w-5" />
-                Rate Calculator
+                Add Load Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Miles</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={miles}
-                    onChange={(e) => setMiles(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Offer (All-in)</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={offerAllIn}
-                    onChange={(e) => setOfferAllIn(e.target.value)}
-                  />
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Choose how you'd like to enter your load details:
+              </p>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={weightLbs}
-                    onChange={(e) => setWeightLbs(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Pickup (hours)</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={pickupInHours}
-                    onChange={(e) => setPickupInHours(e.target.value)}
-                  />
-                </div>
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => setEntryMethod('ocr')}
+                  className="w-full h-auto p-4 flex flex-col gap-2"
+                  variant="outline"
+                >
+                  <Upload className="h-6 w-6" />
+                  <span className="font-medium">Upload Image / Take Photo</span>
+                  <span className="text-xs text-muted-foreground">
+                    Automatically extract load details with OCR
+                  </span>
+                </Button>
+                
+                <Button 
+                  onClick={() => setEntryMethod('manual')}
+                  className="w-full h-auto p-4 flex flex-col gap-2"
+                  variant="outline"
+                >
+                  <Calculator className="h-6 w-6" />
+                  <span className="font-medium">Enter Details Manually</span>
+                  <span className="text-xs text-muted-foreground">
+                    Type in load information yourself
+                  </span>
+                </Button>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="weekend"
-                  checked={weekend}
-                  onChange={(e) => setWeekend(e.target.checked)}
-                  className="rounded border-border"
-                />
-                <label htmlFor="weekend" className="text-sm">Weekend pickup</label>
-              </div>
-              
-              <Button 
-                onClick={handleCalculate} 
-                className="w-full"
-                disabled={!miles || !offerAllIn}
-              >
-                Calculate Negotiation Strategy
-              </Button>
             </CardContent>
           </Card>
+        ) : entryMethod === 'ocr' ? (
+          <div className="space-y-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => setEntryMethod('select')}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Options
+            </Button>
+            
+            <LoadEntryMethod
+              onFieldsDetected={handleFieldsDetected}
+              onManualEntry={handleManualEntry}
+              onClose={() => setEntryMethod('select')}
+              isPro={isPro}
+            />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => setEntryMethod('select')}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Options
+            </Button>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5" />
+                  Rate Calculator
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Miles</label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={miles}
+                      onChange={(e) => setMiles(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Offer (All-in)</label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={offerAllIn}
+                      onChange={(e) => setOfferAllIn(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={weightLbs}
+                      onChange={(e) => setWeightLbs(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Pickup (hours)</label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={pickupInHours}
+                      onChange={(e) => setPickupInHours(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="weekend"
+                    checked={weekend}
+                    onChange={(e) => setWeekend(e.target.checked)}
+                    className="rounded border-border"
+                  />
+                  <label htmlFor="weekend" className="text-sm">Weekend pickup</label>
+                </div>
+                
+                <Button 
+                  onClick={handleCalculate} 
+                  className="w-full"
+                  disabled={!miles || !offerAllIn}
+                >
+                  Calculate Negotiation Strategy
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* Upgrade Card - shown when not in history and not showing results */}
