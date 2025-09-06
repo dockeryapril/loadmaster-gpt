@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard, Upload, ArrowLeft } from 'lucide-react';
+import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard, Upload, ArrowLeft, Camera, Clock } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -12,7 +12,9 @@ import { useEquipment } from '@/hooks/useEquipment';
 import { getEquipmentRPMTargets, equipmentDefaults } from '../../packages/engine/src/equipmentProfiles';
 import { UpgradeCard } from '@/components/UpgradeCard';
 import { LoadEntryMethod } from '@/components/LoadEntryMethod';
+import { CameraInterface } from '@/components/CameraInterface';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
+import { useOCRUsage } from '@/hooks/useOCRUsage';
 import type { Equipment } from '@/types/equipment';
 
 
@@ -91,7 +93,9 @@ const Core = () => {
   const [result, setResult] = useState<any>(null);
   const [history, setHistory] = useLocalStorage<HistoryItem[]>('lm_core_history_v1', []);
   const [showHistory, setShowHistory] = useState(false);
-  const [entryMethod, setEntryMethod] = useState<'select' | 'ocr' | 'manual'>('select');
+  const [entryMethod, setEntryMethod] = useState<'select' | 'camera' | 'upload' | 'manual'>('select');
+  const [showCameraInterface, setShowCameraInterface] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   
   const { user, loading: authLoading } = useAuth();
   const { equipment, setEquipment } = useEquipment();
@@ -100,6 +104,7 @@ const Core = () => {
   const isPro = false;
   const planLoading = false;
   const navigate = useNavigate();
+  const ocrUsage = useOCRUsage(isPro);
 
   const handleCalculate = () => {
     const milesNum = parseFloat(miles);
@@ -147,6 +152,11 @@ const Core = () => {
     setShowResult(false);
     setResult(null);
     setEntryMethod('select');
+    setShowCameraInterface(false);
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
   };
 
   const handleFieldsDetected = (detectionResult: FieldDetectionResult) => {
@@ -170,6 +180,51 @@ const Core = () => {
 
   const handleManualEntry = () => {
     setEntryMethod('manual');
+  };
+
+  const handleUploadClick = () => {
+    if (!ocrUsage.canUseOCR) {
+      return; // Button should be disabled, but this is a safeguard
+    }
+    setEntryMethod('upload');
+  };
+
+  const handleCameraClick = async () => {
+    if (!ocrUsage.canUseOCR) {
+      return; // Button should be disabled, but this is a safeguard
+    }
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      setCameraStream(stream);
+      setShowCameraInterface(true);
+      setEntryMethod('camera');
+    } catch (error) {
+      console.error('Camera access failed:', error);
+      // Fallback to upload if camera fails
+      setEntryMethod('upload');
+    }
+  };
+
+  const handleCameraCapture = (file: File) => {
+    setShowCameraInterface(false);
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    // Process the captured file through OCR
+    // This would need OCR handling logic integrated here
+  };
+
+  const handleCameraClose = () => {
+    setShowCameraInterface(false);
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setEntryMethod('select');
   };
 
   const handleSignIn = () => {
@@ -418,7 +473,13 @@ const Core = () => {
               Calculate Another Load
             </Button>
           </div>
-        ) : entryMethod === 'ocr' ? (
+        ) : showCameraInterface ? (
+          <CameraInterface
+            stream={cameraStream!}
+            onCapture={handleCameraCapture}
+            onClose={handleCameraClose}
+          />
+        ) : entryMethod === 'upload' ? (
           <div className="space-y-4">
             <Button 
               variant="ghost" 
@@ -426,7 +487,7 @@ const Core = () => {
               className="mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Manual Entry
+              Back to Options
             </Button>
             <LoadEntryMethod
               onFieldsDetected={handleFieldsDetected}
@@ -437,16 +498,60 @@ const Core = () => {
         ) : entryMethod === 'select' ? (
           <Card>
             <CardContent className="pt-6 space-y-4">
+              {/* OCR Usage Status for LITE users */}
+              {!ocrUsage.canUseOCR && (
+                <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4 text-destructive" />
+                    <span className="font-medium text-destructive">Daily OCR Limit Reached</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    You've used all {ocrUsage.dailyLimit} OCR scans for today. Resets at midnight.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="default" onClick={handleUpgradeToPro}>
+                      <Crown className="h-4 w-4 mr-2" />
+                      Upgrade to PRO
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEntryMethod('manual')}>
+                      Enter Manually
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {ocrUsage.canUseOCR && (
+                <div className="text-center mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    OCR scans today: {ocrUsage.daily}/{ocrUsage.dailyLimit}
+                  </p>
+                </div>
+              )}
+              
               <div className="space-y-3">
                 <Button 
-                  onClick={() => setEntryMethod('ocr')}
+                  onClick={handleUploadClick}
+                  disabled={!ocrUsage.canUseOCR}
                   className="w-full h-auto p-4 flex flex-col gap-2"
                   variant="outline"
                 >
                   <Upload className="h-6 w-6" />
-                  <span className="font-medium">Upload Image / Take Photo</span>
+                  <span className="font-medium">Upload Image</span>
                   <span className="text-xs text-muted-foreground">
-                    Automatically extract load details with OCR
+                    Select image from gallery
+                  </span>
+                </Button>
+                
+                <Button 
+                  onClick={handleCameraClick}
+                  disabled={!ocrUsage.canUseOCR}
+                  className="w-full h-auto p-4 flex flex-col gap-2"
+                  variant="outline"
+                >
+                  <Camera className="h-6 w-6" />
+                  <span className="font-medium">Take Photo</span>
+                  <span className="text-xs text-muted-foreground">
+                    Use camera to capture load sheet
                   </span>
                 </Button>
                 
