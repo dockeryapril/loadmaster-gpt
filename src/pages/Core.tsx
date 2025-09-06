@@ -536,7 +536,7 @@ const Core = () => {
                 {!isPro && (
                   <div className={`bg-card rounded-lg p-3 border mt-4 ${!ocrUsage.canUseOCR ? 'bg-destructive/5 border-destructive/20' : ''}`}>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">OCR scans today:</span>
+                      <span className="text-muted-foreground">Image scans today:</span>
                       <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
                         {ocrUsage.daily}/{ocrUsage.dailyLimit}
                       </span>
@@ -544,15 +544,15 @@ const Core = () => {
                     {!ocrUsage.canUseOCR ? (
                       <div className="mt-2 space-y-1">
                         <p className="text-xs text-destructive font-medium">
-                          Daily OCR limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          Daily image upload limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Upgrade to PRO for unlimited OCR processing
+                          Upgrade to PRO for more AI image processing
                         </p>
                       </div>
                     ) : (
                       <p className="text-xs text-muted-foreground mt-1">
-                        {ocrUsage.remaining} OCR scans remaining today
+                        {ocrUsage.remaining} Image scans remaining today
                       </p>
                     )}
                   </div>
@@ -629,7 +629,7 @@ const Core = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Pickup (hours)</label>
+                  <label className="text-sm font-medium mb-1 block">Pickup (in hours)</label>
                   <Input
                     type="number"
                     placeholder="0"
