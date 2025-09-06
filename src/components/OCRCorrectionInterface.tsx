@@ -104,40 +104,43 @@ export function OCRCorrectionInterface({
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[600px]">
         {/* Left side: Original text */}
-        <Card className="p-4 flex flex-col">
-          <Label className="text-sm font-medium">Original Image Text</Label>
+        <Card className="p-6 flex flex-col">
+          <Label className="text-sm font-medium mb-3">Original Image Text</Label>
           <Textarea
             value={rawText}
             readOnly
-            className="mt-2 flex-1 resize-none bg-muted min-h-[320px]"
+            className="flex-1 resize-none bg-muted min-h-[500px] text-sm"
           />
         </Card>
 
         {/* Right side: Detected fields */}
-        <Card className="p-4 flex flex-col">
-          <Label className="text-sm font-medium">Detected Fields</Label>
+        <Card className="p-6 flex flex-col">
+          <Label className="text-sm font-medium mb-4">Detected Fields</Label>
           
-          <div className="mt-4 space-y-4 flex-1 overflow-y-auto">
+          <div className="space-y-6 flex-1 overflow-y-auto">
             {/* High confidence fields */}
             {highConfidence.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-success mb-2">
+                <h4 className="text-sm font-medium text-success mb-3 flex items-center gap-2">
+                  <Check className="w-4 h-4" />
                   Auto-filled (High Confidence)
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {highConfidence.map((field, index) => (
-                    <div key={`high-${index}`} className="flex items-center gap-2 p-3 border border-success/20 bg-success/5 rounded-lg transition-colors">
-                      <Label className="text-sm min-w-[100px] text-success font-medium">
+                    <div key={`high-${index}`} className="space-y-2">
+                      <Label className="text-sm text-success font-medium">
                         {getFieldDisplayName(field.field)}:
                       </Label>
-                      <Input
-                        value={field.value || ''}
-                        onChange={(e) => onFieldCorrection(field.field, e.target.value)}
-                        className="flex-1 bg-background"
-                      />
-                      {getConfidenceBadge(field.confidence)}
+                      <div className="flex items-center gap-3 p-4 border border-success/20 bg-success/5 rounded-lg">
+                        <Input
+                          value={field.value || ''}
+                          onChange={(e) => onFieldCorrection(field.field, e.target.value)}
+                          className="flex-1 bg-background h-10"
+                        />
+                        {getConfidenceBadge(field.confidence)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -147,22 +150,25 @@ export function OCRCorrectionInterface({
             {/* Fields needing review */}
             {needsReview.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-destructive mb-2">
+                <h4 className="text-sm font-medium text-destructive mb-3 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
                   Please Review (Uncertain)
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {needsReview.map((field, index) => (
-                    <div key={`review-${index}`} className="flex items-center gap-2 p-3 border border-destructive/20 bg-destructive/5 rounded-lg transition-colors">
-                      <Label className="text-sm min-w-[100px] text-destructive font-medium">
+                    <div key={`review-${index}`} className="space-y-2">
+                      <Label className="text-sm text-destructive font-medium">
                         {getFieldDisplayName(field.field)}:
                       </Label>
-                      <Input
-                        value={field.value || ''}
-                        onChange={(e) => onFieldCorrection(field.field, e.target.value)}
-                        className="flex-1 bg-background focus-visible:border-destructive"
-                        placeholder={`Enter ${getFieldDisplayName(field.field).toLowerCase()}`}
-                      />
-                      {getConfidenceBadge(field.confidence)}
+                      <div className="flex items-center gap-3 p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
+                        <Input
+                          value={field.value || ''}
+                          onChange={(e) => onFieldCorrection(field.field, e.target.value)}
+                          className="flex-1 bg-background focus-visible:border-destructive h-10"
+                          placeholder={`Enter ${getFieldDisplayName(field.field).toLowerCase()}`}
+                        />
+                        {getConfidenceBadge(field.confidence)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -170,10 +176,10 @@ export function OCRCorrectionInterface({
             )}
 
             {detectedFields.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
-                <p>No fields could be automatically detected.</p>
-                <p className="text-sm">Please enter the load details manually.</p>
+              <div className="text-center py-12 text-muted-foreground">
+                <AlertTriangle className="w-8 h-8 mx-auto mb-3" />
+                <p className="text-base font-medium">No fields could be automatically detected.</p>
+                <p className="text-sm mt-1">Please enter the load details manually.</p>
               </div>
             )}
           </div>
