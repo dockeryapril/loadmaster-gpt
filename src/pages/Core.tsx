@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePlan } from '@/hooks/usePlan';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
@@ -71,7 +70,10 @@ const Core = () => {
   const [showHistory, setShowHistory] = useState(false);
   
   const { user, loading: authLoading } = useAuth();
-  const { plan, isPro, loading: planLoading } = usePlan();
+  // This is the LITE page - always LITE tier
+  const plan = 'free' as const;
+  const isPro = false;
+  const planLoading = false;
   const navigate = useNavigate();
 
   const handleCalculate = () => {
@@ -151,7 +153,7 @@ const Core = () => {
     navigate('/');
   };
 
-  if (authLoading || planLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

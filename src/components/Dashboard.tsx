@@ -20,7 +20,6 @@ import { LoadEntryMethod } from './LoadEntryMethod';
 import { LoadCalculator } from './LoadCalculator';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { UpgradeCard } from './UpgradeCard';
-import { useTierDetection } from '@/hooks/useTierDetection';
 
 interface DashboardProps {
   loads: Load[];
@@ -29,6 +28,7 @@ interface DashboardProps {
   onSaveLoad: (load: Omit<Load, 'id' | 'createdAt'>) => Promise<void> | void;
   onClearAll?: (exportToCsv: boolean) => Promise<void>;
   onDelete?: (id: string) => void;
+  isPro?: boolean; // Add isPro prop to control upgrade card visibility
 }
 
 export function Dashboard({
@@ -38,12 +38,12 @@ export function Dashboard({
   onSaveLoad,
   onClearAll,
   onDelete,
+  isPro = true, // Default to PRO when used on Index page
 }: DashboardProps) {
   const [showSkeleton, setShowSkeleton] = useState(!!loading);
   const [contentVisible, setContentVisible] = useState(!loading);
   const [showCalculator, setShowCalculator] = useState(false);
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
-  const { tier, isPro } = useTierDetection();
 
   useEffect(() => {
     if (!loading) {
@@ -165,6 +165,7 @@ export function Dashboard({
             onSaveLoad={handleSaveLoad}
             ocrData={ocrData || undefined}
             onClose={handleCloseCalculator}
+            isPro={isPro} // Pass isPro prop
           />
         ) : (
           <div id="entry-section">

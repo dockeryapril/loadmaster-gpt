@@ -250,6 +250,7 @@ const Index = () => {
               setEditingLoad(null);
               setOcrData(null);
             }}
+            isPro={true} // Index page is always PRO
           />
         );
 
@@ -356,6 +357,7 @@ const Index = () => {
             onSaveLoad={handleSaveLoad}
             onClearAll={handleClearAll}
             onDelete={handleDeleteLoad}
+            isPro={true} // Index page is always PRO
           />
         );
     }

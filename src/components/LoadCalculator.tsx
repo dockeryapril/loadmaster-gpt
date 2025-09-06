@@ -49,6 +49,7 @@ interface LoadCalculatorProps {
   initialData?: Load;
   ocrData?: Partial<Load>;
   onClose?: () => void;
+  isPro?: boolean; // Add isPro prop to control upgrade card visibility
 }
 
 interface LoadFormValues {
@@ -64,11 +65,15 @@ interface LoadFormValues {
   notes: string;
 }
 
-export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: LoadCalculatorProps) {
-  // Unified tier detection
+export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPro: propIsPro }: LoadCalculatorProps) {
+  // Use prop isPro if provided, otherwise fall back to tier detection for backward compatibility
   const { isPro: isProTier, tier, loading: tierLoading } = useTierDetection();
   const { plan, isPro: isPlanPro, loading: planLoading } = usePlan(); // Keep for transition
   const { user } = useAuth();
+  
+  // Use prop first, then tier detection as fallback
+  const isPro = propIsPro !== undefined ? propIsPro : isProTier;
+  
   const { advancedTemplates, ocrExtraction } = getFeatureFlags(user);
   
   // DEBUG: Enhanced tier detection logging
@@ -948,7 +953,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose }: Lo
                   </div>
                 )}
 
-                {!isProTier && !tierLoading && (
+                {!isPro && !tierLoading && (
                   <div className="space-y-4">
                     <div className="pt-4 border-t border-border/50">
                       <UpgradeCard className="animate-in fade-in-50 duration-300" />
