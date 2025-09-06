@@ -178,10 +178,8 @@ const Core = () => {
               <p className="text-sm text-muted-foreground">Your Smart Load Rate Calculator</p>
             </div>
           </div>
-          <TierIndicator />
-        </div>
-          
           <div className="flex items-center gap-2">
+            <TierIndicator />
             {!user && (
               <Button variant="ghost" size="sm" onClick={handleSignIn}>
                 <LogIn className="h-4 w-4 mr-2" />
