@@ -118,19 +118,13 @@ const Core = () => {
 
   // OCR state is now managed explicitly by user actions only
 
-  const handleCalculate = () => {
-    const milesNum = parseFloat(miles);
-    const offerNum = parseFloat(offerAllIn);
-    const weightNum = weightLbs ? parseFloat(weightLbs) : undefined;
+  // Extract calculation logic for reuse
+  const performCalculation = (milesValue: string, offerValue: string, weightValue?: string) => {
+    const milesNum = parseFloat(milesValue);
+    const offerNum = parseFloat(offerValue);
+    const weightNum = weightValue ? parseFloat(weightValue) : undefined;
 
-    if (!milesNum || !offerNum) return;
-
-    const loadData = {
-      miles: milesNum,
-      rate: offerNum,
-      weight: weightNum,
-      notes: weekend ? 'weekend pickup' : ''
-    };
+    if (!milesNum || !offerNum) return null;
 
     const calculation = calculateNegotiation(milesNum, offerNum, weightNum, equipment);
     const message = generateMessage(milesNum, offerNum, calculation.anchor_rate);
@@ -150,14 +144,38 @@ const Core = () => {
       timestamp: Date.now(),
     };
 
-    setHistory(prev => [historyItem, ...prev.slice(0, 4)]);
-    setResult({ calculation, message, historyItem });
+    return { calculation, message, historyItem };
+  };
+
+  const handleCalculate = () => {
+    const result = performCalculation(miles, offerAllIn, weightLbs);
+    if (!result) return;
+
+    setHistory(prev => [result.historyItem, ...prev.slice(0, 4)]);
+    setResult(result);
     setShowResult(true);
     
     // Clear OCR state when user proceeds to calculate
     setOcrJustCompleted(false);
     setPopulatedFields([]);
   };
+
+  // Auto-recalculate when equipment changes and results are showing
+  useEffect(() => {
+    if (showResult && miles && offerAllIn) {
+      const newResult = performCalculation(miles, offerAllIn, weightLbs);
+      if (newResult) {
+        setResult(newResult);
+        // Update the most recent history entry instead of adding new one
+        setHistory(prev => {
+          if (prev.length > 0) {
+            return [newResult.historyItem, ...prev.slice(1)];
+          }
+          return [newResult.historyItem];
+        });
+      }
+    }
+  }, [equipment]);
 
   const handleReset = () => {
     setMiles('');
