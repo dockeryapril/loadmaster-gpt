@@ -132,7 +132,7 @@ export const businessSetupSections: QuestionSection[] = [
         description: 'Enter the percentage you keep (e.g., 75 for 75%)',
         placeholder: '0',
         required: true,
-        validation: { min: 1, max: 100, step: 0.1 }
+        validation: { min: 20, max: 98, step: 0.5 }
       },
       {
         id: 'carrier_company_name',
@@ -307,14 +307,14 @@ export const businessSetupSections: QuestionSection[] = [
         type: 'number',
         label: 'Detention pay rate (per hour)',
         placeholder: '0',
-        validation: { min: 0, step: 1 }
+        validation: { min: 15, max: 75, step: 1 }
       },
       {
         id: 'detention_minimum_hours',
         type: 'number',
         label: 'Minimum hours before detention pay',
         placeholder: '0',
-        validation: { min: 0, step: 0.25 }
+        validation: { min: 0.25, max: 4, step: 0.25 }
       },
       {
         id: 'admin_fee_percentage',
@@ -322,7 +322,7 @@ export const businessSetupSections: QuestionSection[] = [
         label: 'Admin fee percentage',
         description: 'Percentage deducted for administration',
         placeholder: '0',
-        validation: { min: 0, max: 20, step: 0.1 }
+        validation: { min: 0, max: 8, step: 0.1 }
       }
     ]
   }

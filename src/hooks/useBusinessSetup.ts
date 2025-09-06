@@ -3,6 +3,7 @@ import { supabase } from '@loadmaster/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { BusinessSetup, calculateCompletionPercentage } from '@/types/businessSetup';
+import { BusinessSetupProfile, industryBenchmarks } from '@/types/businessSetupProfiles';
 import { logError } from '@/utils/errorLogger';
 
 export const useBusinessSetup = () => {
@@ -165,6 +166,63 @@ export const useBusinessSetup = () => {
     return calculateCompletionPercentage(setup);
   };
 
+  // Apply industry profile to setup
+  const applyProfile = async (profile: BusinessSetupProfile): Promise<boolean> => {
+    if (!user?.id) return false;
+
+    const profileSetup: Partial<BusinessSetup> = {
+      ...profile.setup,
+      user_id: user.id,
+      notes: `Applied industry profile: ${profile.name}. ${profile.setup.notes || ''}`,
+      special_arrangements: profile.description
+    };
+
+    const success = await saveSetup(profileSetup);
+    
+    if (success) {
+      toast({
+        title: "Profile Applied",
+        description: `Successfully applied ${profile.name} setup. You can customize any values as needed.`,
+      });
+    }
+    
+    return success;
+  };
+
+  // Validate setup against industry benchmarks
+  const validateSetup = (setup: Partial<BusinessSetup>): { isValid: boolean; warnings: string[] } => {
+    const warnings: string[] = [];
+
+    // Revenue split validation
+    if (setup.revenue_split_percentage) {
+      const split = setup.revenue_split_percentage;
+      if (split < 20 || split > 98) {
+        warnings.push(`Revenue split of ${split}% is outside typical industry range (20-98%)`);
+      }
+    }
+
+    // Detention pay validation
+    if (setup.detention_pay_rate) {
+      const { min, max } = industryBenchmarks.detentionPay;
+      if (setup.detention_pay_rate < min || setup.detention_pay_rate > max) {
+        warnings.push(`Detention pay of $${setup.detention_pay_rate}/hr is outside typical range ($${min}-$${max}/hr)`);
+      }
+    }
+
+    // Admin fees validation
+    if (setup.admin_fee_percentage) {
+      const { max } = industryBenchmarks.adminFees.percentage;
+      if (setup.admin_fee_percentage > max) {
+        warnings.push(`Admin fee of ${setup.admin_fee_percentage}% is higher than typical industry maximum (${max}%)`);
+      }
+    }
+
+    return {
+      isValid: warnings.length === 0,
+      warnings
+    };
+  };
+
   // AI-powered setup suggestions based on existing load data
   const generateSetupSuggestions = async () => {
     if (!user?.id) return null;
@@ -245,5 +303,7 @@ export const useBusinessSetup = () => {
     isSetupComplete,
     getCompletionPercentage,
     generateSetupSuggestions,
+    applyProfile,
+    validateSetup,
   };
 };
