@@ -575,152 +575,209 @@ const Core = () => {
         ) : (
           <Card>
             <CardContent className="pt-6 space-y-4">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold mb-2">Calculate Load Rate</h2>
-                <p className="text-sm text-muted-foreground">
-                  Get negotiation strategies for your {equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </p>
-                
-                {/* OCR Usage Display - Only show for LITE users */}
-                {!isPro && (
-                  <div className={`bg-card rounded-lg p-3 border mt-4 ${!ocrUsage.canUseOCR ? 'bg-destructive/5 border-destructive/20' : ''}`}>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Image scans today:</span>
-                      <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
-                        {ocrUsage.daily}/{ocrUsage.dailyLimit}
-                      </span>
+              {/* OCR Success Summary - Shows extracted data prominently */}
+              {ocrJustCompleted && populatedFields.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-2 text-primary">✅ Data Extracted Successfully!</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Ready to calculate your negotiation strategy
+                    </p>
+                  </div>
+                  
+                  {/* Extract Summary Card */}
+                  <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg">
+                    <h3 className="font-semibold text-primary mb-3">Extracted Load Details:</h3>
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                      {miles && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Miles</p>
+                          <p className="text-lg font-bold text-primary">{miles}</p>
+                        </div>
+                      )}
+                      {offerAllIn && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Rate (All-in)</p>
+                          <p className="text-lg font-bold text-primary">${offerAllIn}</p>
+                        </div>
+                      )}
+                      {weightLbs && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Weight</p>
+                          <p className="text-lg font-bold text-primary">{weightLbs} lbs</p>
+                        </div>
+                      )}
                     </div>
-                    {!ocrUsage.canUseOCR ? (
-                      <div className="mt-2 space-y-1">
-                        <p className="text-xs text-destructive font-medium">
-                          Daily image upload limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Upgrade to PRO for more AI image processing
-                        </p>
+                    <div className="text-center">
+                      <Button 
+                        onClick={handleCalculate} 
+                        className="w-full bg-primary hover:bg-primary/90"
+                        size="lg"
+                        disabled={!miles || !offerAllIn}
+                      >
+                        <Calculator className="h-4 w-4 mr-2" />
+                        Calculate Negotiation Strategy
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Minimized OCR Options */}
+                  <div className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setOcrJustCompleted(false);
+                        setPopulatedFields([]);
+                        handleReset();
+                      }}
+                      className="text-xs text-muted-foreground"
+                    >
+                      <Upload className="h-3 w-3 mr-1" />
+                      Upload Different Image
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-2">Calculate Load Rate</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Get negotiation strategies for your {equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </p>
+                    
+                    {/* OCR Usage Display - Only show for LITE users */}
+                    {!isPro && (
+                      <div className={`bg-card rounded-lg p-3 border mt-4 ${!ocrUsage.canUseOCR ? 'bg-destructive/5 border-destructive/20' : ''}`}>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Image scans today:</span>
+                          <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
+                            {ocrUsage.daily}/{ocrUsage.dailyLimit}
+                          </span>
+                        </div>
+                        {!ocrUsage.canUseOCR ? (
+                          <div className="mt-2 space-y-1">
+                            <p className="text-xs text-destructive font-medium">
+                              Daily image upload limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Upgrade to PRO for more AI image processing
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {ocrUsage.remaining} Image scans remaining today
+                          </p>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {ocrUsage.remaining} Image scans remaining today
-                      </p>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* OCR Options */}
-              <div className="space-y-3">
-                <p className="text-xs text-muted-foreground text-center">
-                  Upload an image to automatically extract load details
-                </p>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleUploadClick}
-                    disabled={!ocrUsage.canUseOCR}
-                    className="h-auto p-4 flex flex-col gap-2"
-                  >
-                    <Upload className="h-6 w-6" />
-                    <span className="text-sm">Upload Image</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={handleCameraClick}
-                    disabled={!ocrUsage.canUseOCR}
-                    className="h-auto p-4 flex flex-col gap-2"
-                  >
-                    <Camera className="h-6 w-6" />
-                    <span className="text-sm">Take Photo</span>
-                  </Button>
-                </div>
-                
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Show OCR success banner */}
-              {ocrJustCompleted && populatedFields.length > 0 && (
-                <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                    <p className="text-sm font-medium text-primary">
-                      OCR Complete! Populated: {populatedFields.join(', ')}
+                  {/* OCR Options */}
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground text-center">
+                      Upload an image to automatically extract load details
                     </p>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={handleUploadClick}
+                        disabled={!ocrUsage.canUseOCR}
+                        className="h-auto p-4 flex flex-col gap-2"
+                      >
+                        <Upload className="h-6 w-6" />
+                        <span className="text-sm">Upload Image</span>
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={handleCameraClick}
+                        disabled={!ocrUsage.canUseOCR}
+                        className="h-auto p-4 flex flex-col gap-2"
+                      >
+                        <Camera className="h-6 w-6" />
+                        <span className="text-sm">Take Photo</span>
+                      </Button>
+                    </div>
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-border" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Miles</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={miles}
-                    onChange={(e) => setMiles(e.target.value)}
-                    className={ocrJustCompleted && populatedFields.includes('Miles') ? 'ring-2 ring-primary/50 border-primary' : ''}
-                  />
+              {/* Manual Input Form - Only show when OCR hasn't just completed */}
+              {!ocrJustCompleted && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Miles</label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={miles}
+                        onChange={(e) => setMiles(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Offer (All-in)</label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={offerAllIn}
+                        onChange={(e) => setOfferAllIn(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={weightLbs}
+                        onChange={(e) => setWeightLbs(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Pickup (in hours)</label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={pickupInHours}
+                        onChange={(e) => setPickupInHours(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="weekend"
+                      checked={weekend}
+                      onChange={(e) => setWeekend(e.target.checked)}
+                      className="rounded border-border"
+                    />
+                    <label htmlFor="weekend" className="text-sm">Weekend pickup</label>
+                  </div>
+                  
+                  <Button 
+                    onClick={handleCalculate} 
+                    className="w-full"
+                    disabled={!miles || !offerAllIn}
+                  >
+                    Calculate Negotiation Strategy
+                  </Button>
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Offer (All-in)</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={offerAllIn}
-                    onChange={(e) => setOfferAllIn(e.target.value)}
-                    className={ocrJustCompleted && populatedFields.includes('Rate') ? 'ring-2 ring-primary/50 border-primary' : ''}
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={weightLbs}
-                    onChange={(e) => setWeightLbs(e.target.value)}
-                    className={ocrJustCompleted && populatedFields.includes('Weight') ? 'ring-2 ring-primary/50 border-primary' : ''}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Pickup (in hours)</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={pickupInHours}
-                    onChange={(e) => setPickupInHours(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="weekend"
-                  checked={weekend}
-                  onChange={(e) => setWeekend(e.target.checked)}
-                  className="rounded border-border"
-                />
-                <label htmlFor="weekend" className="text-sm">Weekend pickup</label>
-              </div>
-              
-              <Button 
-                onClick={handleCalculate} 
-                className="w-full"
-                disabled={!miles || !offerAllIn}
-              >
-                Calculate Negotiation Strategy
-              </Button>
+              )}
             </CardContent>
           </Card>
         )}
