@@ -505,6 +505,8 @@ export type Database = {
           business_setup_completed_at: string | null
           created_at: string
           enable_fuel_cost_tracking: boolean
+          equipment_mpg_overrides: Json | null
+          equipment_rpm_overrides: Json | null
           fuel_price: number
           id: string
           mpg: number
@@ -516,6 +518,7 @@ export type Database = {
           setup_completion_percentage: number | null
           show_setup_reminders: boolean | null
           updated_at: string
+          use_equipment_defaults: boolean | null
           user_id: string
           weight_limit: number
         }
@@ -524,6 +527,8 @@ export type Database = {
           business_setup_completed_at?: string | null
           created_at?: string
           enable_fuel_cost_tracking?: boolean
+          equipment_mpg_overrides?: Json | null
+          equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
           mpg?: number
@@ -535,6 +540,7 @@ export type Database = {
           setup_completion_percentage?: number | null
           show_setup_reminders?: boolean | null
           updated_at?: string
+          use_equipment_defaults?: boolean | null
           user_id: string
           weight_limit?: number
         }
@@ -543,6 +549,8 @@ export type Database = {
           business_setup_completed_at?: string | null
           created_at?: string
           enable_fuel_cost_tracking?: boolean
+          equipment_mpg_overrides?: Json | null
+          equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
           mpg?: number
@@ -554,6 +562,7 @@ export type Database = {
           setup_completion_percentage?: number | null
           show_setup_reminders?: boolean | null
           updated_at?: string
+          use_equipment_defaults?: boolean | null
           user_id?: string
           weight_limit?: number
         }
