@@ -8,7 +8,7 @@ export default function Upgrade() {
   const navigate = useNavigate();
 
   const coreFeatures = [
-    "10 AI load checks per day",
+    "5 AI load checks per day",
     "OCR text extraction",
     "RPM calculator",
     "Basic negotiation panel",
@@ -16,7 +16,7 @@ export default function Upgrade() {
   ];
 
   const proFeatures = [
-    "100 AI load checks per day",
+    "Up to 100 AI load checks per day",
     "Advanced negotiation templates",
     "Export load history to CSV/Excel",
     "Priority customer support",

@@ -731,20 +731,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
           Use OCR image processing to extract load details automatically, or enter details manually.
         </p>
         
-        {/* OCR Usage Display */}
-        <div className="bg-card rounded-lg p-3 border mt-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">OCR scans today:</span>
-            <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
-              {ocrUsage.daily}/{ocrUsage.dailyLimit}
-            </span>
-          </div>
-          {!isPro && (
+        {/* OCR Usage Display - Only show for LITE users */}
+        {!isPro && (
+          <div className="bg-card rounded-lg p-3 border mt-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">OCR scans today:</span>
+              <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
+                {ocrUsage.daily}/{ocrUsage.dailyLimit}
+              </span>
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
               Manual entry is unlimited • OCR processing has daily limits
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* OCR Options */}

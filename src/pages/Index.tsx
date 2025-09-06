@@ -21,7 +21,7 @@ import { exportLoadsToCSV } from '@/utils/csvExport';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
-import { TierIndicator } from '@/components/TierIndicator';
+
 
 type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings';
 
@@ -142,7 +142,6 @@ const Index = () => {
             */}
           </div>
           <div className="flex items-center gap-2">
-            <TierIndicator />
             <Button
               variant="ghost"
               size="sm"

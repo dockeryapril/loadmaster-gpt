@@ -9,7 +9,7 @@ import { usePlan } from '@/hooks/usePlan';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
-import { TierIndicator } from '@/components/TierIndicator';
+
 
 // Simple negotiation logic for Core version
 const calculateNegotiation = (miles: number, rate: number, weight?: number) => {
@@ -179,7 +179,6 @@ const Core = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <TierIndicator />
             {!user && (
               <Button variant="ghost" size="sm" onClick={handleSignIn}>
                 <LogIn className="h-4 w-4 mr-2" />

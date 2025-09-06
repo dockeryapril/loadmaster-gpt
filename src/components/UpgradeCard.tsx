@@ -42,7 +42,7 @@ export function UpgradeCard({ className }: UpgradeCardProps) {
           <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
             <Zap className="h-4 w-4 text-primary flex-shrink-0" />
             <div className="text-xs">
-              <p className="font-medium">100 imaging runs per day</p>
+              <p className="font-medium">Up to 100 imaging runs per day</p>
               <p className="text-muted-foreground">vs 5 on LITE plan</p>
             </div>
           </div>
