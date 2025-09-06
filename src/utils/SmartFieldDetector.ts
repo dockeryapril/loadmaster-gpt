@@ -144,7 +144,7 @@ export class SmartFieldDetector {
       rate: /\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/,
       origin: /(?:from|pickup|origin)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
       destination: /(?:to|delivery|dest)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
-      deadhead: /(?:deadhead|dh)[\s:]*(\d+)/i,
+      deadhead: /(?:deadhead|dh|dead\s*head|empty\s*miles?)[\s:]*(\d+)/i,
       weight: /(\d+(?:,\d{3})*)\s*(?:lbs?|pounds?)/i
     };
 

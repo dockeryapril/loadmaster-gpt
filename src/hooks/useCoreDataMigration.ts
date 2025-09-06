@@ -67,8 +67,8 @@ export function useCoreDataMigration() {
           .from('loads')
           .insert({
             user_id: user.id,
-            origin: 'LITE Import',
-            destination: 'LITE Import',
+            origin: 'Unknown Origin',
+            destination: 'Unknown Destination', 
             miles: item.miles,
             rate: item.offerAllIn,
             weight: item.weightLbs || null,
@@ -76,7 +76,7 @@ export function useCoreDataMigration() {
             profit: item.offerAllIn,
             quality: 'good',
             tags: item.premiums || [],
-            notes: `Imported from LITE. ${item.weekend ? 'Weekend pickup.' : ''}`,
+            notes: `Imported from LoadMasterLITE. ${item.weekend ? 'Weekend pickup. ' : ''}Original calculation: Ask $${item.anchorAllIn}, Target $${item.targetAllIn}, Floor $${item.floorAllIn}`,
           })
           .select('id')
           .single();

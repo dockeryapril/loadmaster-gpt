@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,33 @@ export function Settings({ onClose }: SettingsProps) {
   const industryContext = equipment ? getIndustryContext(equipment) : null;
   const effectiveMPG = equipment ? getEffectiveMPG(equipment, settings) : settings.mpg;
   const effectiveRPM = equipment ? getEffectiveRPMTargets(equipment, settings) : null;
+
+  // Auto-update MPG when equipment changes (if using defaults and field is empty/default)
+  useEffect(() => {
+    if (equipment && useEquipmentDefaults && industryContext) {
+      const currentMpgValue = parseFloat(mpg) || 0;
+      // Only auto-update if MPG is 0 (empty/default) to avoid overriding user customizations
+      if (currentMpgValue === 0) {
+        setMpg(industryContext.recommendedMPG.toString());
+      }
+    }
+  }, [equipment, useEquipmentDefaults, industryContext]);
+
+  // Auto-update RPM thresholds when equipment changes (if using defaults and fields are empty/default)  
+  useEffect(() => {
+    if (equipment && useEquipmentDefaults && effectiveRPM) {
+      const currentExcellent = parseFloat(excellentRpm) || 0;
+      const currentGood = parseFloat(goodRpm) || 0; 
+      const currentFair = parseFloat(fairRpm) || 0;
+      
+      // Only auto-update if all RPM values are 0 (empty/default)
+      if (currentExcellent === 0 && currentGood === 0 && currentFair === 0) {
+        setExcellentRpm(effectiveRPM.green.toString());
+        setGoodRpm(effectiveRPM.yellow.toString());
+        setFairRpm(effectiveRPM.red.toString());
+      }
+    }
+  }, [equipment, useEquipmentDefaults, effectiveRPM]);
 
   const handleSave = async () => {
     // Validate all inputs before saving

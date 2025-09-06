@@ -7,7 +7,7 @@
     "weightLbs": ["weight", "lbs", "pounds", "load weight"],
     "origin": ["origin", "pickup", "from"],
     "destination": ["destination", "drop", "to", "delivery"],
-    "deadhead": ["deadhead", "dh"],
+    "deadhead": ["deadhead", "dh", "dead head", "empty", "empty miles", "positioning"],
     "rate": ["rate", "offer", "total pay"],
     "miles": ["miles", "distance", "mi"]
   },
