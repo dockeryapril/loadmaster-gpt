@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard, Upload, ArrowLeft, Camera, Clock } from 'lucide-react';
+import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard, ArrowLeft, Camera, Clock } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,10 +11,14 @@ import { logEvent } from '@/utils/metrics';
 import { useEquipment } from '@/hooks/useEquipment';
 import { getEquipmentRPMTargets, equipmentDefaults } from '../../packages/engine/src/equipmentProfiles';
 import { UpgradeCard } from '@/components/UpgradeCard';
-import { LoadEntryMethod } from '@/components/LoadEntryMethod';
 import { CameraInterface } from '@/components/CameraInterface';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useOCRUsage } from '@/hooks/useOCRUsage';
+import { useOCRProcessor } from '@/hooks/useOCRProcessor';
+import { OCRCorrectionInterface } from '@/components/OCRCorrectionInterface';
+import { MilesInputModal } from '@/components/MilesInputModal';
+import { Progress } from '@/components/ui/progress';
+import { Loader2, X, Upload } from 'lucide-react';
 import type { Equipment } from '@/types/equipment';
 
 
@@ -93,7 +97,6 @@ const Core = () => {
   const [result, setResult] = useState<any>(null);
   const [history, setHistory] = useLocalStorage<HistoryItem[]>('lm_core_history_v1', []);
   const [showHistory, setShowHistory] = useState(false);
-  const [entryMethod, setEntryMethod] = useState<'select' | 'camera' | 'upload' | 'manual'>('select');
   const [showCameraInterface, setShowCameraInterface] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   
@@ -105,6 +108,9 @@ const Core = () => {
   const planLoading = false;
   const navigate = useNavigate();
   const ocrUsage = useOCRUsage(isPro);
+  
+  // Initialize OCR processor
+  const ocrProcessor = useOCRProcessor();
 
   const handleCalculate = () => {
     const milesNum = parseFloat(miles);
@@ -151,12 +157,12 @@ const Core = () => {
     setWeekend(false);
     setShowResult(false);
     setResult(null);
-    setEntryMethod('select');
     setShowCameraInterface(false);
     if (cameraStream) {
       cameraStream.getTracks().forEach(track => track.stop());
       setCameraStream(null);
     }
+    ocrProcessor.resetProcessingState();
   };
 
   const handleFieldsDetected = (detectionResult: FieldDetectionResult) => {
@@ -175,24 +181,28 @@ const Core = () => {
         // Add other fields as needed
       }
     });
-    setEntryMethod('manual'); // Switch to manual form after OCR
-  };
-
-  const handleManualEntry = () => {
-    setEntryMethod('manual');
   };
 
   const handleUploadClick = () => {
-    if (!ocrUsage.canUseOCR) {
-      return; // Button should be disabled, but this is a safeguard
-    }
-    setEntryMethod('upload');
+    if (!ocrUsage.canUseOCR) return;
+    
+    // Create file input and trigger click
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file && file.type.startsWith('image/')) {
+        ocrProcessor.processOCR(file, handleFieldsDetected, () => {
+          // Fallback to manual entry
+        });
+      }
+    };
+    fileInput.click();
   };
 
   const handleCameraClick = async () => {
-    if (!ocrUsage.canUseOCR) {
-      return; // Button should be disabled, but this is a safeguard
-    }
+    if (!ocrUsage.canUseOCR) return;
     
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -200,11 +210,10 @@ const Core = () => {
       });
       setCameraStream(stream);
       setShowCameraInterface(true);
-      setEntryMethod('camera');
     } catch (error) {
       console.error('Camera access failed:', error);
-      // Fallback to upload if camera fails
-      setEntryMethod('upload');
+      // Fallback to upload
+      handleUploadClick();
     }
   };
 
@@ -214,8 +223,11 @@ const Core = () => {
       cameraStream.getTracks().forEach(track => track.stop());
       setCameraStream(null);
     }
+    
     // Process the captured file through OCR
-    // This would need OCR handling logic integrated here
+    ocrProcessor.processOCR(file, handleFieldsDetected, () => {
+      // Fallback to manual entry
+    });
   };
 
   const handleCameraClose = () => {
@@ -224,7 +236,6 @@ const Core = () => {
       cameraStream.getTracks().forEach(track => track.stop());
       setCameraStream(null);
     }
-    setEntryMethod('select');
   };
 
   const handleSignIn = () => {
@@ -300,7 +311,7 @@ const Core = () => {
             )}
             
             {user && isPro && (
-              <Button variant="default" size="sm" onClick={handleOpenProApp}>
+              <Button variant="outline" size="sm" onClick={handleOpenProApp}>
                 <ExternalLink className="h-4 w-4 mr-2" />
                 PRO App
               </Button>
@@ -308,32 +319,23 @@ const Core = () => {
           </div>
         </div>
 
-        {/* Quick Equipment Setup */}
+        {/* Equipment Selection */}
         <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Equipment Type</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-3 gap-2">
-              {(['cargo_van', 'straight_truck', 'hotshot'] as Equipment[]).map((type) => {
-                const isSelected = equipment === type;
-                const info = equipmentDefaults[type];
-                const displayName = type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                return (
-                  <Button
-                    key={type}
-                    variant={isSelected ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setEquipment(type)}
-                    className="h-auto p-3 flex flex-col gap-1"
-                  >
-                    <span className="font-medium text-xs">{displayName}</span>
-                    <span className="text-xs opacity-80">
-                      Avg: ${info.rpmTargets.yellow.toFixed(2)}/mi
-                    </span>
-                  </Button>
-                );
-              })}
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              <Truck className="h-5 w-5 text-primary" />
+              <div className="flex-1">
+                <label className="text-sm font-medium">Equipment Type</label>
+                <select
+                  value={equipment}
+                  onChange={(e) => setEquipment(e.target.value as Equipment)}
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="cargo_van">Cargo Van</option>
+                  <option value="straight_truck">Straight Truck</option>
+                  <option value="hotshot">Hotshot</option>
+                </select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -344,7 +346,6 @@ const Core = () => {
             variant={!showHistory ? "default" : "outline"}
             onClick={() => {
               setShowHistory(false);
-              setEntryMethod('select');
             }}
             className="flex-1"
           >
@@ -479,178 +480,185 @@ const Core = () => {
             onCapture={handleCameraCapture}
             onClose={handleCameraClose}
           />
-        ) : entryMethod === 'upload' ? (
-          <div className="space-y-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => setEntryMethod('select')}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Options
-            </Button>
-            <LoadEntryMethod
-              onFieldsDetected={handleFieldsDetected}
-              onManualEntry={handleManualEntry}
-              isPro={isPro}
-            />
-          </div>
-        ) : entryMethod === 'select' ? (
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              {/* OCR Usage Status for LITE users */}
-              {!ocrUsage.canUseOCR && (
-                <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-4 w-4 text-destructive" />
-                    <span className="font-medium text-destructive">Daily OCR Limit Reached</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    You've used all {ocrUsage.dailyLimit} OCR scans for today. Resets at midnight.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="default" onClick={handleUpgradeToPro}>
-                      <Crown className="h-4 w-4 mr-2" />
-                      Upgrade to PRO
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setEntryMethod('manual')}>
-                      Enter Manually
-                    </Button>
-                  </div>
-                </div>
-              )}
-              
-              {ocrUsage.canUseOCR && (
-                <div className="text-center mb-4">
+        ) : ocrProcessor.showCorrection && ocrProcessor.currentDetectionResult ? (
+          <OCRCorrectionInterface
+            detectedFields={ocrProcessor.currentDetectionResult.detectedFields}
+            rawText={ocrProcessor.currentDetectionResult.rawText}
+            onFieldCorrection={ocrProcessor.handleFieldCorrection}
+            onConfirm={() => ocrProcessor.confirmCorrections(handleFieldsDetected)}
+            onCancel={ocrProcessor.cancelCorrections}
+            overallConfidence={ocrProcessor.currentDetectionResult.confidence}
+            warnings={ocrProcessor.currentDetectionResult.warnings}
+          />
+        ) : ocrProcessor.isProcessing ? (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-2">Processing Image</h2>
+              <p className="text-sm text-muted-foreground">
+                Extracting text and analyzing load information...
+              </p>
+            </div>
+            
+            <Card className="p-8">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <Progress value={ocrProcessor.ocrProgress} className="w-48" />
+                <p className="text-sm text-muted-foreground">{Math.round(ocrProcessor.ocrProgress)}%</p>
+                <div className="text-center space-y-2">
+                  <p className="font-medium">{ocrProcessor.processingStage || 'Processing your image'}</p>
                   <p className="text-sm text-muted-foreground">
-                    OCR scans today: {ocrUsage.daily}/{ocrUsage.dailyLimit}
+                    This may take a moment
                   </p>
                 </div>
-              )}
-              
-              <div className="space-y-3">
-                <Button 
-                  onClick={handleUploadClick}
-                  disabled={!ocrUsage.canUseOCR}
-                  className="w-full h-auto p-4 flex flex-col gap-2"
+                <Button
+                  onClick={ocrProcessor.cancelUpload}
                   variant="outline"
+                  size="sm"
+                  disabled={ocrProcessor.isCancelling}
+                  className="mt-2 text-destructive hover:text-destructive border-destructive disabled:opacity-50"
                 >
-                  <Upload className="h-6 w-6" />
-                  <span className="font-medium">Upload Image</span>
-                  <span className="text-xs text-muted-foreground">
-                    Select image from gallery
-                  </span>
-                </Button>
-                
-                <Button 
-                  onClick={handleCameraClick}
-                  disabled={!ocrUsage.canUseOCR}
-                  className="w-full h-auto p-4 flex flex-col gap-2"
-                  variant="outline"
-                >
-                  <Camera className="h-6 w-6" />
-                  <span className="font-medium">Take Photo</span>
-                  <span className="text-xs text-muted-foreground">
-                    Use camera to capture load sheet
-                  </span>
-                </Button>
-                
-                <Button 
-                  onClick={() => setEntryMethod('manual')}
-                  className="w-full h-auto p-4 flex flex-col gap-2"
-                  variant="outline"
-                >
-                  <Calculator className="h-6 w-6" />
-                  <span className="font-medium">Enter Details Manually</span>
-                  <span className="text-xs text-muted-foreground">
-                    Type in load information yourself
-                  </span>
+                  <X className="h-4 w-4 mr-2" />
+                  {ocrProcessor.isCancelling ? 'Cancelling...' : 'Cancel Upload'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => setEntryMethod('select')}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Options
-            </Button>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5" />
-                  Rate Calculator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Miles</label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={miles}
-                      onChange={(e) => setMiles(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Offer (All-in)</label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={offerAllIn}
-                      onChange={(e) => setOfferAllIn(e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={weightLbs}
-                      onChange={(e) => setWeightLbs(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Pickup (hours)</label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={pickupInHours}
-                      onChange={(e) => setPickupInHours(e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="weekend"
-                    checked={weekend}
-                    onChange={(e) => setWeekend(e.target.checked)}
-                    className="rounded border-border"
-                  />
-                  <label htmlFor="weekend" className="text-sm">Weekend pickup</label>
-                </div>
-                
-                <Button 
-                  onClick={handleCalculate} 
-                  className="w-full"
-                  disabled={!miles || !offerAllIn}
-                >
-                  Calculate Negotiation Strategy
-                </Button>
-              </CardContent>
             </Card>
           </div>
+        ) : (
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-2">Calculate Load Rate</h2>
+                <p className="text-sm text-muted-foreground">
+                  Get negotiation strategies for your {equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </p>
+                
+                {/* OCR Usage Display - Only show for LITE users */}
+                {!isPro && (
+                  <div className={`bg-card rounded-lg p-3 border mt-4 ${!ocrUsage.canUseOCR ? 'bg-destructive/5 border-destructive/20' : ''}`}>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">OCR scans today:</span>
+                      <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
+                        {ocrUsage.daily}/{ocrUsage.dailyLimit}
+                      </span>
+                    </div>
+                    {!ocrUsage.canUseOCR ? (
+                      <div className="mt-2 space-y-1">
+                        <p className="text-xs text-destructive font-medium">
+                          Daily OCR limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Upgrade to PRO for unlimited OCR processing
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {ocrUsage.remaining} OCR scans remaining today
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* OCR Options */}
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground text-center">
+                  Upload an image to automatically extract load details
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={handleUploadClick}
+                    disabled={!ocrUsage.canUseOCR}
+                    className="h-auto p-4 flex flex-col gap-2"
+                  >
+                    <Upload className="h-6 w-6" />
+                    <span className="text-sm">Upload Image</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handleCameraClick}
+                    disabled={!ocrUsage.canUseOCR}
+                    className="h-auto p-4 flex flex-col gap-2"
+                  >
+                    <Camera className="h-6 w-6" />
+                    <span className="text-sm">Take Photo</span>
+                  </Button>
+                </div>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Or</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Miles</label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={miles}
+                    onChange={(e) => setMiles(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Offer (All-in)</label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={offerAllIn}
+                    onChange={(e) => setOfferAllIn(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={weightLbs}
+                    onChange={(e) => setWeightLbs(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Pickup (hours)</label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={pickupInHours}
+                    onChange={(e) => setPickupInHours(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="weekend"
+                  checked={weekend}
+                  onChange={(e) => setWeekend(e.target.checked)}
+                  className="rounded border-border"
+                />
+                <label htmlFor="weekend" className="text-sm">Weekend pickup</label>
+              </div>
+              
+              <Button 
+                onClick={handleCalculate} 
+                className="w-full"
+                disabled={!miles || !offerAllIn}
+              >
+                Calculate Negotiation Strategy
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {/* Upgrade Card - shown when not in history and not showing results */}
@@ -678,6 +686,15 @@ const Core = () => {
             </p>
           )}
         </div>
+        
+        {/* Miles Modal for OCR */}
+        {ocrProcessor.showMilesModal && (
+          <MilesInputModal
+            isOpen={ocrProcessor.showMilesModal}
+            onClose={ocrProcessor.cancelMiles}
+            onConfirm={ocrProcessor.confirmMiles}
+          />
+        )}
       </div>
     </div>
   );
