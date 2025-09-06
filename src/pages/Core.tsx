@@ -418,19 +418,25 @@ const Core = () => {
               Calculate Another Load
             </Button>
           </div>
+        ) : entryMethod === 'ocr' ? (
+          <div className="space-y-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => setEntryMethod('select')}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Manual Entry
+            </Button>
+            <LoadEntryMethod
+              onFieldsDetected={handleFieldsDetected}
+              onManualEntry={handleManualEntry}
+              isPro={isPro}
+            />
+          </div>
         ) : entryMethod === 'select' ? (
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5" />
-                Add Load Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground mb-4">
-                Choose how you'd like to enter your load details:
-              </p>
-              
+            <CardContent className="pt-6 space-y-4">
               <div className="space-y-3">
                 <Button 
                   onClick={() => setEntryMethod('ocr')}
@@ -458,24 +464,6 @@ const Core = () => {
               </div>
             </CardContent>
           </Card>
-        ) : entryMethod === 'ocr' ? (
-          <div className="space-y-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => setEntryMethod('select')}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Options
-            </Button>
-            
-            <LoadEntryMethod
-              onFieldsDetected={handleFieldsDetected}
-              onManualEntry={handleManualEntry}
-              onClose={() => setEntryMethod('select')}
-              isPro={isPro}
-            />
-          </div>
         ) : (
           <div className="space-y-4">
             <Button 

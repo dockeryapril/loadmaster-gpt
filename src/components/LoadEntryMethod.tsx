@@ -733,16 +733,27 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
         
         {/* OCR Usage Display - Only show for LITE users */}
         {!isPro && (
-          <div className="bg-card rounded-lg p-3 border mt-4">
+          <div className={`bg-card rounded-lg p-3 border mt-4 ${!ocrUsage.canUseOCR ? 'bg-destructive/5 border-destructive/20' : ''}`}>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">OCR scans today:</span>
               <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
                 {ocrUsage.daily}/{ocrUsage.dailyLimit}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Manual entry is unlimited • OCR processing has daily limits
-            </p>
+            {!ocrUsage.canUseOCR ? (
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-destructive font-medium">
+                  Daily OCR limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Upgrade to PRO for unlimited OCR processing • Manual entry is always unlimited
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-1">
+                {ocrUsage.remaining} OCR scans remaining today • Manual entry is unlimited
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -770,13 +781,13 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Upload Image/Screenshot</div>
-                    <div className="text-sm text-muted-foreground">
-                      {isPro 
-                        ? "Select photos from your device" 
-                        : ocrUsage.canUseOCR 
-                          ? "Select photos from your device" 
-                          : `Daily limit reached (${ocrUsage.remaining} remaining)`
-                      }
+                     <div className="text-sm text-muted-foreground">
+                       {isPro 
+                         ? "Select photos from your device" 
+                         : ocrUsage.canUseOCR 
+                           ? "Select photos from your device" 
+                           : "Daily limit reached"
+                       }
                     </div>
                   </div>
                 </div>
@@ -798,13 +809,13 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Take Photo</div>
-                    <div className="text-sm text-muted-foreground">
-                      {isPro 
-                        ? "Use your camera to capture load documents"
-                        : ocrUsage.canUseOCR 
-                          ? "Use your camera to capture load documents"
-                          : `Daily limit reached (${ocrUsage.remaining} remaining)`
-                      }
+                     <div className="text-sm text-muted-foreground">
+                       {isPro 
+                         ? "Use your camera to capture load documents"
+                         : ocrUsage.canUseOCR 
+                           ? "Use your camera to capture load documents"
+                           : "Daily limit reached"
+                       }
                     </div>
                   </div>
                 </div>
