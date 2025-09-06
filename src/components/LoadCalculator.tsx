@@ -1034,40 +1034,39 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                                 </Badge>
                               </div>
                             </div>
-                            <NegotiationPanel
-                              askRate={askRate}
-                              settleRate={settleRate}
-                              bottomRate={bottomRate}
-                              miles={parseFloat(miles) || 0}
-                              weightLbs={weight ? parseFloat(weight) : undefined}
-                              isPro={isPro} // Pass isPro prop
-                              offerTotal={
-                                (parseFloat(rate) || 0) +
-                                (parseFloat(fsc) || 0) +
-                                (parseFloat(tolls) || 0)
-                              }
-                              rpm={calculation.rpm}
-                              pickupCity={origin}
-                              deliveryCity={destination}
-                              equipmentType={equipment}
-                              flags={{
-                                isRush: extras.afterHours || extras.weekend || undefined,
-                                tarpRequired: extras.tarp || undefined,
-                                extraStops:
-                                  extras.stops && extras.stops > 1
-                                    ? extras.stops - 1
-                                    : undefined,
-                                fuelSurchargeMentioned: !!fsc,
-                                palletJack: extras.palletJack || undefined,
-                                liftGate: extras.liftgate || undefined,
-                              }}
-                              initialChannel={channel}
-                              initialTone={tone}
-                              initialScripts={scripts}
-                              onChannelChange={setChannel}
-                              onToneChange={setTone}
-                              onScriptChange={setScripts}
-                            />
+                             <NegotiationPanel
+                               askRate={askRate}
+                               settleRate={settleRate}
+                               bottomRate={bottomRate}
+                               miles={parseFloat(miles) || 0}
+                               weightLbs={weight ? parseFloat(weight) : undefined}
+                               offerTotal={
+                                 (parseFloat(rate) || 0) +
+                                 (parseFloat(fsc) || 0) +
+                                 (parseFloat(tolls) || 0)
+                               }
+                               rpm={calculation.rpm}
+                               pickupCity={origin}
+                               deliveryCity={destination}
+                               equipmentType={equipment}
+                               flags={{
+                                 isRush: extras.afterHours || extras.weekend || undefined,
+                                 tarpRequired: extras.tarp || undefined,
+                                 extraStops:
+                                   extras.stops && extras.stops > 1
+                                     ? extras.stops - 1
+                                     : undefined,
+                                 fuelSurchargeMentioned: !!fsc,
+                                 palletJack: extras.palletJack || undefined,
+                                 liftGate: extras.liftgate || undefined,
+                               }}
+                               initialChannel={channel}
+                               initialTone={tone}
+                               initialScripts={scripts}
+                               onChannelChange={setChannel}
+                               onToneChange={setTone}
+                               onScriptChange={setScripts}
+                             />
                           </div>
                         );
                       }

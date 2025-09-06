@@ -3,11 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, Sparkles } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 import generateScripts, { Channel, Tone, Equipment } from './templates';
-import enhanceWithAI from './enhanceWithAI';
 
 interface NegotiationFlags {
   isRush?: boolean;
@@ -36,7 +35,6 @@ interface NegotiationPanelProps {
   initialScripts?: { ask: string; settle: string; bottom: string };
   onChannelChange?: (channel: Channel) => void;
   onToneChange?: (tone: Tone) => void;
-  isPro?: boolean; // Add isPro prop to control AI enhancement
 }
 
 export function NegotiationPanel({
@@ -57,17 +55,13 @@ export function NegotiationPanel({
   initialScripts,
   onChannelChange,
   onToneChange,
-  isPro = true, // Default to PRO for backward compatibility
 }: NegotiationPanelProps) {
   const [channel, setChannel] = useState<Channel>(initialChannel || 'text');
   const [tone, setTone] = useState<Tone>(initialTone || 'professional');
   const [scripts, setScripts] = useState(initialScripts || { ask: '', settle: '', bottom: '' });
   const initialized = useRef(false);
-  const [improving, setImproving] = useState<null | keyof typeof scripts>(null);
 
   const { toast } = useToast();
-
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (initialScripts && !initialized.current) {
@@ -129,59 +123,6 @@ export function NegotiationPanel({
     toast({ description: 'Script copied to clipboard' });
   };
 
-  const buildContext = (): string => {
-    const parts: string[] = [];
-    if (pickupCity && deliveryCity) parts.push(`${pickupCity} to ${deliveryCity}`);
-    if (miles) parts.push(`${miles} mi`);
-    if (weightLbs) parts.push(`${weightLbs} lbs`);
-    if (offerTotal) parts.push(`offer $${offerTotal}`);
-    if (rpm) parts.push(`${rpm} rpm`);
-    return parts.join(', ');
-  };
-
-  const debouncedImprove = (stage: keyof typeof scripts) => {
-    if (!isPro) return;
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    debounceRef.current = setTimeout(async () => {
-      setImproving(stage);
-      try {
-        const improved = await enhanceWithAI({
-          baseScript: scripts[stage],
-          context: buildContext(),
-        });
-        setScripts(prev => {
-          const updated = { ...prev, [stage]: improved };
-          onScriptChange?.(updated);
-          return updated;
-        });
-      } catch (err) {
-        const fallback = generateScripts({
-          ask: askRate,
-          settle: settleRate,
-          bottom: bottomRate,
-          channel,
-          tone,
-          equipment: equipmentType,
-          miles,
-          ...flags,
-        });
-        setScripts(prev => {
-          const updated = { ...prev, [stage]: fallback[stage] };
-          onScriptChange?.(updated);
-          return updated;
-        });
-        toast({
-          title: 'AI enhancement failed',
-          description: err instanceof Error ? err.message : 'Failed to improve script',
-          variant: 'destructive',
-        });
-      } finally {
-        setImproving(null);
-      }
-    }, 500);
-  };
 
   return (
     <div className="space-y-4">
@@ -210,22 +151,9 @@ export function NegotiationPanel({
         <div key={stage} className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="font-medium capitalize">{stage}</h3>
-            <div className="flex gap-2">
-              {isPro && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => debouncedImprove(stage)}
-                  disabled={improving === stage}
-                >
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  {improving === stage ? 'Improving...' : 'Improve with AI'}
-                </Button>
-              )}
-              <Button variant="outline" size="icon" onClick={() => handleCopy(stage)}>
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button variant="outline" size="icon" onClick={() => handleCopy(stage)}>
+              <Copy className="h-4 w-4" />
+            </Button>
           </div>
           <Textarea value={scripts[stage]} readOnly rows={channel === 'email' ? 6 : 3} />
         </div>
