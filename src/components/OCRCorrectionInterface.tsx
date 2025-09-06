@@ -46,9 +46,9 @@ export function OCRCorrectionInterface({
   }
   const getConfidenceBadge = (confidence: 'high' | 'medium' | 'low') => {
     const variants = {
-      high: 'bg-green-100 text-green-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      low: 'bg-red-100 text-red-800'
+      high: 'bg-success/10 text-success border-success/20',
+      medium: 'bg-warning/10 text-warning-foreground border-warning/20',
+      low: 'bg-destructive/10 text-destructive border-destructive/20'
     };
     
     const icons = {
@@ -60,7 +60,7 @@ export function OCRCorrectionInterface({
     return (
       <Badge variant="outline" className={variants[confidence]}>
         {icons[confidence]}
-        {confidence}
+        <span className="ml-1 capitalize">{confidence}</span>
       </Badge>
     );
   };
@@ -94,9 +94,9 @@ export function OCRCorrectionInterface({
       </div>
 
       {warnings && warnings.length > 0 && (
-        <Card className="p-4 bg-yellow-50 border-yellow-200">
-          <h4 className="text-sm font-medium text-yellow-800 mb-2">Warnings</h4>
-          <ul className="list-disc list-inside text-sm text-yellow-700">
+        <Card className="p-4 bg-warning/10 border-warning/20">
+          <h4 className="text-sm font-medium text-warning-foreground mb-2">Warnings</h4>
+          <ul className="list-disc list-inside text-sm text-warning-foreground/80">
             {warnings.map((warning, i) => (
               <li key={i}>{warning}</li>
             ))}
@@ -123,19 +123,19 @@ export function OCRCorrectionInterface({
             {/* High confidence fields */}
             {highConfidence.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-green-600 mb-2">
+                <h4 className="text-sm font-medium text-success mb-2">
                   Auto-filled (High Confidence)
                 </h4>
                 <div className="space-y-2">
                   {highConfidence.map((field, index) => (
-                    <div key={`high-${index}`} className="flex items-center gap-2 p-2 border border-green-500 bg-gray-800/50 text-white rounded-md transition-colors">
-                      <Label className="text-sm min-w-[100px] text-green-400 font-medium">
+                    <div key={`high-${index}`} className="flex items-center gap-2 p-3 border border-success/20 bg-success/5 rounded-lg transition-colors">
+                      <Label className="text-sm min-w-[100px] text-success font-medium">
                         {getFieldDisplayName(field.field)}:
                       </Label>
                       <Input
-                        value={field.value}
+                        value={field.value || ''}
                         onChange={(e) => onFieldCorrection(field.field, e.target.value)}
-                        className="flex-1 border-green-200 text-white"
+                        className="flex-1 bg-background"
                       />
                       {getConfidenceBadge(field.confidence)}
                     </div>
@@ -147,19 +147,19 @@ export function OCRCorrectionInterface({
             {/* Fields needing review */}
             {needsReview.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-red-600 mb-2">
+                <h4 className="text-sm font-medium text-destructive mb-2">
                   Please Review (Uncertain)
                 </h4>
                 <div className="space-y-2">
                   {needsReview.map((field, index) => (
-                    <div key={`review-${index}`} className="flex items-center gap-2 p-2 border border-red-500 bg-gray-800/50 text-white rounded-md transition-colors">
-                      <Label className="text-sm min-w-[100px] text-red-600 font-medium">
+                    <div key={`review-${index}`} className="flex items-center gap-2 p-3 border border-destructive/20 bg-destructive/5 rounded-lg transition-colors">
+                      <Label className="text-sm min-w-[100px] text-destructive font-medium">
                         {getFieldDisplayName(field.field)}:
                       </Label>
                       <Input
-                        value={field.value}
+                        value={field.value || ''}
                         onChange={(e) => onFieldCorrection(field.field, e.target.value)}
-                        className="flex-1 border-red-200 focus:border-red-0 text-white"
+                        className="flex-1 bg-background focus-visible:border-destructive"
                         placeholder={`Enter ${getFieldDisplayName(field.field).toLowerCase()}`}
                       />
                       {getConfidenceBadge(field.confidence)}
