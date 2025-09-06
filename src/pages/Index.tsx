@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard, TrendingUp } from 'lucide-react';
+import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard, TrendingUp, Beaker } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseLoads } from '@/hooks/useSupabaseLoads';
@@ -22,9 +22,10 @@ import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
 import { SimpleBusinessSetup } from '@/components/SimpleBusinessSetup';
+import { QAValidation } from '@/components/QAValidation';
 
 
-type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings' | 'business-setup';
+type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings' | 'business-setup' | 'qa-validation';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -292,6 +293,9 @@ const Index = () => {
           </div>
         );
 
+      case 'qa-validation':
+        return <QAValidation />;
+
       case 'settings':
         return (
           <div className="space-y-4">
@@ -314,6 +318,16 @@ const Index = () => {
                 <span className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
                   Negotiation Settings
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentView('qa-validation')}
+                className="flex items-center justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <Beaker className="h-4 w-4" />
+                  QA Validation Suite
                 </span>
               </Button>
             </div>
