@@ -22,8 +22,13 @@ serve(async (req) => {
   const isLocalOrigin = /^https?:\/\/localhost(:\d+)?$/.test(normalizedOrigin) ||
     /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin);
   
-  // Support Lovable preview domains
-  const isLovablePreviewOrigin = /^https:\/\/.*\.lovable\.(app|dev)$/.test(normalizedOrigin);
+  // Support Lovable preview domains - updated regex to match actual format
+  const isLovablePreviewOrigin = /^https:\/\/[a-zA-Z0-9\-]+\.lovable\.(app|dev)$/.test(normalizedOrigin);
+  
+  console.log('🔍 CORS: Checking origin:', normalizedOrigin);
+  console.log('🔍 CORS: Is local origin:', isLocalOrigin);
+  console.log('🔍 CORS: Is Lovable preview origin:', isLovablePreviewOrigin);
+  console.log('🔍 CORS: Is origin allowed:', isOriginAllowed);
 
   const isOriginAllowed = allowedOrigins.length === 0 ||
     allowedOrigins.includes(normalizedOrigin) ||

@@ -55,7 +55,7 @@ export function useOCRProcessor() {
   const { handleRateLimitError } = useRateLimit();
 
   const processOCR = async (file: File, onSuccess: (result: FieldDetectionResult) => void, onFallback: () => void) => {
-    console.log('Starting OCR process for file:', file.name);
+    console.log('🔄 OCR: Starting OCR process for file:', file.name);
     setIsProcessing(true);
     setIsCancelling(false);
     setOcrProgress(0);
@@ -63,6 +63,20 @@ export function useOCRProcessor() {
     
     abortControllerRef.current = new AbortController();
     const abortSignal = abortControllerRef.current.signal;
+    
+    // Set up timeout to prevent indefinite spinning
+    const timeoutMs = 120000; // 2 minutes timeout
+    const timeoutId = setTimeout(() => {
+      console.log('⏰ OCR: Processing timeout reached, aborting');
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      toast({
+        title: "Processing timeout",
+        description: "OCR processing took too long. Please try again with a clearer image.",
+        variant: "destructive",
+      });
+    }, timeoutMs);
     
     incrementOCRUsage();
     
@@ -315,13 +329,15 @@ export function useOCRProcessor() {
         logOCREnd('useOCRProcessor', startTime, false, error);
       }
     } finally {
-      if (isProcessing) {
-        resetProcessingState();
-      }
+      // Always reset processing state to prevent stuck spinning
+      console.log('🔄 OCR: Finally block - resetting processing state');
+      clearTimeout(timeoutId);
+      resetProcessingState();
     }
   };
 
   const resetProcessingState = () => {
+    console.log('🔄 OCR: Resetting processing state');
     setIsProcessing(false);
     setOcrProgress(0);
     setProcessingStage('');
