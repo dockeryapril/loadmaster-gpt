@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, LayoutDashboard, ArrowLeft, Camera, Clock } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -99,6 +100,8 @@ const Core = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [showCameraInterface, setShowCameraInterface] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [ocrJustCompleted, setOcrJustCompleted] = useState(false);
+  const [populatedFields, setPopulatedFields] = useState<string[]>([]);
   
   const { user, loading: authLoading } = useAuth();
   const { equipment, setEquipment } = useEquipment();
@@ -108,9 +111,21 @@ const Core = () => {
   const planLoading = false;
   const navigate = useNavigate();
   const ocrUsage = useOCRUsage(isPro);
+  const { toast } = useToast();
   
   // Initialize OCR processor
   const ocrProcessor = useOCRProcessor();
+
+  // Auto-clear OCR completion state after 3 seconds
+  useEffect(() => {
+    if (ocrJustCompleted) {
+      const timer = setTimeout(() => {
+        setOcrJustCompleted(false);
+        setPopulatedFields([]);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [ocrJustCompleted]);
 
   const handleCalculate = () => {
     const milesNum = parseFloat(miles);
@@ -166,21 +181,53 @@ const Core = () => {
   };
 
   const handleFieldsDetected = (detectionResult: FieldDetectionResult) => {
+    console.log('🎯 OCR: Applying detected fields to calculator', detectionResult);
+    
+    const fieldsPopulated: string[] = [];
+    
     // Populate form fields from OCR results
     detectionResult.detectedFields.forEach(field => {
-      switch (field.field) {
-        case 'miles':
-          setMiles(field.value.replace(/[^0-9.]/g, ''));
-          break;
-        case 'rate':
-          setOfferAllIn(field.value.replace(/[^0-9.]/g, ''));
-          break;
-        case 'weight':
-          setWeightLbs(field.value.replace(/[^0-9.]/g, ''));
-          break;
-        // Add other fields as needed
+      const cleanValue = field.value.replace(/[^0-9.]/g, '');
+      if (cleanValue) {
+        switch (field.field) {
+          case 'miles':
+            setMiles(cleanValue);
+            fieldsPopulated.push('Miles');
+            console.log('📏 OCR: Set miles to', cleanValue);
+            break;
+          case 'rate':
+            setOfferAllIn(cleanValue);
+            fieldsPopulated.push('Rate');
+            console.log('💰 OCR: Set rate to', cleanValue);
+            break;
+          case 'weight':
+            setWeightLbs(cleanValue);
+            fieldsPopulated.push('Weight');
+            console.log('⚖️ OCR: Set weight to', cleanValue);
+            break;
+          // Add other fields as needed
+        }
       }
     });
+
+    // Set visual feedback state
+    setPopulatedFields(fieldsPopulated);
+    setOcrJustCompleted(true);
+    
+    // Show success toast
+    const fieldsList = fieldsPopulated.join(', ');
+    toast({
+      title: "✅ Fields populated successfully!",
+      description: `Extracted: ${fieldsList}. Ready to calculate your negotiation strategy.`,
+      duration: 4000,
+    });
+    
+    console.log('✨ OCR: Successfully populated fields:', fieldsPopulated);
+    
+    // Scroll to top to show the populated form
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleUploadClick = () => {
@@ -599,6 +646,18 @@ const Core = () => {
                 </div>
               </div>
 
+              {/* Show OCR success banner */}
+              {ocrJustCompleted && populatedFields.length > 0 && (
+                <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <p className="text-sm font-medium text-primary">
+                      OCR Complete! Populated: {populatedFields.join(', ')}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Miles</label>
@@ -607,6 +666,7 @@ const Core = () => {
                     placeholder="0"
                     value={miles}
                     onChange={(e) => setMiles(e.target.value)}
+                    className={ocrJustCompleted && populatedFields.includes('Miles') ? 'ring-2 ring-primary/50 border-primary' : ''}
                   />
                 </div>
                 <div>
@@ -616,6 +676,7 @@ const Core = () => {
                     placeholder="0"
                     value={offerAllIn}
                     onChange={(e) => setOfferAllIn(e.target.value)}
+                    className={ocrJustCompleted && populatedFields.includes('Rate') ? 'ring-2 ring-primary/50 border-primary' : ''}
                   />
                 </div>
               </div>
@@ -628,6 +689,7 @@ const Core = () => {
                     placeholder="0"
                     value={weightLbs}
                     onChange={(e) => setWeightLbs(e.target.value)}
+                    className={ocrJustCompleted && populatedFields.includes('Weight') ? 'ring-2 ring-primary/50 border-primary' : ''}
                   />
                 </div>
                 <div>
