@@ -1109,14 +1109,11 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                   variant="outline"
                   onClick={() => setShowNegotiationSheet(true)}
                   disabled={!requiredFilled || hasErrors}
-                  className="flex-1 relative"
+                  className="flex-1"
                   title="Open full negotiation workspace with advanced templates, outcome tracking, and detailed load analysis"
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  Negotiate
-                  <Badge variant="secondary" className="ml-2 text-xs px-1.5 py-0.5">
-                    Full Workspace
-                  </Badge>
+                  Full Negotiation
                 </Button>
 
                 <Button
