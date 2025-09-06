@@ -18,13 +18,17 @@ serve(async (req) => {
   console.log('Request origin:', origin);
   console.log('Allowed origins:', allowedOrigins);
 
-  // CORS setup with fallback for development
+  // CORS setup with fallback for development and Lovable preview domains
   const isLocalOrigin = /^https?:\/\/localhost(:\d+)?$/.test(normalizedOrigin) ||
     /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin);
+  
+  // Support Lovable preview domains
+  const isLovablePreviewOrigin = /^https:\/\/.*\.lovable\.(app|dev)$/.test(normalizedOrigin);
 
   const isOriginAllowed = allowedOrigins.length === 0 ||
     allowedOrigins.includes(normalizedOrigin) ||
-    isLocalOrigin;
+    isLocalOrigin ||
+    isLovablePreviewOrigin;
     
   const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',

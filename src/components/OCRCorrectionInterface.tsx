@@ -104,22 +104,22 @@ export function OCRCorrectionInterface({
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px]">
         {/* Left side: Original text */}
-        <Card className="p-4">
+        <Card className="p-4 flex flex-col">
           <Label className="text-sm font-medium">Original Image Text</Label>
           <Textarea
             value={rawText}
             readOnly
-            className="mt-2 h-64 resize-none bg-muted"
+            className="mt-2 flex-1 resize-none bg-muted min-h-[320px]"
           />
         </Card>
 
         {/* Right side: Detected fields */}
-        <Card className="p-4">
+        <Card className="p-4 flex flex-col">
           <Label className="text-sm font-medium">Detected Fields</Label>
           
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-4 flex-1 overflow-y-auto">
             {/* High confidence fields */}
             {highConfidence.length > 0 && (
               <div>

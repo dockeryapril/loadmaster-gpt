@@ -194,7 +194,8 @@ const Core = () => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (file && file.type.startsWith('image/')) {
         ocrProcessor.processOCR(file, handleFieldsDetected, () => {
-          // Fallback to manual entry
+          // Fallback: Reset OCR states and stay on manual input form
+          console.log('OCR fallback - staying on manual input');
         });
       }
     };
@@ -226,7 +227,8 @@ const Core = () => {
     
     // Process the captured file through OCR
     ocrProcessor.processOCR(file, handleFieldsDetected, () => {
-      // Fallback to manual entry
+      // Fallback: Reset states and stay on manual input form
+      console.log('Camera OCR fallback - staying on manual input');
     });
   };
 
