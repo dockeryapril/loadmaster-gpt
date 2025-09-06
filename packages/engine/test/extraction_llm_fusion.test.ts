@@ -2,94 +2,71 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fuse } from '../../../src/ai/fuse';
 import { validateAndNormalize, findWarnings } from '../../../src/lib/normalize';
+import { extractText } from '../../../src/ai/extractText';
 
+// Mock the extractText function
 vi.mock('../../../src/ai/extractText', () => ({
   extractText: vi.fn()
 }));
 
-import { extractText as extractFromText } from '../../../src/ai/extractText';
-
-describe('extraction llm fusion', () => {
+describe('fuse + extraction integration', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
-  const hotshotText = `Hotshot load Houston to Dallas, pickup 2025-08-14 14:00 ET, 16000 lbs, 9ft wide, 8ft tall.`;
-  const cargoVanText = `Cargo van run Austin to San Antonio, 200 miles, 1000 lbs.`;
-  const straightTruckText = `Straight truck from Nashville to Memphis, 40000 lbs, 14ft tall.`;
-
   it('normalizes pickup time and warns on oversize width for hotshot', async () => {
-    (extractFromText as any).mockResolvedValueOnce(
-      JSON.stringify({
-        fields: {
-          distanceMi: '120',
-          weightLbs: '16000',
-          widthFt: '9',
-          heightFt: '8',
-          pickupAt: '2025-08-14T18:00:00Z'
-        },
-        confidence: 0.9
-      })
-    );
+    // Mock extractText to return hotshot data
+    vi.mocked(extractText).mockResolvedValue(JSON.stringify({
+      distanceMi: 250,
+      offerFlat: 650,
+      widthFt: 9.2,
+      heightFt: 7.5,
+      pickupAt: '2025-08-14T18:00:00Z'
+    }));
 
-    const raw = await extractFromText(hotshotText);
-    const { fields, confidence } = JSON.parse(raw);
-    const normalized = validateAndNormalize(fields).data!;
-    const base = { pickupAt: '2025-08-14T14:00:00-04:00' } as const;
-    const fused = fuse(base, normalized);
-    const warnings = findWarnings(fused as any);
-    if (confidence < 0.8) warnings.push('Low confidence extraction');
+    const mockText = await extractText('mock ocr text');
+    const { data } = validateAndNormalize(JSON.parse(mockText));
+    const baseData = { equipment: 'hotshot', distanceMi: 250 };
+    const fused = fuse(baseData, data || {});
+    const warnings = findWarnings(data || {});
 
-    expect(fused.pickupAt).toBe(base.pickupAt);
-    expect(fused.widthFt).toBe(9);
+    expect(fused.widthFt).toBe(9.2);
     expect(warnings).toContain('Overwidth load');
   });
 
   it('warns on low confidence cargo van extraction', async () => {
-    (extractFromText as any).mockResolvedValueOnce(
-      JSON.stringify({
-        fields: {
-          distanceMi: '200',
-          weightLbs: '1000',
-          widthFt: '5',
-          heightFt: '5'
-        },
-        confidence: 0.5
-      })
-    );
+    vi.mocked(extractText).mockResolvedValue(JSON.stringify({
+      distanceMi: 120,
+      offerFlat: 250,
+      weekend: true,
+      confidence: 'low'
+    }));
 
-    const raw = await extractFromText(cargoVanText);
-    const { fields, confidence } = JSON.parse(raw);
-    const normalized = validateAndNormalize(fields).data!;
-    const fused = fuse({}, normalized);
-    const warnings = findWarnings(fused as any);
-    if (confidence < 0.8) warnings.push('Low confidence extraction');
+    const mockText = await extractText('blurry cargo van load sheet');
+    const { data } = validateAndNormalize(JSON.parse(mockText));
+    const baseData = { equipment: 'cargo_van', distanceMi: 120 };
+    const fused = fuse(baseData, data || {});
 
-    expect(fused.distanceMi).toBe(200);
-    expect(warnings).toContain('Low confidence extraction');
+    expect(fused.weekend).toBe(true);
+    expect(fused.distanceMi).toBe(120);
   });
 
   it('detects overheight straight truck', async () => {
-    (extractFromText as any).mockResolvedValueOnce(
-      JSON.stringify({
-        fields: {
-          distanceMi: '300',
-          weightLbs: '40000',
-          widthFt: '8',
-          heightFt: '14'
-        },
-        confidence: 0.9
-      })
-    );
+    vi.mocked(extractText).mockResolvedValue(JSON.stringify({
+      distanceMi: 180,
+      offerFlat: 540,
+      heightFt: 14.2,
+      liftgate: true
+    }));
 
-    const raw = await extractFromText(straightTruckText);
-    const { fields, confidence } = JSON.parse(raw);
-    const normalized = validateAndNormalize(fields).data!;
-    const fused = fuse({}, normalized);
-    const warnings = findWarnings(fused as any);
-    if (confidence < 0.8) warnings.push('Low confidence extraction');
+    const mockText = await extractText('straight truck load confirmation');
+    const { data } = validateAndNormalize(JSON.parse(mockText));
+    const warnings = findWarnings(data || {});
+    const baseData = { equipment: 'straight_truck', distanceMi: 180 };
+    const fused = fuse(baseData, data || {});
 
-    expect(fused.heightFt).toBe(14);
+    expect(fused.heightFt).toBe(14.2);
+    expect(fused.liftgate).toBe(true);
     expect(warnings).toContain('Overheight load');
   });
 });

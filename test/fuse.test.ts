@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fuse } from '../src/ai/fuse';
+import { fuse } from '@/ai/fuse';
 
 describe('fuse date normalization', () => {
   it('treats equivalent ISO strings with different zones as equal', () => {

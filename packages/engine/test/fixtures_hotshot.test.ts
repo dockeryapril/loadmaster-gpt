@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { describe, it, expect, vi } from 'vitest';
-import fixtures from '../../../LoadMaster_GPT/helper_dropin/fixtures_hotshot.json';
+import fixtures from '../../../fixtures_hotshot.json';
 import { computeCalc } from '../src/computeNegotiation';
 import { suggestTemplates } from '../src/generateMessages';
 import { selectProfile } from '../src/equipmentProfiles';
