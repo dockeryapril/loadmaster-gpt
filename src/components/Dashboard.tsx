@@ -19,6 +19,8 @@ import { cn } from '@/lib/utils';
 import { LoadEntryMethod } from './LoadEntryMethod';
 import { LoadCalculator } from './LoadCalculator';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
+import { UpgradeCard } from './UpgradeCard';
+import { useTierDetection } from '@/hooks/useTierDetection';
 
 interface DashboardProps {
   loads: Load[];
@@ -41,6 +43,7 @@ export function Dashboard({
   const [contentVisible, setContentVisible] = useState(!loading);
   const [showCalculator, setShowCalculator] = useState(false);
   const [ocrData, setOcrData] = useState<Partial<Load> | null>(null);
+  const { tier, isPro } = useTierDetection();
 
   useEffect(() => {
     if (!loading) {
@@ -171,6 +174,12 @@ export function Dashboard({
             />
           </div>
         )}
+
+        {/* Upgrade Card for LITE users */}
+        {!isPro && (
+          <UpgradeCard className="mb-6" />
+        )}
+
         {/* Setup Banner */}
         <SetupBanner />
 

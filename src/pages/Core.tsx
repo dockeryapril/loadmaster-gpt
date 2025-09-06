@@ -9,6 +9,7 @@ import { usePlan } from '@/hooks/usePlan';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
+import { TierIndicator } from '@/components/TierIndicator';
 
 // Simple negotiation logic for Core version
 const calculateNegotiation = (miles: number, rate: number, weight?: number) => {
@@ -177,6 +178,8 @@ const Core = () => {
               <p className="text-sm text-muted-foreground">Your Smart Load Rate Calculator</p>
             </div>
           </div>
+          <TierIndicator />
+        </div>
           
           <div className="flex items-center gap-2">
             {!user && (
@@ -422,4 +425,5 @@ const Core = () => {
   );
 };
 
+// Export the Core component
 export default Core;

@@ -23,6 +23,8 @@ import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
+import { useOCRUsage, incrementOCRUsage } from '@/hooks/useOCRUsage';
+import { useTierDetection } from '@/hooks/useTierDetection';
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -69,6 +71,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
+  const ocrUsage = useOCRUsage();
+  const { isPro } = useTierDetection();
 
   const handleOCR = async (file: File) => {
     console.log('Starting OCR process for file:', file.name);
@@ -81,6 +85,9 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
     abortControllerRef.current = new AbortController();
     const abortSignal = abortControllerRef.current.signal;
     console.log('Created new abort controller');
+    
+    // Increment OCR usage
+    incrementOCRUsage();
     
     const startTime = logOCRStart('LoadEntryMethod');
     try {
@@ -721,8 +728,23 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
       <div className="text-center">
         <h2 className="text-xl font-semibold mb-2">Add New Load</h2>
         <p className="text-sm text-muted-foreground">
-          Choose how you'd like to enter your load information
+          Use OCR image processing to extract load details automatically, or enter details manually.
         </p>
+        
+        {/* OCR Usage Display */}
+        <div className="bg-card rounded-lg p-3 border mt-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">OCR scans today:</span>
+            <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
+              {ocrUsage.daily}/{ocrUsage.dailyLimit}
+            </span>
+          </div>
+          {!isPro && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Manual entry is unlimited • OCR processing has daily limits
+            </p>
+          )}
+        </div>
       </div>
 
       {/* OCR Options */}
@@ -740,15 +762,19 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleUploadClick}
+                disabled={!ocrUsage.canUseOCR}
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className="icon-badge bg-primary/20">
-                    <Upload className="h-6 w-6 text-primary" />
+                  <div className={`icon-badge ${ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Upload className={`h-6 w-6 ${ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Upload Image/Screenshot</div>
                     <div className="text-sm text-muted-foreground">
-                      Select photos from your device
+                      {ocrUsage.canUseOCR 
+                        ? "Select photos from your device" 
+                        : `Daily limit reached (${ocrUsage.remaining} remaining)`
+                      }
                     </div>
                   </div>
                 </div>
@@ -762,15 +788,19 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleCameraClick}
+                disabled={!ocrUsage.canUseOCR}
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className="icon-badge bg-primary/20">
-                    <Camera className="h-6 w-6 text-primary" />
+                  <div className={`icon-badge ${ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Camera className={`h-6 w-6 ${ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Take Photo</div>
                     <div className="text-sm text-muted-foreground">
-                      Use your camera to capture load documents
+                      {ocrUsage.canUseOCR 
+                        ? "Use your camera to capture load documents"
+                        : `Daily limit reached (${ocrUsage.remaining} remaining)`
+                      }
                     </div>
                   </div>
                 </div>
@@ -804,7 +834,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
               <div className="text-left">
                 <div className="font-medium">Manual Entry</div>
                 <div className="text-sm text-muted-foreground">
-                  Enter load details manually
+                  Enter load details manually (unlimited)
                 </div>
               </div>
             </div>
