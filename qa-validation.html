@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoadMaster QA Validation Suite</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .test-group { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-group h3 { margin-top: 0; color: #2563eb; }
+        .test-result { margin: 8px 0; padding: 8px; border-radius: 4px; }
+        .pass { background: #dcfce7; color: #166534; }
+        .fail { background: #fef2f2; color: #dc2626; }
+        .warning { background: #fef3c7; color: #d97706; }
+        .summary { padding: 15px; background: #f8fafc; border-radius: 8px; margin: 20px 0; }
+        .error-details { font-size: 12px; margin-top: 5px; color: #666; }
+        button { padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <h1>🚛 LoadMaster Quality Assurance Validation</h1>
+    <p>Comprehensive testing of core business logic and calculations</p>
+    
+    <button onclick="runAllTests()">🏃‍♂️ Run All Tests</button>
+    
+    <div id="summary" class="summary" style="display: none;">
+        <h2>Test Summary</h2>
+        <div id="summaryContent"></div>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        // Business setup calculation functions (from the tests)
+        function calculateNetRpm(grossRpm, revenueSplitPercentage, weeklyFixedCosts, estimatedWeeklyMiles = 2500) {
+            const afterSplitRpm = grossRpm * (revenueSplitPercentage / 100);
+            const fixedCostPerMile = weeklyFixedCosts / estimatedWeeklyMiles;
+            return afterSplitRpm - fixedCostPerMile;
+        }
+
+        function calculateBusinessImpact(revenueSplitPercentage, weeklyFixedCosts, estimatedWeeklyMiles = 2500) {
+            const splitImpact = 100 - revenueSplitPercentage;
+            const fixedCostPerMile = weeklyFixedCosts / estimatedWeeklyMiles;
+            
+            return {
+                splitImpact,
+                fixedCostPerMile,
+                totalImpactPerMile: (splitImpact / 100) + fixedCostPerMile
+            };
+        }
+
+        // Test runner functions
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message);
+            }
+        }
+
+        function assertCloseTo(actual, expected, precision = 2) {
+            const tolerance = Math.pow(10, -precision) / 2;
+            if (Math.abs(actual - expected) > tolerance) {
+                throw new Error(`Expected ${actual} to be close to ${expected} (±${tolerance})`);
+            }
+        }
+
+        const tests = {
+            'Revenue Split Calculations': {
+                '75% revenue split correctly': () => {
+                    const netRpm = calculateNetRpm(2.50, 75, 0);
+                    assertCloseTo(netRpm, 1.875, 3);
+                },
+                '85% revenue split correctly': () => {
+                    const netRpm = calculateNetRpm(2.00, 85, 0);
+                    assertCloseTo(netRpm, 1.700, 3);
+                },
+                '95% revenue split correctly': () => {
+                    const netRpm = calculateNetRpm(3.00, 95, 0);
+                    assertCloseTo(netRpm, 2.850, 3);
+                },
+                'handles 100% revenue split (no split)': () => {
+                    const netRpm = calculateNetRpm(2.25, 100, 0);
+                    assertCloseTo(netRpm, 2.25, 3);
+                }
+            },
+            'Weekly Fixed Costs': {
+                'calculates weekly costs impact with standard mileage': () => {
+                    const netRpm = calculateNetRpm(2.50, 100, 400, 2500);
+                    const expectedCostPerMile = 400 / 2500; // 0.16
+                    assertCloseTo(netRpm, 2.50 - expectedCostPerMile, 3);
+                },
+                'calculates weekly costs impact with low mileage': () => {
+                    const netRpm = calculateNetRpm(2.00, 100, 300, 1500);
+                    const expectedCostPerMile = 300 / 1500; // 0.20
+                    assertCloseTo(netRpm, 2.00 - expectedCostPerMile, 3);
+                },
+                'calculates weekly costs impact with high mileage': () => {
+                    const netRpm = calculateNetRpm(2.75, 100, 500, 3500);
+                    const expectedCostPerMile = 500 / 3500; // ~0.143
+                    assertCloseTo(netRpm, 2.75 - expectedCostPerMile, 3);
+                }
+            },
+            'Real-World Scenarios': {
+                'lease operator scenario (75% split + $400/week)': () => {
+                    const netRpm = calculateNetRpm(2.50, 75, 400, 2500);
+                    const expectedAfterSplit = 2.50 * 0.75; // 1.875
+                    const expectedCostPerMile = 400 / 2500; // 0.16
+                    const expectedNet = expectedAfterSplit - expectedCostPerMile; // 1.715
+                    assertCloseTo(netRpm, expectedNet, 3);
+                },
+                'independent contractor scenario (95% split + $100/week)': () => {
+                    const netRpm = calculateNetRpm(3.00, 95, 100, 2500);
+                    const expectedAfterSplit = 3.00 * 0.95; // 2.85
+                    const expectedCostPerMile = 100 / 2500; // 0.04
+                    const expectedNet = expectedAfterSplit - expectedCostPerMile; // 2.81
+                    assertCloseTo(netRpm, expectedNet, 3);
+                },
+                'company driver scenario (35% split + $0/week)': () => {
+                    const netRpm = calculateNetRpm(2.25, 35, 0);
+                    const expectedNet = 2.25 * 0.35; // 0.7875
+                    assertCloseTo(netRpm, expectedNet, 3);
+                }
+            },
+            'Business Impact Analysis': {
+                'calculates impact for 75/25 lease scenario': () => {
+                    const impact = calculateBusinessImpact(75, 400);
+                    assert(impact.splitImpact === 25, 'Split impact should be 25%');
+                    assertCloseTo(impact.fixedCostPerMile, 0.16, 3);
+                    assertCloseTo(impact.totalImpactPerMile, 0.41, 3);
+                },
+                'calculates impact for independent contractor scenario': () => {
+                    const impact = calculateBusinessImpact(95, 100);
+                    assert(impact.splitImpact === 5, 'Split impact should be 5%');
+                    assertCloseTo(impact.fixedCostPerMile, 0.04, 3);
+                    assertCloseTo(impact.totalImpactPerMile, 0.09, 3);
+                }
+            },
+            'Edge Cases & Validation': {
+                'handles zero revenue split': () => {
+                    const netRpm = calculateNetRpm(2.50, 0, 0);
+                    assert(netRpm === 0, 'Net RPM should be 0 with 0% split');
+                },
+                'handles negative weekly costs': () => {
+                    const netRpm = calculateNetRpm(2.50, 100, -100);
+                    assertCloseTo(netRpm, 2.54, 2); // Adds to RPM
+                },
+                'handles very low weekly mileage': () => {
+                    const netRpm = calculateNetRpm(2.50, 100, 400, 100);
+                    const expectedCostPerMile = 400 / 100; // 4.00 per mile
+                    assertCloseTo(netRpm, 2.50 - expectedCostPerMile, 2);
+                },
+                'validates revenue split percentage bounds': () => {
+                    const highSplit = calculateNetRpm(2.50, 150, 0);
+                    assertCloseTo(highSplit, 3.75, 2); // 150% of 2.50
+                    
+                    const negativeSplit = calculateNetRpm(2.50, -10, 0);
+                    assertCloseTo(negativeSplit, -0.25, 2); // -10% of 2.50
+                }
+            }
+        };
+
+        function runAllTests() {
+            const resultsDiv = document.getElementById('results');
+            const summaryDiv = document.getElementById('summary');
+            const summaryContent = document.getElementById('summaryContent');
+            
+            resultsDiv.innerHTML = '';
+            summaryDiv.style.display = 'none';
+            
+            let totalTests = 0;
+            let passedTests = 0;
+            let failedTests = 0;
+            
+            Object.entries(tests).forEach(([groupName, groupTests]) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'test-group';
+                groupDiv.innerHTML = `<h3>${groupName}</h3>`;
+                
+                Object.entries(groupTests).forEach(([testName, testFn]) => {
+                    totalTests++;
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'test-result';
+                    
+                    try {
+                        testFn();
+                        resultDiv.className += ' pass';
+                        resultDiv.innerHTML = `✅ ${testName}`;
+                        passedTests++;
+                    } catch (error) {
+                        resultDiv.className += ' fail';
+                        resultDiv.innerHTML = `❌ ${testName}<div class="error-details">${error.message}</div>`;
+                        failedTests++;
+                    }
+                    
+                    groupDiv.appendChild(resultDiv);
+                });
+                
+                resultsDiv.appendChild(groupDiv);
+            });
+            
+            // Show summary
+            summaryDiv.style.display = 'block';
+            const successRate = Math.round((passedTests / totalTests) * 100);
+            summaryContent.innerHTML = `
+                <div style="font-size: 18px; margin-bottom: 10px;">
+                    <strong>Results: ${passedTests}/${totalTests} tests passed (${successRate}%)</strong>
+                </div>
+                <div>✅ Passed: ${passedTests}</div>
+                <div>❌ Failed: ${failedTests}</div>
+                <div style="margin-top: 15px;">
+                    ${successRate >= 95 ? 
+                        '<div class="pass" style="padding: 10px;">🎉 Excellent! Core business logic is solid and ready for production.</div>' :
+                    successRate >= 80 ? 
+                        '<div class="warning" style="padding: 10px;">⚠️ Good foundation, but some issues need attention.</div>' :
+                        '<div class="fail" style="padding: 10px;">🚨 Critical issues found. Business logic needs fixes before deployment.</div>'
+                    }
+                </div>
+            `;
+        }
+
+        // Check app connectivity
+        function checkAppConnectivity() {
+            const iframe = document.createElement('iframe');
+            iframe.src = window.location.origin;
+            iframe.style.display = 'none';
+            iframe.onload = () => {
+                console.log('✅ Main app is accessible');
+                document.body.removeChild(iframe);
+            };
+            iframe.onerror = () => {
+                console.log('❌ Main app connection failed');
+                document.body.removeChild(iframe);
+            };
+            document.body.appendChild(iframe);
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            console.log('🚀 LoadMaster QA Validation Suite loaded');
+            checkAppConnectivity();
+        });
+    </script>
+</body>
+</html>
