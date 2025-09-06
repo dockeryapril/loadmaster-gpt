@@ -244,9 +244,9 @@ export function Settings({ onClose }: SettingsProps) {
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>Great: ${effectiveRPM.green}/mi</div>
-                <div>Good: ${effectiveRPM.yellow}/mi</div>
-                <div>Fair: ${effectiveRPM.red}/mi</div>
+                <div>Great: ${effectiveRPM.green.toFixed(2)}/mi</div>
+                <div>Good: ${effectiveRPM.yellow.toFixed(2)}/mi</div>
+                <div>Fair: ${effectiveRPM.red.toFixed(2)}/mi</div>
               </div>
             </div>
           )}
