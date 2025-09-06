@@ -24,7 +24,7 @@ import { extractionSchema } from '@/ai/extractionSchema';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
 import { useOCRUsage, incrementOCRUsage } from '@/hooks/useOCRUsage';
-import { useTierDetection } from '@/hooks/useTierDetection';
+
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -42,9 +42,10 @@ interface LoadEntryMethodProps {
   onFieldsDetected: (result: FieldDetectionResult) => void;
   onManualEntry: () => void;
   onClose?: () => void;
+  isPro?: boolean; // Add isPro prop to control OCR usage display
 }
 
-export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: LoadEntryMethodProps) {
+export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPro = true }: LoadEntryMethodProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOCRFallback, setShowOCRFallback] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
@@ -71,8 +72,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
-  const ocrUsage = useOCRUsage();
-  const { isPro } = useTierDetection();
+  const ocrUsage = useOCRUsage(isPro);
 
   const handleOCR = async (file: File) => {
     console.log('Starting OCR process for file:', file.name);
@@ -762,18 +762,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleUploadClick}
-                disabled={!ocrUsage.canUseOCR}
+                disabled={!isPro && !ocrUsage.canUseOCR} // Only disable for LITE users who exceeded limits
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className={`icon-badge ${ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
-                    <Upload className={`h-6 w-6 ${ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`icon-badge ${isPro || ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Upload className={`h-6 w-6 ${isPro || ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Upload Image/Screenshot</div>
                     <div className="text-sm text-muted-foreground">
-                      {ocrUsage.canUseOCR 
+                      {isPro 
                         ? "Select photos from your device" 
-                        : `Daily limit reached (${ocrUsage.remaining} remaining)`
+                        : ocrUsage.canUseOCR 
+                          ? "Select photos from your device" 
+                          : `Daily limit reached (${ocrUsage.remaining} remaining)`
                       }
                     </div>
                   </div>
@@ -788,18 +790,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose }: Lo
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleCameraClick}
-                disabled={!ocrUsage.canUseOCR}
+                disabled={!isPro && !ocrUsage.canUseOCR} // Only disable for LITE users who exceeded limits
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className={`icon-badge ${ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
-                    <Camera className={`h-6 w-6 ${ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`icon-badge ${isPro || ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Camera className={`h-6 w-6 ${isPro || ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Take Photo</div>
                     <div className="text-sm text-muted-foreground">
-                      {ocrUsage.canUseOCR 
+                      {isPro 
                         ? "Use your camera to capture load documents"
-                        : `Daily limit reached (${ocrUsage.remaining} remaining)`
+                        : ocrUsage.canUseOCR 
+                          ? "Use your camera to capture load documents"
+                          : `Daily limit reached (${ocrUsage.remaining} remaining)`
                       }
                     </div>
                   </div>

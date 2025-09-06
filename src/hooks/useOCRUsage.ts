@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useTierDetection } from './useTierDetection';
 
 export interface OCRUsageInfo {
   daily: number;
@@ -9,11 +8,10 @@ export interface OCRUsageInfo {
   resetTime: Date;
 }
 
-export function useOCRUsage(): OCRUsageInfo {
-  const { isPro } = useTierDetection();
+export function useOCRUsage(isPro = false): OCRUsageInfo {
   const [dailyUsage, setDailyUsage] = useState(0);
 
-  // Define limits based on tier
+  // Define limits based on tier - passed in rather than detected
   const dailyLimit = isPro ? 100 : 5;
 
   // Get today's date key for localStorage

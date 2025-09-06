@@ -157,9 +157,9 @@ export function Settings({ onClose }: SettingsProps) {
                 id="fuelPrice"
                 type="number"
                 step="0.01"
-                value={fuelPrice}
+                value={fuelPrice ? parseFloat(fuelPrice).toFixed(2) : '0.00'}
                 onChange={(e) => setFuelPrice(e.target.value)}
-                placeholder="0"
+                placeholder="0.00"
               />
               <div className="text-sm text-muted-foreground">
                 National average: $3.89
@@ -168,7 +168,7 @@ export function Settings({ onClose }: SettingsProps) {
             
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="mpg">Miles Per Gallon</Label>
+                <Label htmlFor="mpg">MPG</Label>
                 {equipment && <Badge variant="secondary" className="text-xs">
                   {industryContext?.equipmentType}: {industryContext?.recommendedMPG} MPG
                 </Badge>}

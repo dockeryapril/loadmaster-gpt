@@ -384,6 +384,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
             onFieldsDetected={handleFieldsDetected}
             onManualEntry={() => setShowLoadEntry(false)}
             onClose={() => setShowLoadEntry(false)}
+            isPro={isPro} // Pass isPro prop
           />
         )}
 
@@ -1039,6 +1040,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                               bottomRate={bottomRate}
                               miles={parseFloat(miles) || 0}
                               weightLbs={weight ? parseFloat(weight) : undefined}
+                              isPro={isPro} // Pass isPro prop
                               offerTotal={
                                 (parseFloat(rate) || 0) +
                                 (parseFloat(fsc) || 0) +
@@ -1137,6 +1139,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
         <NegotiationSheet
           open={showNegotiationSheet}
           onClose={() => setShowNegotiationSheet(false)}
+          isPro={isPro} // Pass isPro prop
           load={{
             origin,
             destination,

@@ -172,6 +172,7 @@ export function Dashboard({
             <LoadEntryMethod
               onFieldsDetected={handleFieldsDetected}
               onManualEntry={handleManualEntry}
+              isPro={isPro} // Pass isPro prop
             />
           </div>
         )}

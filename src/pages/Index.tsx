@@ -236,6 +236,7 @@ const Index = () => {
             onFieldsDetected={handleFieldsDetected}
             onManualEntry={handleManualEntry}
             onClose={() => setCurrentView('dashboard')}
+            isPro={true} // Index page is always PRO
           />
         );
 

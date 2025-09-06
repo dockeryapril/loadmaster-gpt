@@ -21,13 +21,13 @@ interface NegotiationSheetProps {
   onClose: () => void;
   load: Partial<Load>;
   onSaveNegotiation?: (negotiation: Omit<Negotiation, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  isPro?: boolean; // Add isPro prop to control advanced features
 }
 
-export function NegotiationSheet({ open, onClose, load, onSaveNegotiation }: NegotiationSheetProps) {
+export function NegotiationSheet({ open, onClose, load, onSaveNegotiation, isPro = true }: NegotiationSheetProps) {
   const { calculation, notes, resultColor } = useNegotiationEngine({ load });
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isPro } = useTierDetection();
   const { advancedTemplates } = getFeatureFlags(user);
   
   // DEBUG: Log tier detection in NegotiationSheet
