@@ -148,6 +148,9 @@ const Index = () => {
     setOcrData(ocrDetectedData);
     setEditingLoad(null); // Make sure we're not editing an existing load
     setCurrentView('calculator');
+    
+    // Scroll to top after navigating to calculator
+    window.scrollTo(0, 0);
   };
 
 
