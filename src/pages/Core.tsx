@@ -452,10 +452,11 @@ const Core = () => {
               <div className="flex-1">
                 <label className="text-sm font-medium">Equipment Type</label>
                 <select
-                  value={equipment}
+                  value={equipment || ''}
                   onChange={(e) => setEquipment(e.target.value as Equipment)}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
+                  <option value="">Select Equipment Type</option>
                   <option value="cargo_van">Cargo Van</option>
                   <option value="straight_truck">Straight Truck</option>
                   <option value="hotshot">Hotshot</option>
