@@ -732,48 +732,48 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
 
                 {equipment === 'cargo_van' && (
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="weekend">Weekend</Label>
-                        <Switch
-                          id="weekend"
-                          checked={extras.weekend}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, weekend: c }))
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="afterHours">After Hours</Label>
-                        <Switch
-                          id="afterHours"
-                          checked={extras.afterHours}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, afterHours: c }))
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="inside">Inside</Label>
-                        <Switch
-                          id="inside"
-                          checked={extras.inside}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, inside: c }))
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="residential">Residential</Label>
-                        <Switch
-                          id="residential"
-                          checked={extras.residential}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, residential: c }))
-                          }
-                        />
-                      </div>
-                    </div>
+                     <div className="grid grid-cols-2 gap-3">
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="weekend">Weekend</Label>
+                         <Checkbox
+                           id="weekend"
+                           checked={extras.weekend}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, weekend: !!c }))
+                           }
+                         />
+                       </div>
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="afterHours">After Hours</Label>
+                         <Checkbox
+                           id="afterHours"
+                           checked={extras.afterHours}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, afterHours: !!c }))
+                           }
+                         />
+                       </div>
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="inside">Inside</Label>
+                         <Checkbox
+                           id="inside"
+                           checked={extras.inside}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, inside: !!c }))
+                           }
+                         />
+                       </div>
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="residential">Residential</Label>
+                         <Checkbox
+                           id="residential"
+                           checked={extras.residential}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, residential: !!c }))
+                           }
+                         />
+                       </div>
+                     </div>
                     <div>
                       <Label htmlFor="stopsVan">Stops</Label>
                       <Input
@@ -791,48 +791,48 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
 
                 {equipment === 'straight_truck' && (
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="liftgate">Liftgate</Label>
-                        <Switch
-                          id="liftgate"
-                          checked={extras.liftgate}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, liftgate: c }))
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="insideSt">Inside</Label>
-                        <Switch
-                          id="insideSt"
-                          checked={extras.inside}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, inside: c }))
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="residentialSt">Residential</Label>
-                        <Switch
-                          id="residentialSt"
-                          checked={extras.residential}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, residential: c }))
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="palletJack">Pallet Jack</Label>
-                        <Switch
-                          id="palletJack"
-                          checked={extras.palletJack}
-                          onCheckedChange={(c) =>
-                            setExtras((f) => ({ ...f, palletJack: c }))
-                          }
-                        />
-                      </div>
-                    </div>
+                     <div className="grid grid-cols-2 gap-3">
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="liftgate">Liftgate</Label>
+                         <Checkbox
+                           id="liftgate"
+                           checked={extras.liftgate}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, liftgate: !!c }))
+                           }
+                         />
+                       </div>
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="insideSt">Inside</Label>
+                         <Checkbox
+                           id="insideSt"
+                           checked={extras.inside}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, inside: !!c }))
+                           }
+                         />
+                       </div>
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="residentialSt">Residential</Label>
+                         <Checkbox
+                           id="residentialSt"
+                           checked={extras.residential}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, residential: !!c }))
+                           }
+                         />
+                       </div>
+                       <div className="flex items-center justify-between">
+                         <Label htmlFor="palletJack">Pallet Jack</Label>
+                         <Checkbox
+                           id="palletJack"
+                           checked={extras.palletJack}
+                           onCheckedChange={(c) =>
+                             setExtras((f) => ({ ...f, palletJack: !!c }))
+                           }
+                         />
+                       </div>
+                     </div>
                     <div>
                       <Label htmlFor="stopsSt">Stops</Label>
                       <Input
