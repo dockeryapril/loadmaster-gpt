@@ -320,16 +320,6 @@ const Index = () => {
                   Negotiation Settings
                 </span>
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setCurrentView('qa-validation')}
-                className="flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2">
-                  <Beaker className="h-4 w-4" />
-                  QA Validation Suite
-                </span>
-              </Button>
             </div>
             <Settings onClose={() => setCurrentView('dashboard')} />
           </div>
