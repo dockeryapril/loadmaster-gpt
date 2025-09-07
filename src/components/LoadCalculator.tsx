@@ -440,16 +440,12 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                     name="origin"
                     rules={{
                       required: 'Origin is required',
-                      pattern: {
-                        value: /^[^,]+,\s*[A-Z]{2}$/,
-                        message: 'Format: City, ST',
-                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Origin</FormLabel>
                         <FormControl>
-                          <Input placeholder="City, ST" {...field} />
+                          <Input placeholder="Enter location" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -460,16 +456,12 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                     name="destination"
                     rules={{
                       required: 'Destination is required',
-                      pattern: {
-                        value: /^[^,]+,\s*[A-Z]{2}$/,
-                        message: 'Format: City, ST',
-                      },
                     }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Destination</FormLabel>
                         <FormControl>
-                          <Input placeholder="City, ST" {...field} />
+                          <Input placeholder="Enter location" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -168,26 +168,19 @@ export function validatePercentage(value: string | number): { isValid: boolean; 
   return { isValid: result.isValid, error: result.error };
 }
 
-// Validate location format (City, ST)
+// Validate location format - flexible approach
 export function validateLocation(value: string): { isValid: boolean; error?: string } {
   if (!value) return { isValid: false, error: 'Location is required' };
   
   const sanitized = sanitizeLocation(value);
   
-  // Basic format check: should contain a comma and be reasonable length
-  const parts = sanitized.split(',');
-  if (parts.length !== 2) {
-    return { isValid: false, error: 'Format: City, ST' };
+  // Very basic validation - just ensure it's not empty and has reasonable length
+  if (sanitized.length < 2) {
+    return { isValid: false, error: 'Please enter a valid location' };
   }
   
-  const [city, state] = parts.map(p => p.trim());
-  
-  if (!city || city.length < 2) {
-    return { isValid: false, error: 'City name too short' };
-  }
-  
-  if (!state || state.length !== 2 || !/^[A-Z]{2}$/.test(state)) {
-    return { isValid: false, error: 'State must be 2 letters (e.g., CA)' };
+  if (sanitized.length > VALIDATION_LIMITS.LOCATION_MAX_LENGTH) {
+    return { isValid: false, error: 'Location is too long' };
   }
   
   return { isValid: true };
