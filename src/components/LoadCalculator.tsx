@@ -1030,7 +1030,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                               <div className="flex items-center gap-2">
                                 <div className="text-sm font-medium">Quick Scripts</div>
                                 <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                                  Pro
+                                  PRO
                                 </Badge>
                               </div>
                             </div>
