@@ -43,11 +43,11 @@ export function SimpleBusinessSetup({
   onSkip, 
   initialRevenueSplit = 100, 
   initialWeeklyCosts = 0,
-  initialEquipment = 'straight_truck' 
+  initialEquipment 
 }: SimpleBusinessSetupProps) {
   const [revenueSplit, setRevenueSplit] = useState(initialRevenueSplit);
   const [weeklyCosts, setWeeklyCosts] = useState(initialWeeklyCosts);
-  const [equipment, setEquipment] = useState<Equipment>(initialEquipment);
+  const [equipment, setEquipment] = useState<Equipment | undefined>(initialEquipment);
 
   const handleSave = () => {
     onSave(revenueSplit, weeklyCosts, equipment);
