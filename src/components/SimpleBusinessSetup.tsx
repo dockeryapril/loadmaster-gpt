@@ -45,12 +45,12 @@ export function SimpleBusinessSetup({
   initialWeeklyCosts = 0,
   initialEquipment 
 }: SimpleBusinessSetupProps) {
-  const [revenueSplit, setRevenueSplit] = useState(initialRevenueSplit);
-  const [weeklyCosts, setWeeklyCosts] = useState(initialWeeklyCosts);
+  const [revenueSplit, setRevenueSplit] = useState(initialRevenueSplit.toString());
+  const [weeklyCosts, setWeeklyCosts] = useState(initialWeeklyCosts.toString());
   const [equipment, setEquipment] = useState<Equipment | undefined>(initialEquipment);
 
   const handleSave = () => {
-    onSave(revenueSplit, weeklyCosts, equipment);
+    onSave(parseFloat(revenueSplit) || 0, parseFloat(weeklyCosts) || 0, equipment);
   };
 
   const equipmentOptions = [
@@ -60,12 +60,12 @@ export function SimpleBusinessSetup({
   ];
 
   const applyTemplate = (template: typeof SETUP_TEMPLATES[0]) => {
-    setRevenueSplit(template.revenueSplit);
-    setWeeklyCosts(template.weeklyCosts);
+    setRevenueSplit(template.revenueSplit.toString());
+    setWeeklyCosts(template.weeklyCosts.toString());
   };
 
   const estimatedWeeklyMiles = 2500; // Industry average for calculations
-  const weeklyImpactPerMile = weeklyCosts / estimatedWeeklyMiles;
+  const weeklyImpactPerMile = (parseFloat(weeklyCosts) || 0) / estimatedWeeklyMiles;
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -141,7 +141,7 @@ export function SimpleBusinessSetup({
                 id="revenue-split"
                 type="number"
                 value={revenueSplit}
-                onChange={(e) => setRevenueSplit(Number(e.target.value))}
+                onChange={(e) => setRevenueSplit(e.target.value)}
                 min="0"
                 max="100"
                 step="5"
@@ -166,7 +166,7 @@ export function SimpleBusinessSetup({
                 id="weekly-costs"
                 type="number"
                 value={weeklyCosts}
-                onChange={(e) => setWeeklyCosts(Number(e.target.value))}
+                onChange={(e) => setWeeklyCosts(e.target.value)}
                 min="0"
                 step="25"
                 className="pl-10"
@@ -179,14 +179,14 @@ export function SimpleBusinessSetup({
         </div>
 
         {/* Impact Preview */}
-        {(revenueSplit < 100 || weeklyCosts > 0) && (
+        {(parseFloat(revenueSplit) < 100 || parseFloat(weeklyCosts) > 0) && (
           <div className="p-3 bg-muted rounded-lg">
             <div className="text-sm font-medium mb-2">Impact on Your Calculations:</div>
             <div className="space-y-1 text-xs text-muted-foreground">
-              {revenueSplit < 100 && (
-                <div>• Revenue reduced by {100 - revenueSplit}% after company split</div>
+              {parseFloat(revenueSplit) < 100 && (
+                <div>• Revenue reduced by {100 - parseFloat(revenueSplit)}% after company split</div>
               )}
-              {weeklyCosts > 0 && (
+              {parseFloat(weeklyCosts) > 0 && (
                 <div>• Fixed costs reduce RPM by ~${weeklyImpactPerMile.toFixed(3)}/mile</div>
               )}
             </div>

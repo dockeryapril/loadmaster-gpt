@@ -217,8 +217,8 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                     <Input
                       type="number"
                       step="0.01"
-                      value={localSettings.rush_value}
-                      onChange={(e) => updateLocalSetting('rush_value', parseFloat(e.target.value))}
+                      value={localSettings.rush_value?.toString() || ''}
+                      onChange={(e) => updateLocalSetting('rush_value', e.target.value ? parseFloat(e.target.value) : undefined)}
                     />
                   </div>
                 </div>
@@ -260,8 +260,8 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                     <Input
                       type="number"
                       step="0.01"
-                      value={localSettings.weekend_value}
-                      onChange={(e) => updateLocalSetting('weekend_value', parseFloat(e.target.value))}
+                      value={localSettings.weekend_value?.toString() || ''}
+                      onChange={(e) => updateLocalSetting('weekend_value', e.target.value ? parseFloat(e.target.value) : undefined)}
                     />
                   </div>
                 </div>
@@ -303,16 +303,16 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                     <Input
                       type="number"
                       step="0.01"
-                      value={localSettings.heavy_value}
-                      onChange={(e) => updateLocalSetting('heavy_value', parseFloat(e.target.value))}
+                      value={localSettings.heavy_value?.toString() || ''}
+                      onChange={(e) => updateLocalSetting('heavy_value', e.target.value ? parseFloat(e.target.value) : undefined)}
                     />
                   </div>
                   <div className="flex-1">
                     <Label>Weight Threshold (lbs)</Label>
                     <Input
                       type="number"
-                      value={localSettings.heavy_weight_threshold}
-                      onChange={(e) => updateLocalSetting('heavy_weight_threshold', parseInt(e.target.value))}
+                      value={localSettings.heavy_weight_threshold?.toString() || ''}
+                      onChange={(e) => updateLocalSetting('heavy_weight_threshold', e.target.value ? parseInt(e.target.value) : undefined)}
                     />
                   </div>
                 </div>
@@ -354,8 +354,8 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                     <Input
                       type="number"
                       step="0.01"
-                      value={localSettings.multi_stop_value}
-                      onChange={(e) => updateLocalSetting('multi_stop_value', parseFloat(e.target.value))}
+                      value={localSettings.multi_stop_value?.toString() || ''}
+                      onChange={(e) => updateLocalSetting('multi_stop_value', e.target.value ? parseFloat(e.target.value) : undefined)}
                     />
                   </div>
                 </div>
@@ -397,8 +397,8 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                     <Input
                       type="number"
                       step="0.01"
-                      value={localSettings.premium_freight_value}
-                      onChange={(e) => updateLocalSetting('premium_freight_value', parseFloat(e.target.value))}
+                      value={localSettings.premium_freight_value?.toString() || ''}
+                      onChange={(e) => updateLocalSetting('premium_freight_value', e.target.value ? parseFloat(e.target.value) : undefined)}
                     />
                   </div>
                 </div>
@@ -422,8 +422,8 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                 <Input
                   type="number"
                   step="0.01"
-                  value={localSettings.anchor_offset ? localSettings.anchor_offset * 100 : 0}
-                  onChange={(e) => updateLocalSetting('anchor_offset', parseFloat(e.target.value) / 100)}
+                  value={localSettings.anchor_offset ? (localSettings.anchor_offset * 100).toString() : ''}
+                  onChange={(e) => updateLocalSetting('anchor_offset', e.target.value ? parseFloat(e.target.value) / 100 : undefined)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   How much above settle-for for opening bid.
@@ -434,8 +434,8 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
                 <Input
                   type="number"
                   step="0.01"
-                  value={localSettings.floor_offset ? localSettings.floor_offset * 100 : 0}
-                  onChange={(e) => updateLocalSetting('floor_offset', parseFloat(e.target.value) / 100)}
+                  value={localSettings.floor_offset ? (localSettings.floor_offset * 100).toString() : ''}
+                  onChange={(e) => updateLocalSetting('floor_offset', e.target.value ? parseFloat(e.target.value) / 100 : undefined)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   How much below settle-for for bottom line rate.
@@ -446,8 +446,8 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
               <Label>Rush Threshold (hours)</Label>
               <Input
                 type="number"
-                value={localSettings.rush_threshold_hours}
-                onChange={(e) => updateLocalSetting('rush_threshold_hours', parseInt(e.target.value))}
+                value={localSettings.rush_threshold_hours?.toString() || ''}
+                onChange={(e) => updateLocalSetting('rush_threshold_hours', e.target.value ? parseInt(e.target.value) : undefined)}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Hours to pickup to consider a load "rush"
