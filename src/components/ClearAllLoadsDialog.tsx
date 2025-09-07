@@ -10,10 +10,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Download, Archive, Trash2 } from 'lucide-react';
+import { Loader2, Download, Trash2 } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFeatureFlags } from '@/utils/featureFlags';
 
 interface ClearAllLoadsDialogProps {
   loads: Load[];
@@ -26,14 +25,13 @@ export function ClearAllLoadsDialog({
 }: ClearAllLoadsDialogProps) {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
-  const { historyExport } = getFeatureFlags(user);
-  const [exportToCsv, setExportToCsv] = useState(historyExport);
+  const [exportToCsv, setExportToCsv] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleConfirm = async () => {
     setIsProcessing(true);
     try {
-      await onClearAll(historyExport && exportToCsv);
+      await onClearAll(exportToCsv);
       setOpen(false);
     } finally {
       setIsProcessing(false);
@@ -55,39 +53,37 @@ export function ClearAllLoadsDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Archive className="h-5 w-5 text-destructive" />
-            Clear All Loads
+            <Trash2 className="h-5 w-5 text-destructive" />
+            Delete All Loads
           </DialogTitle>
           <DialogDescription>
-            Are you sure you want to clear all {loads.length} loads? This action will archive your loads instead of permanently deleting them.
+            Are you sure you want to permanently delete all {loads.length} loads? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          {historyExport && (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="export-csv"
-                checked={exportToCsv}
-                onCheckedChange={(checked) => setExportToCsv(!!checked)}
-                disabled={isProcessing}
-              />
-              <label
-                htmlFor="export-csv"
-                className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                <Download className="h-4 w-4" />
-                Export to CSV before clearing
-              </label>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="export-csv"
+              checked={exportToCsv}
+              onCheckedChange={(checked) => setExportToCsv(!!checked)}
+              disabled={isProcessing}
+            />
+            <label
+              htmlFor="export-csv"
+              className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              <Download className="h-4 w-4" />
+              Export to CSV before deleting
+            </label>
+          </div>
 
-          <div className="rounded-lg border border-border bg-muted/50 p-3">
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
             <div className="flex items-start gap-2">
-              <Archive className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium">Safe archiving</p>
-                <p>Your loads will be moved to an archive table, not permanently deleted. This ensures your data remains recoverable if needed.</p>
+              <Trash2 className="h-4 w-4 text-destructive mt-0.5" />
+              <div className="text-sm text-destructive">
+                <p className="font-medium">Permanent deletion</p>
+                <p>Your loads will be permanently deleted from the database. Export to CSV if you want to keep a backup of your data.</p>
               </div>
             </div>
           </div>
@@ -109,12 +105,12 @@ export function ClearAllLoadsDialog({
             {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {exportToCsv ? 'Exporting & Archiving...' : 'Archiving...'}
+                {exportToCsv ? 'Exporting & Deleting...' : 'Deleting...'}
               </>
             ) : (
               <>
-                <Archive className="mr-2 h-4 w-4" />
-                Clear All Loads
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete All Loads
               </>
             )}
           </Button>

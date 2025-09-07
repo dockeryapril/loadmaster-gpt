@@ -34,7 +34,7 @@ const Index = () => {
   const [showMigrationModal, setShowMigrationModal] = useState(false);
   const { toast } = useToast();
   const { user, signOut } = useAuth();
-  const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, archiveAllLoads, refetch } = useSupabaseLoads();
+  const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, deleteAllLoads, refetch } = useSupabaseLoads();
   const { settings, updateSettings } = useSupabaseSettings();
   const { hasCoreData } = useCoreDataMigration();
   const { showRateLimitBanner, dismissBanner } = useRateLimit();
@@ -110,10 +110,10 @@ const Index = () => {
   };
 
   const handleClearAll = async (exportToCsv: boolean) => {
-    if (featureFlags.historyExport && exportToCsv && loads.length > 0) {
+    if (exportToCsv && loads.length > 0) {
       exportLoadsToCSV(loads);
     }
-    await archiveAllLoads();
+    await deleteAllLoads();
     await refetch();
   };
 

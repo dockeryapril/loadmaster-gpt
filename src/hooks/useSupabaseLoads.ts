@@ -402,59 +402,27 @@ export function useSupabaseLoads() {
     }
   }, [user]);
 
-  // Archive all loads to archived_loads table
-  const archiveAllLoads = async () => {
+  // Delete all loads permanently
+  const deleteAllLoads = async () => {
     if (!user) return;
 
     if (!navigator.onLine) {
-      handleOffline(() => archiveAllLoads());
+      handleOffline(() => deleteAllLoads());
       return;
     }
 
     try {
-      // First, get all user's loads
-      const { data: loadsToArchive, error: fetchError } = await supabase
+      // Get count of loads to delete
+      const { data: loadsToDelete, error: fetchError } = await supabase
         .from('loads')
-        .select('*')
+        .select('id')
         .eq('user_id', user.id);
 
       if (fetchError) throw fetchError;
 
-      if (!loadsToArchive || loadsToArchive.length === 0) {
-        return { archivedCount: 0 };
+      if (!loadsToDelete || loadsToDelete.length === 0) {
+        return { deletedCount: 0 };
       }
-
-      // Transform loads for archive table
-      const archiveData = loadsToArchive.map(load => ({
-        original_load_id: load.id,
-        user_id: load.user_id,
-        origin: load.origin,
-        destination: load.destination,
-        miles: load.miles,
-        rate: load.rate,
-        fsc: load.fsc || 0,
-        tolls: load.tolls || 0,
-        weight: load.weight,
-        deadhead_miles: load.deadhead_miles || 0,
-        fuel_cost: load.fuel_cost || 0,
-        rpm: load.rpm,
-        profit: load.profit,
-        quality: load.quality,
-        tags: load.tags || [],
-        notes: load.notes,
-        negotiation_channel: load.negotiation_channel,
-        negotiation_tone: load.negotiation_tone,
-        negotiation_scripts: load.negotiation_scripts,
-        original_created_at: load.created_at,
-        archived_reason: 'bulk_clear'
-      }));
-
-      // Insert into archived_loads
-      const { error: archiveError } = await supabase
-        .from('archived_loads')
-        .insert(archiveData);
-
-      if (archiveError) throw archiveError;
 
       // Delete from loads table
       const { error: deleteError } = await supabase
@@ -467,22 +435,22 @@ export function useSupabaseLoads() {
       // Update local state
       setLoads([]);
 
-      const archivedCount = loadsToArchive.length;
+      const deletedCount = loadsToDelete.length;
 
       toast({
-        title: "All loads cleared",
-        description: `${archivedCount} loads have been archived successfully.`,
+        title: "All loads deleted",
+        description: `${deletedCount} loads have been permanently deleted.`,
       });
 
-      return { archivedCount };
+      return { deletedCount };
     } catch (error: any) {
-      logError('Error archiving loads:', error);
+      logError('Error deleting loads:', error);
       if (isNetworkError(error)) {
-        handleOffline(() => archiveAllLoads());
+        handleOffline(() => deleteAllLoads());
       } else {
         toast({
-          title: "Error archiving loads",
-          description: error.message || "Failed to archive loads.",
+          title: "Error deleting loads",
+          description: error.message || "Failed to delete loads.",
           variant: "destructive",
         });
         throw error;
@@ -496,7 +464,7 @@ export function useSupabaseLoads() {
     saveLoad,
     deleteLoad,
     updateLoad,
-    archiveAllLoads,
+    deleteAllLoads,
     refetch: fetchLoads,
   };
 }
