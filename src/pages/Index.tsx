@@ -287,6 +287,7 @@ const Index = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <SimpleBusinessSetup
               onSave={handleBusinessSetup}
+              onSkip={() => setCurrentView('dashboard')}
               initialRevenueSplit={settings?.revenueSplitPercentage || 100}
               initialWeeklyCosts={settings?.weeklyFixedCosts || 0}
             />
