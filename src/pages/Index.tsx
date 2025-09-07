@@ -89,6 +89,7 @@ const Index = () => {
       }
       await refetch();
       setCurrentView('dashboard');
+      window.scrollTo(0, 0);
     } catch (error) {
       // Error handling is done in the hooks
     }
@@ -121,6 +122,7 @@ const Index = () => {
     setEditingLoad(null);
     setOcrData(null);
     setCurrentView('calculator');
+    window.scrollTo(0, 0);
   };
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {

@@ -88,6 +88,13 @@ export function LoadCard({ load, onDelete, onEdit }: LoadCardProps) {
           </div>
         )}
 
+        {load.notes && (
+          <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
+            <span className="font-medium">Notes: </span>
+            <span>{load.notes}</span>
+          </div>
+        )}
+
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
           <span>{format(load.createdAt, 'MMM d, h:mm a')}</span>
           {onEdit && (

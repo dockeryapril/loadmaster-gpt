@@ -536,6 +536,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
     setShowCorrection(false);
     setCurrentDetectionResult(null);
     setCorrectedFields({});
+    resetProcessingState();
   };
 
   const handleCancelUpload = () => {
