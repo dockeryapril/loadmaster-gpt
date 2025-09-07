@@ -225,6 +225,7 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation, isPro
               <Button
                 variant="outline"
                 size="sm"
+                type="button"
                 onClick={handleCopyAllNotes}
                 className="mb-2"
               >
@@ -238,6 +239,7 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation, isPro
                     <Button
                       variant="ghost"
                       size="icon"
+                      type="button"
                       onClick={() => handleCopyNote(n.message)}
                       aria-label="Copy note"
                     >
@@ -295,7 +297,7 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation, isPro
                   )}
                 </div>
 
-                <Button onClick={handleCopyMessage} className="w-full">
+                <Button type="button" onClick={handleCopyMessage} className="w-full">
                   <Copy className="h-4 w-4 mr-2" />
                   Copy Message to Clipboard
                 </Button>

@@ -151,7 +151,7 @@ export function NegotiationPanel({
         <div key={stage} className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="font-medium capitalize">{stage}</h3>
-            <Button variant="outline" size="icon" onClick={() => handleCopy(stage)}>
+            <Button variant="outline" size="icon" type="button" onClick={() => handleCopy(stage)}>
               <Copy className="h-4 w-4" />
             </Button>
           </div>
