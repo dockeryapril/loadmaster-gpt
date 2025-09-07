@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useNegotiationSettings } from '@/hooks/useNegotiationSettings';
@@ -187,10 +187,10 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
             {/* Rush Premium */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Switch
-                  checked={localSettings.rush_enabled}
-                  onCheckedChange={(checked) => updateLocalSetting('rush_enabled', checked)}
-                />
+                 <Checkbox
+                   checked={localSettings.rush_enabled}
+                   onCheckedChange={(checked) => updateLocalSetting('rush_enabled', !!checked)}
+                 />
                 <Label htmlFor="rush-enabled" className="font-medium">Rush Load Premium</Label>
               </div>
               {localSettings.rush_enabled && (
@@ -230,10 +230,10 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
             {/* Weekend Premium */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Switch
-                  checked={localSettings.weekend_enabled}
-                  onCheckedChange={(checked) => updateLocalSetting('weekend_enabled', checked)}
-                />
+                 <Checkbox
+                   checked={localSettings.weekend_enabled}
+                   onCheckedChange={(checked) => updateLocalSetting('weekend_enabled', !!checked)}
+                 />
                 <Label className="font-medium">Weekend Premium</Label>
               </div>
               {localSettings.weekend_enabled && (
@@ -273,10 +273,10 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
             {/* Heavy Load Adjustment */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Switch
-                  checked={localSettings.heavy_enabled}
-                  onCheckedChange={(checked) => updateLocalSetting('heavy_enabled', checked)}
-                />
+                 <Checkbox
+                   checked={localSettings.heavy_enabled}
+                   onCheckedChange={(checked) => updateLocalSetting('heavy_enabled', !!checked)}
+                 />
                 <Label className="font-medium">Heavy Load Adjustment</Label>
               </div>
               {localSettings.heavy_enabled && (
@@ -324,10 +324,10 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
             {/* Multi-Stop Premium */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Switch
-                  checked={localSettings.multi_stop_enabled}
-                  onCheckedChange={(checked) => updateLocalSetting('multi_stop_enabled', checked)}
-                />
+                 <Checkbox
+                   checked={localSettings.multi_stop_enabled}
+                   onCheckedChange={(checked) => updateLocalSetting('multi_stop_enabled', !!checked)}
+                 />
                 <Label className="font-medium">Multi-Stop Premium</Label>
               </div>
               {localSettings.multi_stop_enabled && (
@@ -367,10 +367,10 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
             {/* Premium Freight */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Switch
-                  checked={localSettings.premium_freight_enabled}
-                  onCheckedChange={(checked) => updateLocalSetting('premium_freight_enabled', checked)}
-                />
+                 <Checkbox
+                   checked={localSettings.premium_freight_enabled}
+                   onCheckedChange={(checked) => updateLocalSetting('premium_freight_enabled', !!checked)}
+                 />
                 <Label className="font-medium">Premium Freight</Label>
               </div>
               {localSettings.premium_freight_enabled && (

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings as SettingsIcon, Save, RotateCcw, Info, Zap } from 'lucide-react';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
@@ -225,11 +225,11 @@ export function Settings({ onClose }: SettingsProps) {
                 Automatically use industry-researched MPG/RPM targets for your equipment type
               </div>
             </div>
-            <Switch
-              id="useEquipmentDefaults"
-              checked={useEquipmentDefaults}
-              onCheckedChange={setUseEquipmentDefaults}
-            />
+             <Checkbox
+               id="useEquipmentDefaults"
+               checked={useEquipmentDefaults}
+               onCheckedChange={(checked) => setUseEquipmentDefaults(!!checked)}
+             />
           </div>
         </div>
 
@@ -359,11 +359,11 @@ export function Settings({ onClose }: SettingsProps) {
                 Track fuel costs in your load calculations. Can be enabled later if needed.
               </div>
             </div>
-            <Switch
-              id="enableFuelCostTracking"
-              checked={enableFuelCostTracking}
-              onCheckedChange={setEnableFuelCostTracking}
-            />
+             <Checkbox
+               id="enableFuelCostTracking"
+               checked={enableFuelCostTracking}
+               onCheckedChange={(checked) => setEnableFuelCostTracking(!!checked)}
+             />
           </div>
         </div>
 

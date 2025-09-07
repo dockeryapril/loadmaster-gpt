@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Lightbulb } from 'lucide-react';
@@ -66,11 +66,11 @@ export const QuestionCard = ({
       case 'boolean':
         return (
           <div className="flex items-center space-x-2">
-            <Switch
-              id={question.id}
-              checked={value || false}
-              onCheckedChange={onChange}
-            />
+             <Checkbox
+               id={question.id}
+               checked={value || false}
+               onCheckedChange={(checked) => onChange(!!checked)}
+             />
             <Label htmlFor={question.id} className="text-sm">
               {value ? 'Yes' : 'No'}
             </Label>
