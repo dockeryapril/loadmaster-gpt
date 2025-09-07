@@ -47,7 +47,7 @@ export function OCRCorrectionInterface({
   const getConfidenceBadge = (confidence: 'high' | 'medium' | 'low') => {
     const variants = {
       high: 'bg-success/10 text-success border-success/20',
-      medium: 'bg-warning/10 text-warning-foreground border-warning/20',
+      medium: 'bg-warning text-warning-foreground border-warning',
       low: 'bg-destructive/10 text-destructive border-destructive/20'
     };
     
