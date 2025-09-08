@@ -129,6 +129,7 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
         title: "Settings saved",
         description: "Your negotiation settings have been updated successfully.",
       });
+      onClose?.(); // Navigate back to dashboard after successful save
     } catch (error) {
       toast({
         title: "Error saving settings",
