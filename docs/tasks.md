@@ -44,6 +44,12 @@
   - Now properly detects when comprehensive business setup (8/9 questions) is complete
   - Users who've completed business setup go directly to dashboard instead of setup screen
   - Fixed conflict between simple and comprehensive business setup systems
+- [x] **Fixed Business Setup Save Process**: Updated Simple Business Setup to create comprehensive records
+  - Modified handleBusinessSetup to use saveSetup from useBusinessSetup hook instead of just updateSettings
+  - Added equipment selection requirement to Simple Business Setup component
+  - Maps simple setup values to comprehensive business setup record with reasonable defaults
+  - Creates complete business_setup table record that satisfies isSetupComplete() validation
+  - Users now properly redirected to dashboard after completing Simple Business Setup
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types

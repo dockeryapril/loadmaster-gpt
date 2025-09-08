@@ -196,6 +196,28 @@ export function SimpleBusinessSetup({
           </div>
         )}
 
+        {/* Equipment Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="equipment" className="text-sm">
+            Equipment Type
+          </Label>
+          <Select value={equipment || ''} onValueChange={(value) => setEquipment(value as Equipment)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your equipment type" />
+            </SelectTrigger>
+            <SelectContent>
+              {equipmentOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Choose the type of equipment you operate
+          </p>
+        </div>
+
         {/* Action Buttons */}
         <div className="flex gap-3 pt-2">
           {onSkip && (
@@ -203,7 +225,7 @@ export function SimpleBusinessSetup({
               Skip for Now
             </Button>
           )}
-          <Button onClick={handleSave} className="flex-1">
+          <Button onClick={handleSave} className="flex-1" disabled={!equipment}>
             Save Setup
           </Button>
         </div>

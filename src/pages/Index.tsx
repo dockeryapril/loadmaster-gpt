@@ -23,6 +23,7 @@ import { useRateLimit } from '@/contexts/RateLimitContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
 import { SimpleBusinessSetup } from '@/components/SimpleBusinessSetup';
 import { QAValidation } from '@/components/QAValidation';
+import type { Equipment } from '@/types/equipment';
 import { useBusinessSetup } from '@/hooks/useBusinessSetup';
 
 
@@ -38,7 +39,7 @@ const Index = () => {
   const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, deleteAllLoads, refetch } = useSupabaseLoads();
   const { settings, updateSettings } = useSupabaseSettings();
   const { hasCoreData } = useCoreDataMigration();
-  const { isSetupComplete, loading: setupLoading } = useBusinessSetup();
+  const { isSetupComplete, loading: setupLoading, saveSetup } = useBusinessSetup();
   const { showRateLimitBanner, dismissBanner } = useRateLimit();
   const featureFlags = getFeatureFlags(user);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -64,16 +65,39 @@ const Index = () => {
   }, [searchParams, setSearchParams]);
 
   // Business setup handlers
-  const handleBusinessSetup = (revenueSplit: number, weeklyCosts: number) => {
-    updateSettings({
-      revenueSplitPercentage: revenueSplit,
-      weeklyFixedCosts: weeklyCosts,
-    });
-    setCurrentView('dashboard');
-    toast({
-      title: "Business setup saved!",
-      description: "Your load calculations will now reflect your business arrangement.",
-    });
+  const handleBusinessSetup = async (revenueSplit: number, weeklyCosts: number, equipment?: Equipment) => {
+    try {
+      // Update user settings for backwards compatibility
+      await updateSettings({
+        revenueSplitPercentage: revenueSplit,
+        weeklyFixedCosts: weeklyCosts,
+      });
+
+      // Create comprehensive business setup record
+      await saveSetup({
+        revenue_split_percentage: revenueSplit,
+        weekly_truck_payment: weeklyCosts * 0.6, // Reasonable default: 60% of costs for truck payment
+        weekly_insurance_payment: weeklyCosts * 0.3, // 30% for insurance
+        weekly_escrow_payment: weeklyCosts * 0.1, // 10% for escrow
+        pay_structure_type: revenueSplit >= 90 ? 'percentage_split' : 'gross_revenue',
+        fuel_responsibility: 'driver_pays',
+        equipment_type: equipment || 'cargo_van',
+        setup_completed_at: new Date().toISOString(),
+      });
+
+      setCurrentView('dashboard');
+      toast({
+        title: "Business setup saved!",
+        description: "Your load calculations will now reflect your business arrangement.",
+      });
+    } catch (error) {
+      console.error('Failed to save business setup:', error);
+      toast({
+        title: "Setup failed",
+        description: "There was an error saving your business setup. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Show business setup for users who haven't completed the comprehensive setup
