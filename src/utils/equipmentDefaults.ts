@@ -56,6 +56,18 @@ export function calculateFuelCost(miles: number, equipment: Equipment, settings:
 }
 
 /**
+ * Get abbreviated equipment display name
+ */
+function getEquipmentDisplayName(equipment: Equipment): string {
+  const displayNames = {
+    cargo_van: 'Cargo Van',
+    straight_truck: 'Str Truck',
+    hotshot: 'Hotshot'
+  };
+  return displayNames[equipment];
+}
+
+/**
  * Get industry benchmark context for UI display
  */
 export function getIndustryContext(equipment: Equipment) {
@@ -65,6 +77,6 @@ export function getIndustryContext(equipment: Equipment) {
   return {
     marketAverageRPM: defaults.yellow,
     recommendedMPG: mpg,
-    equipmentType: equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+    equipmentType: getEquipmentDisplayName(equipment)
   };
 }
