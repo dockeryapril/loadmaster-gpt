@@ -9,7 +9,7 @@ export default function Upgrade() {
 
   const coreFeatures = [
     "5 AI load analyses per day",
-    "OCR text extraction",
+    "AI photo analysis",
     "RPM calculator",
     "Basic negotiation panel",
     "Load history tracking"
