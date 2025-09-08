@@ -23,6 +23,9 @@
 - [x] **UI Cleanup**: Removed duplicate Equipment Type dropdown from SimpleBusinessSetup
   - Eliminated redundant Equipment Type selection in Custom Setup section
   - Equipment selection now handled at top-level to avoid duplication
+- [x] **Navigation Fix**: Fixed UpgradeCard button navigation to upgrade page
+  - Removed setTimeout that was interfering with React Router navigation
+  - Button now properly navigates to /upgrade when clicked
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types

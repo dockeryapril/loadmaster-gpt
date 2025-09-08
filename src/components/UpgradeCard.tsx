@@ -12,10 +12,6 @@ export function UpgradeCard({ className }: UpgradeCardProps) {
 
   const handleUpgrade = () => {
     navigate('/upgrade');
-    // Scroll to top of the page
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 100);
   };
 
   return (
