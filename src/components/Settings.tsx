@@ -286,7 +286,7 @@ export function Settings({ onClose }: SettingsProps) {
                   id="excellentRpm"
                   type="number"
                   step="0.1"
-                  value={excellentRpm}
+                  value={useEquipmentDefaults && equipment ? "0" : excellentRpm}
                   onChange={(e) => setExcellentRpm(e.target.value)}
                   placeholder="0"
                   className="h-10"
@@ -300,7 +300,7 @@ export function Settings({ onClose }: SettingsProps) {
                   id="goodRpm"
                   type="number"
                   step="0.1"
-                  value={goodRpm}
+                  value={useEquipmentDefaults && equipment ? "0" : goodRpm}
                   onChange={(e) => setGoodRpm(e.target.value)}
                   placeholder="0"
                   className="h-10"
@@ -314,7 +314,7 @@ export function Settings({ onClose }: SettingsProps) {
                   id="fairRpm"
                   type="number"
                   step="0.1"
-                  value={fairRpm}
+                  value={useEquipmentDefaults && equipment ? "0" : fairRpm}
                   onChange={(e) => setFairRpm(e.target.value)}
                   placeholder="0"
                   className="h-10"
@@ -324,7 +324,7 @@ export function Settings({ onClose }: SettingsProps) {
             </div>
             <div className="text-sm text-muted-foreground">
               {useEquipmentDefaults && equipment ? 
-                "Using equipment-specific industry standards. Disable smart defaults to customize." :
+                "Using equipment-specific industry standards. Disable 'Use Equipment-Specific Defaults' button above." :
                 "Loads below the Fair threshold will be marked as Poor quality."
               }
             </div>
