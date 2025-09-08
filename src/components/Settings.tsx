@@ -135,28 +135,16 @@ export function Settings({ onClose }: SettingsProps) {
   };
 
   const handleReset = async () => {
-    // Custom reset values - all numbers to 0
-    const resetSettings = {
-      ...defaultUserSettings,
-      fuelPrice: 0,
-      mpg: 0,
-      rpmThresholds: {
-        excellent: 0,
-        good: 0,
-        fair: 0
-      },
-      weightLimit: 0
-    };
-    
-    await updateSettings(resetSettings);
-    setFuelPrice('0');
-    setMpg('0');
-    setExcellentRpm('0');
-    setGoodRpm('0');
-    setFairRpm('0');
-    setWeightLimit('0');
-    setEnableFuelCostTracking(resetSettings.enableFuelCostTracking);
-    setUseEquipmentDefaults(true);
+    // Use actual default values instead of zeros
+    await updateSettings(defaultUserSettings);
+    setFuelPrice(defaultUserSettings.fuelPrice.toString());
+    setMpg(defaultUserSettings.mpg.toString());
+    setExcellentRpm(defaultUserSettings.rpmThresholds.excellent.toString());
+    setGoodRpm(defaultUserSettings.rpmThresholds.good.toString());
+    setFairRpm(defaultUserSettings.rpmThresholds.fair.toString());
+    setWeightLimit(defaultUserSettings.weightLimit.toString());
+    setEnableFuelCostTracking(defaultUserSettings.enableFuelCostTracking);
+    setUseEquipmentDefaults(defaultUserSettings.useEquipmentDefaults);
     
     // Reset equipment to unselected state
     setEquipment(undefined);
