@@ -493,6 +493,9 @@ export const shouldShowQuestion = (
     return dependentValue === 'tiered_by_distance';
   }
   
+  // For negotiated_per_load and customer_dependent - no additional fields needed
+  // These are handled by the base rate field
+  
   // For fuel reimbursement rate, show when responsibility IS 'reimbursed'
   if (question.id === 'fuel_reimbursement_rate') {
     return dependentValue === 'reimbursed';

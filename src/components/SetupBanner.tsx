@@ -63,34 +63,31 @@ export const SetupBanner = () => {
   }
 
   return (
-    <Card className="border border-border bg-card">
+    <Card className="border border-border/50 bg-muted/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1">
-            <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-              <Settings className="h-4 w-4 text-primary" />
+            <div className="p-2 rounded-md bg-muted flex-shrink-0">
+              <Settings className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-foreground mb-1">
-                Complete Your Business Setup
+                Business Setup Required
               </h3>
               <p className="text-sm text-muted-foreground mb-3">
-                Get accurate RPM calculations based on your specific business arrangement and costs.
+                Configure your business details for accurate cost calculations and RPM analysis.
               </p>
               
               {completionPercentage > 0 && (
                 <div className="space-y-2 mb-3">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">
-                      {completionPercentage}% complete
-                    </span>
-                    <span className="text-muted-foreground">
-                      ~{Math.ceil((100 - completionPercentage) / 20)} min remaining
+                      Setup progress: {completionPercentage}%
                     </span>
                   </div>
                   <Progress 
                     value={completionPercentage} 
-                    className="h-1"
+                    className="h-1.5"
                   />
                 </div>
               )}
@@ -98,9 +95,10 @@ export const SetupBanner = () => {
               <Button
                 onClick={handleStartSetup}
                 size="sm"
+                variant="secondary"
                 className="mr-2"
               >
-                {completionPercentage === 0 ? 'Start Setup' : 'Continue Setup'}
+                {completionPercentage === 0 ? 'Configure Setup' : 'Continue Setup'}
               </Button>
             </div>
           </div>
