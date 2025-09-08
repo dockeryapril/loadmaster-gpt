@@ -8,6 +8,9 @@
 - [x] Fixed setup completion logic for new conditional questions
 - [x] Improved SetupBanner UI design - removed orange styling, made more professional
 - [x] Added proper conditional question handling for all deadhead compensation types
+- [x] Fixed premium options alignment in NegotiationSettings - standardized to 2-column layout
+- [x] Moved Weight Threshold to separate row for consistent visual alignment
+- [x] Improved Heavy Load labeling to clarify it's a cost adjustment (can be negative)
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types

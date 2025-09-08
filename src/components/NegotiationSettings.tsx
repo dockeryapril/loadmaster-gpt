@@ -270,50 +270,61 @@ export function NegotiationSettings({ onClose }: NegotiationSettingsProps) {
 
             <Separator />
 
-            {/* Heavy Load Adjustment */}
+            {/* Heavy Load Cost Adjustment */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                  <Checkbox
                    checked={localSettings.heavy_enabled}
                    onCheckedChange={(checked) => updateLocalSetting('heavy_enabled', !!checked)}
                  />
-                <Label className="font-medium">Heavy Load Adjustment</Label>
+                <Label className="font-medium">Heavy Load Cost Adjustment</Label>
               </div>
               {localSettings.heavy_enabled && (
-                <div className="flex gap-4 ml-6">
-                  <div className="flex-1">
-                    <Label>Method</Label>
-                    <Select 
-                      value={localSettings.heavy_method} 
-                      onValueChange={(value) => updateLocalSetting('heavy_method', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="fixed">Fixed $/mile</SelectItem>
-                        <SelectItem value="percentage">Percentage</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="ml-6 space-y-4">
+                  {/* Method and Value row */}
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <Label>Method</Label>
+                      <Select 
+                        value={localSettings.heavy_method} 
+                        onValueChange={(value) => updateLocalSetting('heavy_method', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fixed">Fixed $/mile</SelectItem>
+                          <SelectItem value="percentage">Percentage</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex-1">
+                      <Label>
+                        Adjustment {localSettings.heavy_method === 'percentage' ? '(%)' : '($/mile)'}
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={localSettings.heavy_value?.toString() || ''}
+                        onChange={(e) => updateLocalSetting('heavy_value', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        placeholder="e.g., -0.05 for cost reduction"
+                      />
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <Label>
-                      Value {localSettings.heavy_method === 'percentage' ? '(%)' : '($/mile)'}
-                    </Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={localSettings.heavy_value?.toString() || ''}
-                      onChange={(e) => updateLocalSetting('heavy_value', e.target.value ? parseFloat(e.target.value) : undefined)}
-                    />
-                  </div>
-                  <div className="flex-1">
+                  
+                  {/* Weight Threshold row */}
+                  <div>
                     <Label>Weight Threshold (lbs)</Label>
                     <Input
                       type="number"
                       value={localSettings.heavy_weight_threshold?.toString() || ''}
                       onChange={(e) => updateLocalSetting('heavy_weight_threshold', e.target.value ? parseInt(e.target.value) : undefined)}
+                      placeholder="e.g., 45000"
+                      className="w-full max-w-xs"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Loads above this weight will apply the adjustment (can be negative for cost reduction)
+                    </p>
                   </div>
                 </div>
               )}
