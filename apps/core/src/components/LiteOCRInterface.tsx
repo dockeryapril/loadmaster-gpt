@@ -2,9 +2,17 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, Upload, Loader2, X } from 'lucide-react';
+import Tesseract from 'tesseract.js';
+
+interface ExtractedData {
+  miles?: string;
+  offerAllIn?: string;
+  weightLbs?: string;
+  pickupInHours?: string;
+}
 
 interface LiteOCRInterfaceProps {
-  onSuccess: () => void;
+  onSuccess: (data: ExtractedData) => void;
   onClose: () => void;
 }
 
@@ -12,6 +20,8 @@ export function LiteOCRInterface({ onSuccess, onClose }: LiteOCRInterfaceProps) 
   const [processing, setProcessing] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [processingStage, setProcessingStage] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,14 +75,122 @@ export function LiteOCRInterface({ onSuccess, onClose }: LiteOCRInterfaceProps) 
     }
   };
 
+  const extractDataFromText = (text: string): ExtractedData => {
+    const extractedData: ExtractedData = {};
+    
+    // Miles extraction - look for numbers near miles/mi/distance keywords
+    const milesPatterns = [
+      /(?:miles?|mi\.?|distance)\s*:?\s*(\d+(?:,\d{3})*)/i,
+      /(\d+(?:,\d{3})*)\s*(?:miles?|mi\.?)/i,
+      /total\s+(?:miles?|distance)\s*:?\s*(\d+(?:,\d{3})*)/i
+    ];
+    
+    for (const pattern of milesPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        extractedData.miles = match[1].replace(/,/g, '');
+        break;
+      }
+    }
+    
+    // Rate extraction - look for dollar amounts near rate/pay/total keywords  
+    const ratePatterns = [
+      /(?:rate|pay|total|amount)\s*:?\s*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,
+      /\$(\d+(?:,\d{3})*(?:\.\d{2})?)/,
+      /(?:all\s*in|gross)\s*:?\s*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i
+    ];
+    
+    for (const pattern of ratePatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const cleanRate = match[1].replace(/,/g, '');
+        // Only consider reasonable freight rates (> $100)
+        if (parseFloat(cleanRate) > 100) {
+          extractedData.offerAllIn = cleanRate;
+          break;
+        }
+      }
+    }
+    
+    // Weight extraction - look for numbers near weight/lbs/pounds keywords
+    const weightPatterns = [
+      /(?:weight|wt\.?|lbs?|pounds?)\s*:?\s*(\d+(?:,\d{3})*)/i,
+      /(\d+(?:,\d{3})*)\s*(?:lbs?|pounds?|#)/i,
+      /gross\s+weight\s*:?\s*(\d+(?:,\d{3})*)/i
+    ];
+    
+    for (const pattern of weightPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const cleanWeight = match[1].replace(/,/g, '');
+        // Only consider reasonable freight weights (> 1000 lbs)
+        if (parseInt(cleanWeight) > 1000) {
+          extractedData.weightLbs = cleanWeight;
+          break;
+        }
+      }
+    }
+    
+    // Pickup time extraction - look for hours/time references
+    const pickupPatterns = [
+      /(?:pickup|ready)\s+(?:in\s+)?(\d+)\s*(?:hours?|hrs?)/i,
+      /(\d+)\s*(?:hours?|hrs?)\s*(?:notice|pickup)/i
+    ];
+    
+    for (const pattern of pickupPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        extractedData.pickupInHours = match[1];
+        break;
+      }
+    }
+    
+    return extractedData;
+  };
+
   const handleFileUpload = async (file: File | Blob) => {
     setProcessing(true);
+    setOcrProgress(0);
+    setProcessingStage('Preparing image...');
     
-    // Simulate OCR processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setProcessing(false);
-    onSuccess();
+    try {
+      // Convert Blob to File if needed
+      const fileToProcess = file instanceof File ? file : new File([file], 'capture.jpg', { type: 'image/jpeg' });
+      
+      setProcessingStage('Extracting text from image...');
+      
+      // Perform OCR with Tesseract
+      const result = await Tesseract.recognize(fileToProcess, 'eng', {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setOcrProgress(Math.round(m.progress * 100));
+          }
+        }
+      });
+      
+      setProcessingStage('Analyzing extracted data...');
+      await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause for UX
+      
+      const extractedText = result.data.text;
+      console.log('OCR Text:', extractedText);
+      
+      if (!extractedText.trim()) {
+        throw new Error('No text found in image');
+      }
+      
+      // Extract data from OCR text
+      const extractedData = extractDataFromText(extractedText);
+      
+      setProcessing(false);
+      onSuccess(extractedData);
+      
+    } catch (error) {
+      console.error('OCR processing failed:', error);
+      setProcessing(false);
+      
+      // Still call success with empty data to allow manual entry
+      onSuccess({});
+    }
   };
 
   if (showCamera) {
@@ -123,9 +241,17 @@ export function LiteOCRInterface({ onSuccess, onClose }: LiteOCRInterfaceProps) 
             </div>
             <div>
               <h3 className="font-semibold mb-2">Processing Image</h3>
-              <p className="text-sm text-muted-foreground">
-                Extracting load information from your image...
+              <p className="text-sm text-muted-foreground mb-2">
+                {processingStage}
               </p>
+              {ocrProgress > 0 && (
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div 
+                    className="bg-primary h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${ocrProgress}%` }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

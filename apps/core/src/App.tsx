@@ -93,9 +93,15 @@ function App() {
     setShowSuccess(false);
   };
 
-  const handleOCRSuccess = () => {
+  const handleOCRSuccess = (extractedData: any) => {
+    // Populate form fields with extracted data
+    if (extractedData.miles) setMiles(extractedData.miles);
+    if (extractedData.offerAllIn) setOfferAllIn(extractedData.offerAllIn);
+    if (extractedData.weightLbs) setWeightLbs(extractedData.weightLbs);
+    if (extractedData.pickupInHours) setPickupInHours(extractedData.pickupInHours);
+    
     setShowOCR(false);
-    setShowSuccess(true);
+    // Don't show success screen - go directly to calculator with populated data
   };
 
   const handleBackToCalculator = () => {
