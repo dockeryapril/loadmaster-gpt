@@ -38,9 +38,19 @@ export interface BusinessSetup {
   
   // Trip-Related Compensation
   toll_responsibility?: 'driver_pays' | 'carrier_pays' | 'reimbursed';
-  deadhead_compensation_type?: 'per_mile' | 'percentage' | 'flat_rate' | 'none';
+  deadhead_compensation_type?: 'per_mile' | 'percentage' | 'flat_rate' | 'none' | 'varies_by_load' | 'negotiated_per_load' | 'tiered_by_distance' | 'customer_dependent' | 'minimum_plus_variable';
   deadhead_compensation_rate?: number;
   deadhead_minimum_miles?: number;
+  
+  // Additional fields for complex deadhead compensation types
+  deadhead_rate_low?: number; // For varies_by_load
+  deadhead_rate_high?: number; // For varies_by_load
+  deadhead_minimum_rate?: number; // For minimum_plus_variable
+  deadhead_tier_1_distance?: number; // For tiered_by_distance
+  deadhead_tier_1_rate?: number;
+  deadhead_tier_2_distance?: number;
+  deadhead_tier_2_rate?: number;
+  deadhead_tier_3_rate?: number;
   
   // FSC and Additional Pay
   fsc_handling?: 'driver_receives_fsc' | 'carrier_keeps_fsc' | 'fsc_in_margin';
@@ -279,9 +289,14 @@ export const businessSetupSections: QuestionSection[] = [
         label: 'Deadhead compensation',
         description: 'How you get paid for empty miles',
         options: [
-          { value: 'per_mile', label: 'Per mile rate' },
+          { value: 'per_mile', label: 'Fixed per mile rate' },
           { value: 'percentage', label: 'Percentage of loaded rate' },
           { value: 'flat_rate', label: 'Flat rate per deadhead trip' },
+          { value: 'varies_by_load', label: 'Varies by load/dispatcher decision' },
+          { value: 'negotiated_per_load', label: 'Negotiated with each load' },
+          { value: 'tiered_by_distance', label: 'Different rates by distance' },
+          { value: 'customer_dependent', label: 'Depends on customer/load type' },
+          { value: 'minimum_plus_variable', label: 'Minimum guaranteed + variable' },
           { value: 'none', label: 'No deadhead compensation' }
         ],
         required: true
@@ -293,6 +308,78 @@ export const businessSetupSections: QuestionSection[] = [
         description: 'Rate per mile, percentage, or flat amount',
         placeholder: '0',
         dependsOn: { field: 'deadhead_compensation_type', value: 'per_mile' },
+        validation: { min: 0, step: 0.01 }
+      },
+      {
+        id: 'deadhead_rate_low',
+        type: 'number',
+        label: 'Typical low deadhead rate',
+        description: 'Lowest rate you usually get per mile',
+        placeholder: '0',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'varies_by_load' },
+        validation: { min: 0, step: 0.01 }
+      },
+      {
+        id: 'deadhead_rate_high',
+        type: 'number',
+        label: 'Typical high deadhead rate',
+        description: 'Highest rate you usually get per mile',
+        placeholder: '0',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'varies_by_load' },
+        validation: { min: 0, step: 0.01 }
+      },
+      {
+        id: 'deadhead_minimum_rate',
+        type: 'number',
+        label: 'Minimum guaranteed rate',
+        description: 'Minimum rate per mile you\'re guaranteed',
+        placeholder: '0',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'minimum_plus_variable' },
+        validation: { min: 0, step: 0.01 }
+      },
+      {
+        id: 'deadhead_tier_1_distance',
+        type: 'number',
+        label: 'First tier distance (miles)',
+        description: 'Distance cutoff for first tier rate',
+        placeholder: '50',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'tiered_by_distance' },
+        validation: { min: 1, step: 1 }
+      },
+      {
+        id: 'deadhead_tier_1_rate',
+        type: 'number',
+        label: 'First tier rate per mile',
+        description: 'Rate for distances up to first tier',
+        placeholder: '0',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'tiered_by_distance' },
+        validation: { min: 0, step: 0.01 }
+      },
+      {
+        id: 'deadhead_tier_2_distance',
+        type: 'number',
+        label: 'Second tier distance (miles)',
+        description: 'Distance cutoff for second tier rate',
+        placeholder: '150',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'tiered_by_distance' },
+        validation: { min: 1, step: 1 }
+      },
+      {
+        id: 'deadhead_tier_2_rate',
+        type: 'number',
+        label: 'Second tier rate per mile',
+        description: 'Rate for distances in second tier',
+        placeholder: '0',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'tiered_by_distance' },
+        validation: { min: 0, step: 0.01 }
+      },
+      {
+        id: 'deadhead_tier_3_rate',
+        type: 'number',
+        label: 'Third tier rate per mile',
+        description: 'Rate for distances above second tier',
+        placeholder: '0',
+        dependsOn: { field: 'deadhead_compensation_type', value: 'tiered_by_distance' },
         validation: { min: 0, step: 0.01 }
       },
       {
@@ -386,7 +473,24 @@ export const shouldShowQuestion = (
   
   // For deadhead compensation rate, show when type is NOT 'none'
   if (question.id === 'deadhead_compensation_rate') {
-    return dependentValue !== 'none';
+    return dependentValue === 'per_mile' || dependentValue === 'percentage' || dependentValue === 'flat_rate';
+  }
+  
+  // For varies_by_load deadhead fields
+  if (question.id === 'deadhead_rate_low' || question.id === 'deadhead_rate_high') {
+    return dependentValue === 'varies_by_load';
+  }
+  
+  // For minimum_plus_variable deadhead fields
+  if (question.id === 'deadhead_minimum_rate') {
+    return dependentValue === 'minimum_plus_variable';
+  }
+  
+  // For tiered_by_distance deadhead fields
+  if (question.id === 'deadhead_tier_1_distance' || question.id === 'deadhead_tier_1_rate' || 
+      question.id === 'deadhead_tier_2_distance' || question.id === 'deadhead_tier_2_rate' || 
+      question.id === 'deadhead_tier_3_rate') {
+    return dependentValue === 'tiered_by_distance';
   }
   
   // For fuel reimbursement rate, show when responsibility IS 'reimbursed'
