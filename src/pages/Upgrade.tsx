@@ -19,7 +19,6 @@ export default function Upgrade() {
     "Up to 100 AI load analyses per day",
     "Advanced negotiation templates",
     "Export load history to CSV/Excel",
-    "Priority customer support",
     "Enhanced RPM analytics",
     "Custom rate optimization"
   ];
