@@ -61,17 +61,18 @@ const Index = () => {
     });
   };
 
-  // Show business setup for new users
+  // Show business setup for new users only on initial load
   const shouldShowSetup = user && settings && 
     settings.revenueSplitPercentage === 100 && 
-    settings.weeklyFixedCosts === 0 &&
-    currentView === 'dashboard';
+    settings.weeklyFixedCosts === 0;
 
   useEffect(() => {
-    if (shouldShowSetup) {
+    if (shouldShowSetup && currentView === 'dashboard') {
+      // Only auto-redirect to business setup on initial dashboard load
+      // Don't override user navigation choices
       setCurrentView('business-setup');
     }
-  }, [shouldShowSetup]);
+  }, [user, settings]); // Remove currentView from dependencies to prevent navigation override
 
   const handleSignOut = async () => {
     await signOut();
@@ -333,7 +334,7 @@ const Index = () => {
 
       case 'negotiation-settings':
         return (
-          <NegotiationSettings onClose={() => setCurrentView('settings')} />
+          <NegotiationSettings onClose={() => setCurrentView('entry-method')} />
         );
       
       case 'history':
