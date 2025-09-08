@@ -30,6 +30,14 @@
   - Selected templates now highlight with primary variant and ring
   - Only one template can be selected at a time
   - Manual input changes clear template selection automatically
+- [x] **Enhanced PRO RPM Display**: Implemented Gross vs Net Take-Home RPM feature for PRO users
+  - Added Gross RPM calculation (rate / miles before business costs)
+  - Added Net Take-Home RPM calculation (after revenue split and fixed costs)
+  - Enhanced LoadCalculator display with two-column RPM breakdown
+  - Shows business impact details (revenue split %, fixed costs per mile, total impact)
+  - Falls back to simple RPM display for non-PRO users or missing business setup data
+  - Integrated with existing business setup (revenue split % and weekly fixed costs)
+  - Updated LoadCalculationResult interface to support enhanced RPM data
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types

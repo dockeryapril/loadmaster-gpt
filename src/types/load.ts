@@ -98,6 +98,12 @@ export interface LoadCalculationResult {
   quality: 'excellent' | 'good' | 'fair' | 'poor';
   weightImpact: 'light' | 'medium' | 'heavy' | 'overweight';
   tags: string[];
+  // Enhanced RPM breakdown for PRO features
+  grossRpm?: number;
+  netRpm?: number;
+  revenueSplit?: number;
+  weeklyCosts?: number;
+  weeklyFixedCostPerMile?: number;
 }
 
 export const calculateLoadQuality = (rpm: number, settings?: UserSettings): Load['quality'] => {

@@ -220,9 +220,27 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
     const weightNum = parseFloat(weight) || 0;
 
     const totalMiles = milesNum + deadheadNum;
+    const grossRevenue = rateNum + fscNum;
+    
+    // Calculate business costs impact
+    const revenueSplit = settings?.revenueSplitPercentage || 100;
+    const weeklyCosts = settings?.weeklyFixedCosts || 0;
+    const estimatedWeeklyMiles = 2500; // Industry standard
+    const weeklyFixedCostPerMile = weeklyCosts / estimatedWeeklyMiles;
+    
+    // Gross RPM (before business costs)
+    const grossRpm = totalMiles > 0 ? grossRevenue / totalMiles : 0;
+    
+    // Net revenue after split and costs
+    const afterSplitRevenue = grossRevenue * (revenueSplit / 100);
+    const netRevenue = afterSplitRevenue - (weeklyFixedCostPerMile * totalMiles);
     const profit = calculateProfit(rateNum, fscNum, tollsNum, fuelCostNum);
     const netRate = profit;
-    const rpm = totalMiles > 0 ? netRate / totalMiles : 0;
+    
+    // Net Take-Home RPM (after business costs)
+    const netRpm = totalMiles > 0 ? (netRevenue - tollsNum - fuelCostNum) / totalMiles : 0;
+    
+    const rpm = netRpm; // Use net RPM for quality calculation
     const quality = calculateLoadQuality(rpm, settings);
     const weightImpact = getWeightImpact(weightNum, settings);
     
@@ -249,7 +267,13 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
       netRate,
       quality,
       weightImpact,
-      tags
+      tags,
+      // Enhanced RPM breakdown
+      grossRpm,
+      netRpm,
+      revenueSplit,
+      weeklyCosts,
+      weeklyFixedCostPerMile
     };
   };
 
@@ -901,16 +925,62 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                 />
               </div>
 
-            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Revenue Per Mile</span>
-                <div className="text-right">
-                  <div className="text-2xl font-bold">${calculation.rpm.toFixed(2)}</div>
-                  <Badge variant={getQualityColor(calculation.quality)} className="text-xs">
-                    {calculation.quality}
-                  </Badge>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-4">
+              {/* Enhanced RPM Breakdown */}
+              {isPro && calculation.grossRpm && calculation.netRpm ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Gross RPM */}
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Gross RPM</div>
+                      <div className="text-xl font-bold">${calculation.grossRpm.toFixed(2)}</div>
+                      <div className="text-xs text-muted-foreground">Before business costs</div>
+                    </div>
+                    
+                    {/* Net Take-Home RPM */}
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Net Take-Home RPM</div>
+                      <div className="text-2xl font-bold text-success">${calculation.netRpm.toFixed(2)}</div>
+                      <Badge variant={getQualityColor(calculation.quality)} className="text-xs">
+                        {calculation.quality}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Business Impact Details */}
+                  {(calculation.revenueSplit !== 100 || calculation.weeklyCosts > 0) && (
+                    <div className="pt-2 border-t border-border/50">
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div className="flex justify-between">
+                          <span>Revenue Split:</span>
+                          <span>{calculation.revenueSplit}%</span>
+                        </div>
+                        {calculation.weeklyCosts > 0 && (
+                          <div className="flex justify-between">
+                            <span>Fixed Costs:</span>
+                            <span>${calculation.weeklyFixedCostPerMile?.toFixed(3)}/mi</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-medium text-primary">
+                          <span>Impact:</span>
+                          <span>-${(calculation.grossRpm - calculation.netRpm).toFixed(2)}/mi</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                /* Fallback for non-PRO or missing data */
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Revenue Per Mile</span>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold">${calculation.rpm.toFixed(2)}</div>
+                    <Badge variant={getQualityColor(calculation.quality)} className="text-xs">
+                      {calculation.quality}
+                    </Badge>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <span className="font-medium">Estimated Profit</span>
