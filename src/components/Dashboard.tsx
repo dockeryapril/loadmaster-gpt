@@ -182,8 +182,8 @@ export function Dashboard({
           <UpgradeCard className="mb-6" />
         )}
 
-        {/* Setup Banner */}
-        <SetupBanner />
+        {/* Setup Banner - only show on dashboard, not during processing */}
+        {!showCalculator && <SetupBanner />}
 
       {/* Stats Grid */}
       <section aria-labelledby="stats-heading" className="relative">
