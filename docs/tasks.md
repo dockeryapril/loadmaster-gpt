@@ -26,6 +26,10 @@
 - [x] **Navigation Fix**: Fixed UpgradeCard button navigation to upgrade page
   - Removed setTimeout that was interfering with React Router navigation
   - Button now properly navigates to /upgrade when clicked
+- [x] **Template Selection Feedback**: Added visual feedback for template selection in SimpleBusinessSetup
+  - Selected templates now highlight with primary variant and ring
+  - Only one template can be selected at a time
+  - Manual input changes clear template selection automatically
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types

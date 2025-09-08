@@ -48,6 +48,7 @@ export function SimpleBusinessSetup({
   const [revenueSplit, setRevenueSplit] = useState(initialRevenueSplit.toString());
   const [weeklyCosts, setWeeklyCosts] = useState(initialWeeklyCosts.toString());
   const [equipment, setEquipment] = useState<Equipment | undefined>(initialEquipment);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   const handleSave = () => {
     onSave(parseFloat(revenueSplit) || 0, parseFloat(weeklyCosts) || 0, equipment);
@@ -62,6 +63,17 @@ export function SimpleBusinessSetup({
   const applyTemplate = (template: typeof SETUP_TEMPLATES[0]) => {
     setRevenueSplit(template.revenueSplit.toString());
     setWeeklyCosts(template.weeklyCosts.toString());
+    setSelectedTemplate(template.name);
+  };
+
+  const handleRevenueSplitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRevenueSplit(e.target.value);
+    setSelectedTemplate(null); // Clear template selection on manual change
+  };
+
+  const handleWeeklyCostsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWeeklyCosts(e.target.value);
+    setSelectedTemplate(null); // Clear template selection on manual change
   };
 
   const estimatedWeeklyMiles = 2500; // Industry average for calculations
@@ -87,8 +99,12 @@ export function SimpleBusinessSetup({
             {SETUP_TEMPLATES.map((template) => (
               <Button
                 key={template.name}
-                variant="outline"
-                className="h-auto p-3 text-left justify-start"
+                variant={selectedTemplate === template.name ? "default" : "outline"}
+                className={`h-auto p-3 text-left justify-start ${
+                  selectedTemplate === template.name 
+                    ? "ring-2 ring-primary/50" 
+                    : ""
+                }`}
                 onClick={() => applyTemplate(template)}
               >
                 <div className="flex-1">
@@ -120,7 +136,7 @@ export function SimpleBusinessSetup({
                 id="revenue-split"
                 type="number"
                 value={revenueSplit}
-                onChange={(e) => setRevenueSplit(e.target.value)}
+                onChange={handleRevenueSplitChange}
                 min="0"
                 max="100"
                 step="5"
@@ -145,7 +161,7 @@ export function SimpleBusinessSetup({
                 id="weekly-costs"
                 type="number"
                 value={weeklyCosts}
-                onChange={(e) => setWeeklyCosts(e.target.value)}
+                onChange={handleWeeklyCostsChange}
                 min="0"
                 step="25"
                 className="pl-10"
