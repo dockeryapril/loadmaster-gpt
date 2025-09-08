@@ -106,6 +106,7 @@ export type Database = {
           deadhead_minimum_miles: number | null
           detention_minimum_hours: number | null
           detention_pay_rate: number | null
+          equipment_type: string | null
           extra_stop_rate: number | null
           factoring_fee_percentage: number | null
           fsc_handling: string | null
@@ -147,6 +148,7 @@ export type Database = {
           deadhead_minimum_miles?: number | null
           detention_minimum_hours?: number | null
           detention_pay_rate?: number | null
+          equipment_type?: string | null
           extra_stop_rate?: number | null
           factoring_fee_percentage?: number | null
           fsc_handling?: string | null
@@ -188,6 +190,7 @@ export type Database = {
           deadhead_minimum_miles?: number | null
           detention_minimum_hours?: number | null
           detention_pay_rate?: number | null
+          equipment_type?: string | null
           extra_stop_rate?: number | null
           factoring_fee_percentage?: number | null
           fsc_handling?: string | null
