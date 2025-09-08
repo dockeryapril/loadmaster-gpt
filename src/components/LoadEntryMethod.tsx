@@ -23,7 +23,7 @@ import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
-import { useOCRUsage, incrementOCRUsage } from '@/hooks/useOCRUsage';
+import { useOCRUsage, incrementOCRUsage, decrementOCRUsage } from '@/hooks/useOCRUsage';
 
 
 const fileToBase64 = (file: File): Promise<string> =>
@@ -86,10 +86,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
     const abortSignal = abortControllerRef.current.signal;
     console.log('Created new abort controller');
     
-    // Increment OCR usage
-    incrementOCRUsage();
-    
     const startTime = logOCRStart('LoadEntryMethod');
+    let usageIncremented = false;
     try {
       // Check if cancelled before starting
       if (abortSignal.aborted) {
@@ -187,6 +185,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
 
         let detectionResult: FieldDetectionResult | null = null;
         try {
+          // Increment usage only when we're about to make the API call
+          if (!usageIncremented) {
+            incrementOCRUsage();
+            usageIncremented = true;
+          }
+          
           detectionResult = await SmartFieldDetector.detectFields(
             text,
             settings.enableFuelCostTracking,
@@ -203,6 +207,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
           }
           
           if (err instanceof RateLimitExceededError) {
+            // Rollback usage increment on rate limit error
+            if (usageIncremented) {
+              decrementOCRUsage();
+            }
             handleRateLimitError(err);
             return;
           }
@@ -390,6 +398,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       // Check if this was a cancellation
       if (error instanceof Error && error.message === 'Upload cancelled') {
         console.log('OCR process was cancelled by user');
+        // Rollback usage increment on cancellation
+        if (usageIncremented) {
+          decrementOCRUsage();
+        }
         logOCREnd('LoadEntryMethod', startTime, false, 'cancelled');
         recordExtractionEvent({
           source: 'LoadEntryMethod',
@@ -402,6 +414,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       }
       
       if (error instanceof RateLimitExceededError) {
+        // Rollback usage increment on rate limit error
+        if (usageIncremented) {
+          decrementOCRUsage();
+        }
         handleRateLimitError(error);
         return;
       } else {
@@ -431,6 +447,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    
+    // Pre-flight check: Don't allow OCR if user exceeded limits
+    if (!isPro && !ocrUsage.canUseOCR) {
+      toast({
+        title: "Daily limit reached",
+        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+        variant: "destructive",
+      });
+      if (event.target) {
+        event.target.value = '';
+      }
+      return;
+    }
+    
     if (file && file.type.startsWith('image/')) {
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
@@ -468,10 +498,30 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   };
 
   const handleUploadClick = () => {
+    // Pre-flight check: Don't allow OCR if user exceeded limits
+    if (!isPro && !ocrUsage.canUseOCR) {
+      toast({
+        title: "Daily limit reached",
+        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     fileInputRef.current?.click();
   };
 
   const handleCameraClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Pre-flight check: Don't allow OCR if user exceeded limits
+    if (!isPro && !ocrUsage.canUseOCR) {
+      toast({
+        title: "Daily limit reached", 
+        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Remember the element that opened the camera so focus can return
     setCameraTriggerElement(e.currentTarget);
     try {

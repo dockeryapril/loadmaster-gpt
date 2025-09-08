@@ -54,3 +54,12 @@ export function incrementOCRUsage(): void {
   const currentUsage = parseInt(localStorage.getItem(storageKey) || '0', 10);
   localStorage.setItem(storageKey, (currentUsage + 1).toString());
 }
+
+export function decrementOCRUsage(): void {
+  const today = new Date().toDateString();
+  const storageKey = `ocr_usage_${today}`;
+  const currentUsage = parseInt(localStorage.getItem(storageKey) || '0', 10);
+  if (currentUsage > 0) {
+    localStorage.setItem(storageKey, (currentUsage - 1).toString());
+  }
+}

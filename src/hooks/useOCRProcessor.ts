@@ -14,7 +14,7 @@ import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
-import { incrementOCRUsage } from '@/hooks/useOCRUsage';
+import { incrementOCRUsage, decrementOCRUsage, useOCRUsage } from '@/hooks/useOCRUsage';
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -54,7 +54,19 @@ export function useOCRProcessor() {
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
 
-  const processOCR = async (file: File, onSuccess: (result: FieldDetectionResult) => void, onFallback: () => void) => {
+  const processOCR = async (file: File, onSuccess: (result: FieldDetectionResult) => void, onFallback: () => void, isPro = false) => {
+    // Pre-flight check for LITE users
+    const ocrUsage = useOCRUsage(isPro);
+    if (!isPro && !ocrUsage.canUseOCR) {
+      toast({
+        title: "Daily limit reached",
+        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+        variant: "destructive",
+      });
+      onFallback();
+      return;
+    }
+    
     console.log('🔄 OCR: Starting OCR process for file:', file.name);
     setIsProcessing(true);
     setIsCancelling(false);
@@ -78,9 +90,8 @@ export function useOCRProcessor() {
       });
     }, timeoutMs);
     
-    incrementOCRUsage();
-    
     const startTime = logOCRStart('useOCRProcessor');
+    let usageIncremented = false;
     try {
       if (abortSignal.aborted) {
         throw new Error('Upload cancelled');
@@ -166,6 +177,12 @@ export function useOCRProcessor() {
 
         let detectionResult: FieldDetectionResult | null = null;
         try {
+          // Increment usage only when we're about to make the API call
+          if (!usageIncremented) {
+            incrementOCRUsage();
+            usageIncremented = true;
+          }
+          
           detectionResult = await SmartFieldDetector.detectFields(
             text,
             settings.enableFuelCostTracking,
@@ -181,6 +198,10 @@ export function useOCRProcessor() {
           }
           
           if (err instanceof RateLimitExceededError) {
+            // Rollback usage increment on rate limit error
+            if (usageIncremented) {
+              decrementOCRUsage();
+            }
             handleRateLimitError(err);
             return;
           }
@@ -332,11 +353,19 @@ export function useOCRProcessor() {
       }
     } catch (error) {
       if (error instanceof Error && error.message === 'Upload cancelled') {
+        // Rollback usage increment on cancellation
+        if (usageIncremented) {
+          decrementOCRUsage();
+        }
         logOCREnd('useOCRProcessor', startTime, false, 'cancelled');
         return;
       }
       
       if (error instanceof RateLimitExceededError) {
+        // Rollback usage increment on rate limit error
+        if (usageIncremented) {
+          decrementOCRUsage();
+        }
         handleRateLimitError(error);
         return;
       } else {

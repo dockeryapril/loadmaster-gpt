@@ -11,6 +11,12 @@
 - [x] Fixed premium options alignment in NegotiationSettings - standardized to 2-column layout
 - [x] Moved Weight Threshold to separate row for consistent visual alignment
 - [x] Improved Heavy Load labeling to clarify it's a cost adjustment (can be negative)
+- [x] **OCR Usage Limit Fixes**: Fixed OCR usage counter exceeding limits (was showing 10/5)
+  - Added `decrementOCRUsage()` function for rollback on failures
+  - Moved `incrementOCRUsage()` to after successful API validation instead of at start
+  - Added pre-flight checks to prevent OCR attempts when limits reached
+  - Added rollback logic for rate limit errors, cancellations, and failures
+  - Improved error handling to prevent usage increment on failed requests
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types
