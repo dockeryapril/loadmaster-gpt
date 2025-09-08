@@ -20,6 +20,9 @@
 - [x] **Upgrade Page Navigation**: Fixed upgrade links to scroll to top of page
   - Updated UpgradeCard "Upgrade to PRO" button to scroll to top after navigation
   - Updated footer "Unlock AI-powered negotiations" link to scroll to top after navigation
+- [x] **UI Cleanup**: Removed duplicate Equipment Type dropdown from SimpleBusinessSetup
+  - Eliminated redundant Equipment Type selection in Custom Setup section
+  - Equipment selection now handled at top-level to avoid duplication
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types

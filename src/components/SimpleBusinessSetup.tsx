@@ -112,27 +112,6 @@ export function SimpleBusinessSetup({
           <Label className="text-sm font-medium">Custom Setup</Label>
           
           <div className="space-y-2">
-            <Label htmlFor="equipment-type" className="text-sm">
-              Equipment Type
-            </Label>
-            <Select value={equipment} onValueChange={(value) => setEquipment(value as Equipment)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select equipment type" />
-              </SelectTrigger>
-              <SelectContent>
-                {equipmentOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Your primary equipment type for load calculations
-            </p>
-          </div>
-          
-          <div className="space-y-2">
             <Label htmlFor="revenue-split" className="text-sm">
               Revenue Split Percentage
             </Label>
