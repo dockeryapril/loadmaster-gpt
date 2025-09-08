@@ -48,8 +48,8 @@ export function Settings({ onClose }: SettingsProps) {
   useEffect(() => {
     if (equipment && useEquipmentDefaults && industryContext) {
       const currentMpgValue = parseFloat(mpg) || 0;
-      // Only auto-update if MPG is 0 (empty/default) to avoid overriding user customizations
-      if (currentMpgValue === 0) {
+      // Auto-update if MPG is 0 (empty) or 6.5 (system default) to populate equipment-specific defaults
+      if (currentMpgValue === 0 || currentMpgValue === 6.5) {
         setMpg(industryContext.recommendedMPG.toString());
       }
     }
