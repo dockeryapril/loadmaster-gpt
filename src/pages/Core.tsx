@@ -941,7 +941,16 @@ const Core = () => {
           <p>LoadMasterLITE - Free Forever</p>
           <p className="mt-2">
             Want more?{' '}
-            <Link to="/upgrade" className="underline">
+            <Link 
+              to="/upgrade" 
+              className="underline"
+              onClick={() => {
+                // Scroll to top when navigating to upgrade page
+                setTimeout(() => {
+                  window.scrollTo(0, 0);
+                }, 100);
+              }}
+            >
               Unlock AI-powered negotiations
             </Link>{' '}
             and smarter load insights with LoadMasterPRO.

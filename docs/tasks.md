@@ -17,6 +17,9 @@
   - Added pre-flight checks to prevent OCR attempts when limits reached
   - Added rollback logic for rate limit errors, cancellations, and failures
   - Improved error handling to prevent usage increment on failed requests
+- [x] **Upgrade Page Navigation**: Fixed upgrade links to scroll to top of page
+  - Updated UpgradeCard "Upgrade to PRO" button to scroll to top after navigation
+  - Updated footer "Unlock AI-powered negotiations" link to scroll to top after navigation
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types
