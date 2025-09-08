@@ -43,7 +43,7 @@ export interface BusinessSetup {
   deadhead_minimum_miles?: number;
   
   // FSC and Additional Pay
-  fsc_handling?: 'included_in_rpm' | 'separate_payment' | 'split_with_carrier';
+  fsc_handling?: 'driver_receives_fsc' | 'carrier_keeps_fsc' | 'fsc_in_margin';
   fsc_split_percentage?: number;
   
   // Detention and Waiting
@@ -317,10 +317,11 @@ export const businessSetupSections: QuestionSection[] = [
         id: 'fsc_handling',
         type: 'select',
         label: 'How is fuel surcharge (FSC) handled?',
+        description: 'FSC helps offset fuel costs and varies by business arrangement',
         options: [
-          { value: 'included_in_rpm', label: 'Included in my rate per mile' },
-          { value: 'separate_payment', label: 'Paid separately from linehaul' },
-          { value: 'split_with_carrier', label: 'Split with carrier' }
+          { value: 'driver_receives_fsc', label: 'I receive FSC directly (I pay for fuel)' },
+          { value: 'carrier_keeps_fsc', label: 'Carrier keeps FSC (carrier pays for fuel)' },
+          { value: 'fsc_in_margin', label: 'FSC negotiated as part of margin' }
         ],
         required: true
       },

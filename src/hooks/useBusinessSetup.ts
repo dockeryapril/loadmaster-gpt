@@ -257,7 +257,7 @@ export const useBusinessSetup = () => {
           sum + (load.fsc / load.rate), 0) / loadsWithFSC.length;
         
         if (avgFSCRatio > 0.15) {
-          suggestions.fsc_handling = 'separate_payment';
+          suggestions.fsc_handling = 'driver_receives_fsc';
         }
       }
 

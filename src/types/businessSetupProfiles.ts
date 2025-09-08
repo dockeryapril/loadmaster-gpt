@@ -29,7 +29,7 @@ export const industryBusinessProfiles: BusinessSetupProfile[] = [
       deadhead_compensation_type: 'per_mile',
       deadhead_compensation_rate: 0.75,
       deadhead_minimum_miles: 50,
-      fsc_handling: 'separate_payment',
+      fsc_handling: 'driver_receives_fsc',
       detention_pay_rate: 30,
       detention_minimum_hours: 2,
       layover_pay_rate: 75,
@@ -75,7 +75,7 @@ export const industryBusinessProfiles: BusinessSetupProfile[] = [
       deadhead_compensation_type: 'per_mile',
       deadhead_compensation_rate: 0.85,
       deadhead_minimum_miles: 25,
-      fsc_handling: 'separate_payment',
+      fsc_handling: 'driver_receives_fsc',
       detention_pay_rate: 35,
       detention_minimum_hours: 2,
       layover_pay_rate: 100,
@@ -126,7 +126,7 @@ export const industryBusinessProfiles: BusinessSetupProfile[] = [
       deadhead_compensation_type: 'percentage',
       deadhead_compensation_rate: 60,
       deadhead_minimum_miles: 50,
-      fsc_handling: 'separate_payment',
+      fsc_handling: 'driver_receives_fsc',
       detention_pay_rate: 25,
       detention_minimum_hours: 2.5,
       layover_pay_rate: 50,
@@ -166,7 +166,7 @@ export const industryBusinessProfiles: BusinessSetupProfile[] = [
       weekly_truck_payment: 0, // Assuming owned
       weekly_insurance_payment: 200,
       deadhead_compensation_type: 'none', // Negotiate with each load
-      fsc_handling: 'included_in_rpm',
+      fsc_handling: 'fsc_in_margin',
       detention_pay_rate: 50, // Negotiate higher rates
       detention_minimum_hours: 1,
       layover_pay_rate: 150,
@@ -208,7 +208,7 @@ export const industryBusinessProfiles: BusinessSetupProfile[] = [
       insurance_responsibility: 'carrier_pays',
       deadhead_compensation_type: 'flat_rate',
       deadhead_compensation_rate: 50, // Per occurrence
-      fsc_handling: 'split_with_carrier',
+      fsc_handling: 'carrier_keeps_fsc',
       fsc_split_percentage: 50,
       detention_pay_rate: 20,
       detention_minimum_hours: 2,
