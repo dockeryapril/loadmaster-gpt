@@ -21,6 +21,11 @@ import { getIndustryContext, getEffectiveMPG, getEffectiveRPMTargets } from '@/u
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
+// Helper function to format numbers with one decimal place (preserving trailing zeros)
+const formatWithDecimal = (value: number): string => {
+  return value.toFixed(1);
+};
+
 interface SettingsProps {
   onClose?: () => void;
 }
@@ -32,9 +37,9 @@ export function Settings({ onClose }: SettingsProps) {
   
   const [fuelPrice, setFuelPrice] = useState(settings.fuelPrice.toString());
   const [mpg, setMpg] = useState(settings.mpg.toString());
-  const [excellentRpm, setExcellentRpm] = useState(settings.rpmThresholds.excellent.toString());
-  const [goodRpm, setGoodRpm] = useState(settings.rpmThresholds.good.toString());
-  const [fairRpm, setFairRpm] = useState(settings.rpmThresholds.fair.toString());
+  const [excellentRpm, setExcellentRpm] = useState(formatWithDecimal(settings.rpmThresholds.excellent));
+  const [goodRpm, setGoodRpm] = useState(formatWithDecimal(settings.rpmThresholds.good));
+  const [fairRpm, setFairRpm] = useState(formatWithDecimal(settings.rpmThresholds.fair));
   const [weightLimit, setWeightLimit] = useState(settings.weightLimit.toString());
   const [enableFuelCostTracking, setEnableFuelCostTracking] = useState(settings.enableFuelCostTracking);
   const [useEquipmentDefaults, setUseEquipmentDefaults] = useState(settings.useEquipmentDefaults ?? true);
@@ -64,9 +69,9 @@ export function Settings({ onClose }: SettingsProps) {
       
       // Only auto-update if all RPM values are 0 (empty/default)
       if (currentExcellent === 0 && currentGood === 0 && currentFair === 0) {
-        setExcellentRpm(effectiveRPM.green.toString());
-        setGoodRpm(effectiveRPM.yellow.toString());
-        setFairRpm(effectiveRPM.red.toString());
+        setExcellentRpm(formatWithDecimal(effectiveRPM.green));
+        setGoodRpm(formatWithDecimal(effectiveRPM.yellow));
+        setFairRpm(formatWithDecimal(effectiveRPM.red));
       }
     }
   }, [equipment, useEquipmentDefaults, effectiveRPM]);
@@ -139,9 +144,9 @@ export function Settings({ onClose }: SettingsProps) {
     await updateSettings(defaultUserSettings);
     setFuelPrice(defaultUserSettings.fuelPrice.toString());
     setMpg(defaultUserSettings.mpg.toString());
-    setExcellentRpm(defaultUserSettings.rpmThresholds.excellent.toString());
-    setGoodRpm(defaultUserSettings.rpmThresholds.good.toString());
-    setFairRpm(defaultUserSettings.rpmThresholds.fair.toString());
+    setExcellentRpm(formatWithDecimal(defaultUserSettings.rpmThresholds.excellent));
+    setGoodRpm(formatWithDecimal(defaultUserSettings.rpmThresholds.good));
+    setFairRpm(formatWithDecimal(defaultUserSettings.rpmThresholds.fair));
     setWeightLimit(defaultUserSettings.weightLimit.toString());
     setEnableFuelCostTracking(defaultUserSettings.enableFuelCostTracking);
     setUseEquipmentDefaults(defaultUserSettings.useEquipmentDefaults);
