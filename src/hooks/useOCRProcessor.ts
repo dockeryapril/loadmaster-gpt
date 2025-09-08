@@ -202,8 +202,18 @@ export function useOCRProcessor() {
           detectionResult.detectedFields
         );
 
+        // Check for cancellation before handling miles
+        if (abortSignal.aborted) {
+          throw new Error('Upload cancelled');
+        }
+
         const handleMilesPrompt = () => {
           return new Promise<string | null>((resolve) => {
+            // Check for cancellation before showing modal
+            if (abortSignal.aborted) {
+              resolve(null);
+              return;
+            }
             setMilesResolver(() => resolve);
             setShowMilesModal(true);
           });
@@ -212,7 +222,18 @@ export function useOCRProcessor() {
         const ensuredFieldsResult = ensureMiles(detectionResult.detectedFields, handleMilesPrompt);
         
         const processEnsuredFields = async () => {
+          // Check for cancellation before processing ensured fields
+          if (abortSignal.aborted) {
+            throw new Error('Upload cancelled');
+          }
+          
           const ensuredFields = await Promise.resolve(ensuredFieldsResult);
+          
+          // Check for cancellation after resolving
+          if (abortSignal.aborted) {
+            throw new Error('Upload cancelled');
+          }
+          
           if (!ensuredFields) {
             toast({
               title: 'Miles required',
@@ -342,6 +363,11 @@ export function useOCRProcessor() {
     setOcrProgress(0);
     setProcessingStage('');
     setIsCancelling(false);
+    setShowMilesModal(false); // Close miles modal on reset
+    if (milesResolver) {
+      milesResolver(null); // Resolve with null to cancel miles input
+      setMilesResolver(null);
+    }
     abortControllerRef.current = null;
   };
 
