@@ -23,6 +23,7 @@ import { useRateLimit } from '@/contexts/RateLimitContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
 import { SimpleBusinessSetup } from '@/components/SimpleBusinessSetup';
 import { QAValidation } from '@/components/QAValidation';
+import { useBusinessSetup } from '@/hooks/useBusinessSetup';
 
 
 type View = 'dashboard' | 'calculator' | 'history' | 'settings' | 'entry-method' | 'negotiation-settings' | 'business-setup' | 'qa-validation';
@@ -37,6 +38,7 @@ const Index = () => {
   const { loads, loading: loadsLoading, saveLoad, deleteLoad, updateLoad, deleteAllLoads, refetch } = useSupabaseLoads();
   const { settings, updateSettings } = useSupabaseSettings();
   const { hasCoreData } = useCoreDataMigration();
+  const { isSetupComplete, loading: setupLoading } = useBusinessSetup();
   const { showRateLimitBanner, dismissBanner } = useRateLimit();
   const featureFlags = getFeatureFlags(user);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -74,10 +76,8 @@ const Index = () => {
     });
   };
 
-  // Show business setup for new users only on initial load
-  const shouldShowSetup = user && settings && 
-    settings.revenueSplitPercentage === 100 && 
-    settings.weeklyFixedCosts === 0;
+  // Show business setup for users who haven't completed the comprehensive setup
+  const shouldShowSetup = user && !setupLoading && !isSetupComplete();
 
   useEffect(() => {
     if (shouldShowSetup && currentView === 'dashboard') {
@@ -85,7 +85,7 @@ const Index = () => {
       // Don't override user navigation choices
       setCurrentView('business-setup');
     }
-  }, [user, settings]); // Remove currentView from dependencies to prevent navigation override
+  }, [user, shouldShowSetup, currentView]); // Use comprehensive setup logic
 
   const handleSignOut = async () => {
     await signOut();
