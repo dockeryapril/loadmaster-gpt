@@ -40,7 +40,7 @@ export default function Upgrade() {
             </div>
             <Button 
               variant="outline" 
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/?view=entry-method')}
             >
               Back to App
             </Button>

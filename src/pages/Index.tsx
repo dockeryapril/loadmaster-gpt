@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, History, Calculator, LogOut, Settings as SettingsIcon, LayoutDashboard, TrendingUp, Beaker } from 'lucide-react';
 import { Load } from '@/types/load';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,6 +39,7 @@ const Index = () => {
   const { hasCoreData } = useCoreDataMigration();
   const { showRateLimitBanner, dismissBanner } = useRateLimit();
   const featureFlags = getFeatureFlags(user);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Check for Core data on mount
   useEffect(() => {
@@ -47,6 +48,18 @@ const Index = () => {
     }
     // No state value needed
   }, []);
+
+  // Check URL parameters for initial view
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'entry-method') {
+      setCurrentView('entry-method');
+      setEditingLoad(null);
+      setOcrData(null);
+      // Clear the URL parameter after setting the view
+      setSearchParams(new URLSearchParams());
+    }
+  }, [searchParams, setSearchParams]);
 
   // Business setup handlers
   const handleBusinessSetup = (revenueSplit: number, weeklyCosts: number) => {
