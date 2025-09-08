@@ -38,7 +38,7 @@ export interface OCRProcessorState {
   showMilesModal: boolean;
 }
 
-export function useOCRProcessor() {
+export function useOCRProcessor(isPro = false) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
@@ -53,10 +53,10 @@ export function useOCRProcessor() {
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
+  const ocrUsage = useOCRUsage(isPro);
 
-  const processOCR = async (file: File, onSuccess: (result: FieldDetectionResult) => void, onFallback: () => void, isPro = false) => {
+  const processOCR = async (file: File, onSuccess: (result: FieldDetectionResult) => void, onFallback: () => void) => {
     // Pre-flight check for LITE users
-    const ocrUsage = useOCRUsage(isPro);
     if (!isPro && !ocrUsage.canUseOCR) {
       toast({
         title: "Daily limit reached",

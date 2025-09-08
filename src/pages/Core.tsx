@@ -142,7 +142,7 @@ const Core = () => {
   const { toast } = useToast();
   
   // Initialize OCR processor
-  const ocrProcessor = useOCRProcessor();
+  const ocrProcessor = useOCRProcessor(isPro);
 
   // OCR state is now managed explicitly by user actions only
 
