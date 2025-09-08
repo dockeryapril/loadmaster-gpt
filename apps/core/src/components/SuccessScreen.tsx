@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Calculator } from "lucide-react";
+import { CheckCircle, Calculator, MessageSquare } from "lucide-react";
 import { UpgradeCard } from "./UpgradeCard";
 
 interface SuccessScreenProps {
@@ -27,6 +27,16 @@ export function SuccessScreen({ onBackToCalculator, onUpgrade }: SuccessScreenPr
           </div>
         </CardContent>
       </Card>
+
+      {/* Primary Negotiate Button */}
+      <Button 
+        onClick={onUpgrade}
+        className="w-full"
+        size="lg"
+      >
+        <MessageSquare className="h-4 w-4 mr-2" />
+        Negotiate
+      </Button>
 
       {/* Upgrade Card */}
       <UpgradeCard onUpgrade={onUpgrade} />
