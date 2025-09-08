@@ -234,7 +234,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
     // Net revenue after split and costs
     const afterSplitRevenue = grossRevenue * (revenueSplit / 100);
     const netRevenue = afterSplitRevenue - (weeklyFixedCostPerMile * totalMiles);
-    const profit = calculateProfit(rateNum, fscNum, tollsNum, fuelCostNum);
+    const profit = netRevenue - tollsNum - fuelCostNum; // Net profit after business costs
     const netRate = profit;
     
     // Net Take-Home RPM (after business costs)

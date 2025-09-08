@@ -25,8 +25,17 @@ export function useEquipmentAwareCalculations({ load, equipment: providedEquipme
     // Calculate fuel cost using equipment-specific MPG
     const fuelCost = calculateFuelCost(load.miles, activeEquipment, settings);
     
-    // Calculate net rate (total revenue minus costs)
-    const netRate = load.rate + (load.fsc || 0) - (load.tolls || 0) - fuelCost;
+    // Calculate business costs impact
+    const revenueSplit = settings.revenueSplitPercentage || 100;
+    const weeklyCosts = settings.weeklyFixedCosts || 0;
+    const estimatedWeeklyMiles = 2500; // Industry standard
+    const weeklyFixedCostPerMile = weeklyCosts / estimatedWeeklyMiles;
+    
+    // Calculate net rate (revenue after business costs)
+    const grossRevenue = load.rate + (load.fsc || 0);
+    const afterSplitRevenue = grossRevenue * (revenueSplit / 100);
+    const netRevenue = afterSplitRevenue - (weeklyFixedCostPerMile * load.miles);
+    const netRate = netRevenue - (load.tolls || 0) - fuelCost;
     const rpm = netRate / load.miles;
     
     // Calculate quality using equipment-specific thresholds
@@ -45,7 +54,7 @@ export function useEquipmentAwareCalculations({ load, equipment: providedEquipme
     
     const result: LoadCalculationResult = {
       rpm,
-      profit: netRate,
+      profit: netRate, // Now includes business setup costs
       totalMiles: load.miles + (load.deadheadMiles || 0),
       netRate,
       quality,
