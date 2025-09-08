@@ -109,10 +109,18 @@ export function SimpleBusinessSetup({
               >
                 <div className="flex-1">
                   <div className="font-medium text-sm">{template.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
+                  <div className={`text-xs mt-1 ${
+                    selectedTemplate === template.name 
+                      ? "text-primary-foreground" 
+                      : "text-muted-foreground"
+                  }`}>
                     {template.revenueSplit}% split • ${template.weeklyCosts}/week fixed costs
                   </div>
-                  <div className="text-xs text-muted-foreground/80 mt-1">
+                  <div className={`text-xs mt-1 ${
+                    selectedTemplate === template.name 
+                      ? "text-primary-foreground/90" 
+                      : "text-muted-foreground/80"
+                  }`}>
                     {template.description}
                   </div>
                 </div>
