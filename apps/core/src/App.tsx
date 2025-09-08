@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3 } from 'lucide-react';
+import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, Camera } from 'lucide-react';
+import { LiteOCRInterface } from '@/components/LiteOCRInterface';
+import { SuccessScreen } from '@/components/SuccessScreen';
 import { computeNegotiation, generateMessage, DEFAULT_NEGOTIATION_SETTINGS } from '@loadmaster/engine';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,6 +31,8 @@ function App() {
   const [result, setResult] = useState<any>(null);
   const [history, setHistory] = useLocalStorage<HistoryItem[]>('lm_core_history_v1', []);
   const [showHistory, setShowHistory] = useState(false);
+  const [showOCR, setShowOCR] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const { user, loading: authLoading } = useAuth();
   const { plan, isPro, loading: planLoading } = usePlan();
@@ -85,6 +89,18 @@ function App() {
     setWeekend(false);
     setShowResult(false);
     setResult(null);
+    setShowOCR(false);
+    setShowSuccess(false);
+  };
+
+  const handleOCRSuccess = () => {
+    setShowOCR(false);
+    setShowSuccess(true);
+  };
+
+  const handleBackToCalculator = () => {
+    setShowSuccess(false);
+    setShowHistory(false);
   };
 
   const handleSignIn = async () => {
@@ -175,8 +191,12 @@ function App() {
         {/* Navigation */}
         <div className="flex gap-2 mb-6">
           <Button
-            variant={!showHistory ? "default" : "outline"}
-            onClick={() => setShowHistory(false)}
+            variant={!showHistory && !showOCR && !showSuccess ? "default" : "outline"}
+            onClick={() => {
+              setShowHistory(false);
+              setShowOCR(false);
+              setShowSuccess(false);
+            }}
             className="flex-1"
           >
             <Calculator className="h-4 w-4 mr-2" />
@@ -184,7 +204,11 @@ function App() {
           </Button>
           <Button
             variant={showHistory ? "default" : "outline"}
-            onClick={() => setShowHistory(true)}
+            onClick={() => {
+              setShowHistory(true);
+              setShowOCR(false);
+              setShowSuccess(false);
+            }}
             className="flex-1"
           >
             <History className="h-4 w-4 mr-2" />
@@ -192,7 +216,17 @@ function App() {
           </Button>
         </div>
 
-        {showHistory ? (
+        {showSuccess ? (
+          <SuccessScreen 
+            onBackToCalculator={handleBackToCalculator}
+            onUpgrade={handleUpgradeToPro}
+          />
+        ) : showOCR ? (
+          <LiteOCRInterface 
+            onSuccess={handleOCRSuccess}
+            onClose={() => setShowOCR(false)}
+          />
+        ) : showHistory ? (
           <div className="space-y-4">
             {history.length === 0 ? (
               <Card>
@@ -358,13 +392,33 @@ function App() {
                 <label htmlFor="weekend" className="text-sm">Weekend pickup</label>
               </div>
               
-              <Button 
-                onClick={handleCalculate} 
-                className="w-full"
-                disabled={!miles || !offerAllIn}
-              >
-                Calculate Negotiation Strategy
-              </Button>
+              <div className="space-y-3">
+                <Button 
+                  onClick={handleCalculate} 
+                  className="w-full"
+                  disabled={!miles || !offerAllIn}
+                >
+                  Calculate Negotiation Strategy
+                </Button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={() => setShowOCR(true)}
+                  variant="outline" 
+                  className="w-full"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Upload Load Image
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
