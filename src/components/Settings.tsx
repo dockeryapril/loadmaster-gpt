@@ -201,7 +201,7 @@ export function Settings({ onClose }: SettingsProps) {
                 onChange={(e) => setMpg(e.target.value)}
                 placeholder="0"
               />
-              {equipment && effectiveMPG !== parseFloat(mpg) && (
+              {equipment && useEquipmentDefaults && (
                 <div className="text-sm text-muted-foreground flex items-center gap-1">
                   <Zap className="h-3 w-3" />
                   Smart default: {effectiveMPG} MPG
