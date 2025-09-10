@@ -25,14 +25,14 @@ export default function Auth() {
     // Check if user is already authenticated
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        window.location.href = '/';
+        window.location.href = '/app';
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        window.location.href = '/';
+        window.location.href = '/app';
       }
     });
 
@@ -67,7 +67,7 @@ export default function Auth() {
           title: "Welcome back!",
           description: "You've been signed in successfully.",
         });
-        window.location.href = '/';
+        window.location.href = '/app';
       }
     } catch (error: any) {
       toast({
