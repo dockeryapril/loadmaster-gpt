@@ -79,20 +79,20 @@ const Landing = () => {
           <div className="absolute inset-0 flex items-center justify-center z-20">
             <div className="text-center max-w-4xl mx-auto px-4">
               <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
-                Smart Freight
+                Smart Load
                 <br />
-                <span className="text-primary">Negotiation</span>
+                <span className="text-primary">Analysis</span>
                 <br />
                 Made Simple
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Upload your load offer — screenshot or manual entry — and let AI do the heavy lifting.
-              Get instant rate targets, edit details on the fly, and use proven negotiation scripts
-              designed for owner-operators chasing better margins.
+                One plan. All features. Built for serious owner-operators.
+                <br />
+                Upload screenshots, get instant RPM calculations, and maximize your profits.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 py-6">
-                  Try LoadMasterLITE - FREE!
+                  Start with LoadMaster Free
                 </Button>
                 {/*
                 <Button size="lg" variant="outline" onClick={handleLogin} className="text-lg px-8 py-6">
@@ -109,10 +109,10 @@ const Landing = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need to Maximize Your Hauls
+              Everything You Need to Maximize Your Profits
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Stop leaving money on the table. Our AI-powered tools help you negotiate better rates and find more profitable loads.
+              Start with LoadMaster Free (4 uploads per week) or upgrade to PRO for unlimited access and advanced features.
             </p>
           </div>
 
@@ -121,9 +121,10 @@ const Landing = () => {
               <div className="w-16 h-16 bg-card border border-border rounded-xl flex items-center justify-center mx-auto mb-6">
                 <Camera className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Screenshot Load Scanning</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-3">Smart Image Upload</h3>
               <p className="text-muted-foreground">
-                Take a screenshot or snap a photo of any load board offer, text, or email and instantly extract all the key details with the power of AI.
+                Upload screenshots or photos of load offers and instantly extract key details. 
+                Free: 4 uploads per week. PRO: Up to 100 per week.
               </p>
             </div>
 
@@ -141,9 +142,9 @@ const Landing = () => {
               <div className="w-16 h-16 bg-card border border-border rounded-xl flex items-center justify-center mx-auto mb-6">
                 <MessageSquare className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">AI Negotiation Coach</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-3">Smart Negotiation Tools</h3>
               <p className="text-muted-foreground">
-                Get personalized negotiation scripts and strategies to secure better rates.
+                Get intelligent rate analysis and negotiation insights to secure better deals and maximize your revenue.
               </p>
             </div>
 
@@ -160,17 +161,104 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Start free, upgrade when you're ready for more power.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-card border border-border rounded-2xl p-8 text-center">
+              <h3 className="text-2xl font-bold text-foreground mb-2">LoadMaster Free</h3>
+              <div className="text-4xl font-bold text-foreground mb-4">$0</div>
+              <p className="text-muted-foreground mb-6">Perfect for getting started</p>
+              
+              <div className="space-y-3 mb-8 text-left">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  </div>
+                  <span className="text-sm">4 uploads per week</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  </div>
+                  <span className="text-sm">Core calculator + insights</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  </div>
+                  <span className="text-sm">Unlimited manual entry</span>
+                </div>
+              </div>
+              
+              <Button onClick={handleGetStarted} variant="outline" className="w-full">
+                Start Free
+              </Button>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-8 text-center relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
+                  Most Popular
+                </div>
+              </div>
+              
+              <h3 className="text-2xl font-bold text-foreground mb-2">LoadMaster PRO</h3>
+              <div className="text-4xl font-bold text-foreground mb-1">$10</div>
+              <div className="text-muted-foreground mb-4">per month</div>
+              <p className="text-muted-foreground mb-6">Built for serious owner-operators</p>
+              
+              <div className="space-y-3 mb-8 text-left">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  </div>
+                  <span className="text-sm font-medium">Up to 100 uploads per week</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  </div>
+                  <span className="text-sm font-medium">Full feature access</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  </div>
+                  <span className="text-sm font-medium">Priority updates + support</span>
+                </div>
+              </div>
+              
+              <Button onClick={handleGetStarted} className="w-full">
+                Start Free Trial
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24 px-4 bg-card/50">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-            Ready to Negotiate Better Rates?
+            Ready to Maximize Your Profits?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join a community of owner-operators increasing their margins with LoadMaster.
+            Join owner-operators using LoadMaster to make smarter decisions and increase their margins.
           </p>
           <Button size="lg" onClick={handleGetStarted} className="text-lg px-12 py-6">
-            Try For Free Today!
+            Start with LoadMaster Free
           </Button>
         </div>
       </section>
