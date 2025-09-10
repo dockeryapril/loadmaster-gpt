@@ -79,7 +79,19 @@
 - [ ] Testing setup completion detection with all question types
 - [ ] Validating conditional question logic for complex compensation structures
 
-### 📋 Upcoming Tasks
+- [x] **Implemented Free/Pro Weekly Upload System**: Complete restructure from Lite/Core/Pro to Free/Pro model
+  - Added weekly upload tracking (Free: 4/week, Pro: 100/week) with Sunday reset
+  - Created useWeeklyUploads hook for Supabase-based weekly counter management
+  - Built WeeklyLimitReached lockout page with Stripe checkout integration
+  - Updated Upgrade page with new Free/Pro pricing and copy
+  - Created WeeklyLimitBanner for usage warnings and limit notifications
+  - Updated LoadEntryMethod to use weekly limits and redirect to lockout page
+  - Created create-pro-subscription edge function for $10/month Pro subscriptions
+  - Added database migration for weekly_upload_count and week_start_date columns
+  - Updated tier display system to show "Free" instead of "Lite" in UI
+  - Removed all Lite/Core references and replaced with Free/Pro terminology
+  - Integrated weekly limit checking with upload buttons (OCR/camera)
+  - Manual entry remains unlimited for all users as requested
 - [ ] Add business setup profiles for different trucking arrangements (owner-operator, lease-operator, company driver)
 - [ ] Implement setup validation against industry benchmarks
 - [ ] Add setup data export/import functionality

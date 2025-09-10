@@ -398,10 +398,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       // Check if this was a cancellation
       if (error instanceof Error && error.message === 'Upload cancelled') {
         console.log('OCR process was cancelled by user');
-        // Rollback usage increment on cancellation
-        if (usageIncremented) {
-          decrementOCRUsage();
-        }
+        // Note: Weekly uploads don't rollback like daily counters since they're stored in database
         logOCREnd('LoadEntryMethod', startTime, false, 'cancelled');
         recordExtractionEvent({
           source: 'LoadEntryMethod',
@@ -414,10 +411,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       }
       
       if (error instanceof RateLimitExceededError) {
-        // Rollback usage increment on rate limit error
-        if (usageIncremented) {
-          decrementOCRUsage();
-        }
+        // Weekly uploads don't rollback like daily counters
         handleRateLimitError(error);
         return;
       } else {
@@ -448,16 +442,17 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     
-    // Pre-flight check: Don't allow OCR if user exceeded limits
-    if (!isPro && !ocrUsage.canUseOCR) {
+    // Pre-flight check: Don't allow OCR if user exceeded weekly limits
+    if (!weeklyUploads.canUpload) {
       toast({
-        title: "Daily limit reached",
-        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+        title: "Weekly limit reached",
+        description: `You've used all ${weeklyUploads.weeklyLimit} weekly uploads. Resets ${weeklyUploads.resetDate.toLocaleDateString()}`,
         variant: "destructive",
       });
       if (event.target) {
         event.target.value = '';
       }
+      navigate('/weekly-limit-reached');
       return;
     }
     
@@ -498,13 +493,9 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   };
 
   const handleUploadClick = () => {
-    // Pre-flight check: Don't allow OCR if user exceeded limits
-    if (!isPro && !ocrUsage.canUseOCR) {
-      toast({
-        title: "Daily limit reached",
-        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
-        variant: "destructive",
-      });
+    // Check if user can upload (has remaining uploads)
+    if (!weeklyUploads.canUpload) {
+      navigate('/weekly-limit-reached');
       return;
     }
     
@@ -512,13 +503,14 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   };
 
   const handleCameraClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Pre-flight check: Don't allow OCR if user exceeded limits
-    if (!isPro && !ocrUsage.canUseOCR) {
+    // Pre-flight check: Don't allow OCR if user exceeded weekly limits
+    if (!weeklyUploads.canUpload) {
       toast({
-        title: "Daily limit reached", 
-        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+        title: "Weekly limit reached", 
+        description: `You've used all ${weeklyUploads.weeklyLimit} weekly uploads. Resets ${weeklyUploads.resetDate.toLocaleDateString()}`,
         variant: "destructive",
       });
+      navigate('/weekly-limit-reached');
       return;
     }
     
@@ -782,27 +774,23 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
           Upload image for processing to extract load details automatically, or enter details manually.
         </p>
         
-        {/* OCR Usage Display - Only show for LITE users */}
+        {/* Usage Display */}
         {!isPro && (
-          <div className={`bg-card rounded-lg p-3 border mt-4 ${!ocrUsage.canUseOCR ? 'bg-destructive/5 border-destructive/20' : ''}`}>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Image scans today:</span>
-              <span className={`font-medium ${ocrUsage.canUseOCR ? 'text-primary' : 'text-destructive'}`}>
-                {ocrUsage.daily}/{ocrUsage.dailyLimit}
-              </span>
+          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                LoadMaster Free • {weeklyUploads.remaining} uploads remaining this week
+              </div>
             </div>
-            {!ocrUsage.canUseOCR ? (
-              <div className="mt-2 space-y-1">
-                <p className="text-xs text-destructive font-medium">
-                  Daily image upload limit reached! Resets at {ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Upgrade to PRO for unlimited image processing • Manual entry is always unlimited
+            {!weeklyUploads.canUpload ? (
+              <div className="mt-2">
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  Upgrade to PRO for 100 uploads per week • Manual entry is always unlimited
                 </p>
               </div>
             ) : (
               <p className="text-xs text-muted-foreground mt-1">
-                {ocrUsage.remaining} Image scans remaining today • Manual entry is unlimited
+                {weeklyUploads.remaining} uploads remaining this week • Manual entry is unlimited
               </p>
             )}
           </div>
@@ -824,20 +812,18 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleUploadClick}
-                disabled={!isPro && !ocrUsage.canUseOCR} // Only disable for LITE users who exceeded limits
+                disabled={!weeklyUploads.canUpload} // Only disable for Free users who exceeded limits
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className={`icon-badge ${isPro || ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
-                    <Upload className={`h-6 w-6 ${isPro || ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`icon-badge ${weeklyUploads.canUpload ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Upload className={`h-6 w-6 ${weeklyUploads.canUpload ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Upload Image/Screenshot</div>
                      <div className="text-sm text-muted-foreground">
-                       {isPro 
+                       {weeklyUploads.canUpload 
                          ? "Select photos from your device" 
-                         : ocrUsage.canUseOCR 
-                           ? "Select photos from your device" 
-                           : "Daily limit reached"
+                         : "Weekly limit reached"
                        }
                     </div>
                   </div>
@@ -852,20 +838,18 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleCameraClick}
-                disabled={!isPro && !ocrUsage.canUseOCR} // Only disable for LITE users who exceeded limits
+                disabled={!weeklyUploads.canUpload} // Only disable for Free users who exceeded limits
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className={`icon-badge ${isPro || ocrUsage.canUseOCR ? 'bg-primary/20' : 'bg-muted'}`}>
-                    <Camera className={`h-6 w-6 ${isPro || ocrUsage.canUseOCR ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`icon-badge ${weeklyUploads.canUpload ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Camera className={`h-6 w-6 ${weeklyUploads.canUpload ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Take Photo</div>
                      <div className="text-sm text-muted-foreground">
-                       {isPro 
+                       {weeklyUploads.canUpload 
                          ? "Use your camera to capture load documents"
-                         : ocrUsage.canUseOCR 
-                           ? "Use your camera to capture load documents"
-                           : "Daily limit reached"
+                         : "Weekly limit reached"
                        }
                     </div>
                   </div>
