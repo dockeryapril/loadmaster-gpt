@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@loadmaster/api": path.resolve(__dirname, "../../packages/api/src"),
+      "@loadmaster/engine": path.resolve(__dirname, "../../packages/engine/src"),
     },
   },
   build: {

@@ -5,21 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, Truck, TrendingUp, Crown, LogIn, ExternalLink, History, BarChart3, Camera } from 'lucide-react';
 import { LiteOCRInterface } from '@/components/LiteOCRInterface';
 import { SuccessScreen } from '@/components/SuccessScreen';
-import { computeNegotiation, generateMessage, DEFAULT_NEGOTIATION_SETTINGS } from '@loadmaster/engine';
+import { computeCalc, suggestTemplates } from '@loadmaster/engine';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { HistoryItem } from '@/types';
 import { supabase } from '@loadmaster/api';
 import { logEvent } from '@/utils/metrics';
-
-const DEFAULT_USER_SETTINGS = {
-  rpmThresholds: {
-    excellent: 2.5,
-    good: 2.0,
-    fair: 1.5
-  }
-};
 
 function App() {
   const [miles, setMiles] = useState('');
@@ -51,15 +43,22 @@ function App() {
       notes: weekend ? 'weekend pickup' : ''
     };
 
-    const calculation = computeNegotiation(
-      loadData,
-      DEFAULT_USER_SETTINGS,
-      DEFAULT_NEGOTIATION_SETTINGS
-    );
+    const loadFields = {
+      distanceMi: milesNum,
+      offerFlat: offerNum,
+      weightLbs: weightNum,
+      equipment: 'straight_truck' as const,
+      weekend: weekend
+    };
+
+    const margins = { anchorPct: 15, targetPct: 10, floorPct: 5 };
+    
+    const calculation = computeCalc(loadFields, margins);
 
     if (!calculation) return;
 
-    const message = generateMessage(loadData, calculation, 'Origin', 'Destination');
+    const templates = suggestTemplates(loadFields, calculation);
+    const message = templates && templates.length > 0 ? templates[0] : { subject: 'Rate Request', message: 'Looking to negotiate a better rate for this load.' };
 
     const historyItem: HistoryItem = {
       id: Date.now().toString(),
@@ -68,11 +67,11 @@ function App() {
       weightLbs: weightNum,
       pickupInHours: pickupInHours ? parseFloat(pickupInHours) : undefined,
       weekend,
-      targetAllIn: calculation.target_rate,
-      anchorAllIn: calculation.anchor_rate,
-      floorAllIn: calculation.floor_rate,
-      premiums: calculation.premiums_applied,
-      strategy: calculation.suggested_strategy,
+      targetAllIn: calculation.negotiation.target,
+      anchorAllIn: calculation.negotiation.anchor,
+      floorAllIn: calculation.negotiation.floor,
+      premiums: Object.entries(calculation.surcharges).filter(([_, value]) => value > 0).map(([key, _]) => key),
+      strategy: 'standard',
       timestamp: Date.now(),
     };
 
@@ -297,23 +296,23 @@ function App() {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-sm text-muted-foreground">Ask</p>
-                    <p className="text-xl font-bold text-primary">${result.calculation.anchor_rate}</p>
+                    <p className="text-xl font-bold text-primary">${result.calculation.negotiation.anchor}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Settle For</p>
-                    <p className="text-xl font-bold">${result.calculation.target_rate}</p>
+                    <p className="text-xl font-bold">${result.calculation.negotiation.target}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Bottom Line</p>
-                    <p className="text-xl font-bold text-muted-foreground">${result.calculation.floor_rate}</p>
+                    <p className="text-xl font-bold text-muted-foreground">${result.calculation.negotiation.floor}</p>
                   </div>
                 </div>
                 
-                {result.calculation.premiums_applied.length > 0 && (
+                {result.historyItem.premiums.length > 0 && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Applied Premiums:</p>
                     <div className="flex flex-wrap gap-2">
-                      {result.calculation.premiums_applied.map((premium: string, idx: number) => (
+                      {result.historyItem.premiums.map((premium: string, idx: number) => (
                         <span key={idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                           {premium}
                         </span>
