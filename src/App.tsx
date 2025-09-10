@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Core from "./pages/Core";
 import Landing from "./pages/Landing";
+import FAQ from "./pages/FAQ";
 import Upgrade from "./pages/Upgrade";
 import WeeklyLimitReached from "./pages/WeeklyLimitReached";
 import NotFound from "./pages/NotFound";
@@ -40,6 +41,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/core" element={<Core />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/weekly-limit-reached" element={<WeeklyLimitReached />} />
         <Route path="/" element={

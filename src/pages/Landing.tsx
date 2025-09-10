@@ -28,6 +28,9 @@ const Landing = () => {
             <span className="text-xl font-bold text-foreground">LoadMaster</span>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => navigate("/faq")}>
+              FAQ
+            </Button>
             <Button variant="ghost" onClick={handleLogin}>
               Sign In
             </Button>
@@ -274,6 +277,12 @@ const Landing = () => {
               <span className="font-semibold text-foreground">LoadMaster</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <button 
+                onClick={() => navigate("/faq")} 
+                className="hover:text-foreground transition-colors"
+              >
+                FAQ
+              </button>
               <span>© 2025 LoadMaster. All rights reserved.</span>
             </div>
           </div>
