@@ -970,7 +970,18 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                     {/* Gross RPM */}
                     <div className="space-y-1">
                       <div className="text-sm text-muted-foreground">Gross RPM</div>
-                      <div className="text-xl font-bold">${calculation.grossRpm.toFixed(2)}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-xl font-bold">${calculation.grossRpm.toFixed(2)}</div>
+                        {negotiation && (
+                          <span
+                            className={cn('h-2 w-2 rounded-full', {
+                              'bg-green-500': negotiation.calc.resultColor === 'green',
+                              'bg-yellow-500': negotiation.calc.resultColor === 'yellow',
+                              'bg-red-500': negotiation.calc.resultColor === 'red',
+                            })}
+                          />
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">Before business costs</div>
                     </div>
                     
@@ -1067,22 +1078,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
 
                 {negotiation && (
                   <div className="space-y-3 pt-3 border-t">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Base RPM</span>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={cn('h-2 w-2 rounded-full', {
-                            'bg-green-500': negotiation.calc.resultColor === 'green',
-                            'bg-yellow-500': negotiation.calc.resultColor === 'yellow',
-                            'bg-red-500': negotiation.calc.resultColor === 'red',
-                          })}
-                        />
-                        <span className="font-mono">
-                          ${negotiation.calc.baseRpm?.toFixed(2) || '0.00'}/mi
-                        </span>
-                      </div>
-                    </div>
-
                     <div className="grid grid-cols-3 gap-2 text-sm">
                       <div className="text-center p-2 bg-muted/30 rounded">
                         <div className="font-medium text-green-600">Ask</div>
