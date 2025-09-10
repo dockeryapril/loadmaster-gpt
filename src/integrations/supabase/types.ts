@@ -224,6 +224,30 @@ export type Database = {
         }
         Relationships: []
       }
+      email_signups: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          metadata: Json | null
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          metadata?: Json | null
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          metadata?: Json | null
+          source?: string
+        }
+        Relationships: []
+      }
       lane_history: {
         Row: {
           avg_rpm: number

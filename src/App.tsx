@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import Core from "./pages/Core";
 import Landing from "./pages/Landing";
 import MVPLanding from "./pages/MVPLanding";
+import EmailAdmin from "./pages/EmailAdmin";
 import FAQ from "./pages/FAQ";
 import Upgrade from "./pages/Upgrade";
 import WeeklyLimitReached from "./pages/WeeklyLimitReached";
@@ -53,6 +54,11 @@ const AppContent = () => {
           ) : (
             <Auth />
           )
+        } />
+        <Route path="/admin/emails" element={
+          <ProtectedRoute>
+            <EmailAdmin />
+          </ProtectedRoute>
         } />
         <Route path="/product" element={<Landing />} />
         <Route path="/" element={<MVPLanding />} />

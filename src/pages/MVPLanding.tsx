@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Truck, Calculator, Camera, MessageSquare, CheckCircle, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const MVPLanding = () => {
   const [email, setEmail] = useState("");
@@ -26,18 +27,41 @@ const MVPLanding = () => {
 
     setIsLoading(true);
     
-    // Simulate API call - replace with actual email collection service
     try {
-      // Here you would integrate with your email collection service
-      // For now, we'll just simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setIsSubmitted(true);
-      toast({
-        title: "Thanks for your interest!",
-        description: "We'll keep you updated on LoadMaster's progress.",
-      });
+      const { error } = await supabase
+        .from('email_signups')
+        .insert([
+          {
+            email: email.toLowerCase().trim(),
+            source: 'mvp_landing',
+            metadata: {
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              referrer: document.referrer || 'direct'
+            }
+          }
+        ]);
+
+      if (error) {
+        // Handle duplicate email gracefully
+        if (error.code === '23505') {
+          toast({
+            title: "Already signed up!",
+            description: "You're already on our waitlist. We'll keep you updated!",
+          });
+          setIsSubmitted(true);
+        } else {
+          throw error;
+        }
+      } else {
+        setIsSubmitted(true);
+        toast({
+          title: "Thanks for your interest!",
+          description: "We'll keep you updated on LoadMaster's progress.",
+        });
+      }
     } catch (error) {
+      console.error('Email signup error:', error);
       toast({
         title: "Something went wrong",
         description: "Please try again or contact us directly.",
