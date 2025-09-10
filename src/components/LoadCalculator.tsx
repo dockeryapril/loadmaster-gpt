@@ -994,6 +994,17 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                       </Badge>
                     </div>
                   </div>
+
+                  {/* Estimated Profit - Primary Metric */}
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Estimated Profit</span>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-success">${calculation.profit.toFixed(2)}</div>
+                    </div>
+                  </div>
+                  
+                  {/* Divider between primary and secondary metrics */}
+                  <div className="border-t border-border/30 my-4"></div>
                   
                   {/* Business Impact Details */}
                   {(calculation.revenueSplit !== 100 || calculation.weeklyCosts > 0) && (
@@ -1030,12 +1041,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                 </div>
               )}
 
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Estimated Profit</span>
-                <div className="text-right">
-                  <div className="text-xl font-bold text-success">${calculation.profit.toFixed(2)}</div>
-                </div>
-              </div>
 
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
