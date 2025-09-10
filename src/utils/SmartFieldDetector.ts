@@ -45,7 +45,7 @@ export class SmartFieldDetector {
       
       Extract the following fields with confidence levels:
       - miles (trip distance, total miles, mi, distance, loaded miles)
-      - rate (total pay amount, rate per mile, total rate, gross pay, may include $ symbol)
+      - rate (total pay amount, rate per mile, total rate, gross pay, OFFER AMOUNT, TOTAL PAY, GROSS AMOUNT, LOAD PAY, CONTRACT AMOUNT, PAY RATE, may include $ symbol and commas)
       - origin (pickup location, from, origin city/state, shipper location)
       - destination (delivery location, to, destination city/state, consignee location)
       - deadhead (deadhead miles, DH, empty miles, positioning miles)
@@ -57,22 +57,29 @@ export class SmartFieldDetector {
       - layover (layover pay, restart pay, overnight compensation)
       - hazmat (hazmat premium, dangerous goods surcharge, HAZMAT pay)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost, fuel expense, fuel charges if enabled)' : ''}
       
-      CALCULATION RULES:
+      RATE DETECTION RULES (CRITICAL):
+      - ALWAYS prioritize dollar amounts that appear after these labels: "OFFER AMOUNT", "TOTAL PAY", "GROSS AMOUNT", "LOAD PAY", "CONTRACT AMOUNT", "PAY RATE", "TOTAL AMOUNT"
+      - Look for patterns like "OFFER AMOUNT $1,405.24" or "TOTAL PAY: $2,500.00"
+      - Prefer larger dollar amounts over smaller ones when multiple amounts are present
       - If you see "$/mile" rates, multiply by miles to get total rate
+      - Handle comma-separated amounts properly: "$1,405.24" should extract as "1405.24"
+      - Ignore small amounts that are likely fees unless clearly labeled as the main rate
+      
+      OCR ERROR CORRECTION:
       - Convert weight formats: "25K" = 25000, "15,000#" = 15000
       - Recognize city abbreviations: "CHI" = Chicago, "ATL" = Atlanta
-      - Fix common OCR errors: "5" vs "S", "0" vs "O", "$" vs "S", "1" vs "l"
+      - Fix common OCR errors: "5" vs "S", "0" vs "O", "$" vs "S", "1" vs "l", "," vs "."
       - Validate state codes: convert full state names to 2-letter codes
       - Clean currency: remove extra symbols, fix decimal placement
       
       CONFIDENCE GUIDELINES (be generous but accurate):
-      - "high": Clear numeric values with proper labels and context
+      - "high": Clear numeric values with proper labels and context, especially rates with clear labels
       - "medium": Recognizable values that may need minor interpretation  
       - "low": Ambiguous values requiring human verification
       
       PATTERN RECOGNITION:
       - Miles: Numbers near "mi", "miles", "distance", "loaded"
-      - Rate: Dollar amounts near "rate", "pay", "total", per-mile calculations
+      - Rate: Dollar amounts near "rate", "pay", "total", "offer amount", "gross amount", per-mile calculations
       - Locations: City/State pairs, ZIP codes, facility names
       - Weight: Numbers near "lbs", "#", "pounds", "weight"
       - Accessorials: Look for detention, lumper, layover, hazmat with associated amounts
@@ -141,15 +148,23 @@ export class SmartFieldDetector {
   }
 
   private static fallbackDetection(ocrText: string, startTime: number, aiResponse = ''): FieldDetectionResult {
-    if (isDebugMode()) {
+    const debug = isDebugMode();
+    if (debug) {
       debugLog('Using fallback pattern detection');
     }
     const fields: DetectedField[] = [];
 
-    // Basic regex patterns for common formats
+    // Enhanced regex patterns for better trucking terminology recognition
     const patterns = {
       miles: /(\d+)\s*(miles?|mi\.?)/i,
-      rate: /\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/,
+      rate: [
+        // Priority patterns for specific rate labels
+        /(?:offer\s*amount|total\s*pay|gross\s*amount|load\s*pay|contract\s*amount|pay\s*rate|total\s*amount)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,
+        // General rate patterns
+        /(?:rate|pay|total)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,
+        // Fallback for any dollar amount (lowest priority)
+        /\$(\d+(?:,\d{3})*(?:\.\d{2})?)/
+      ],
       origin: /(?:from|pickup|origin)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
       destination: /(?:to|delivery|dest)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
       deadhead: /(?:deadhead|dh|dead\s*head|empty\s*miles?)[\s:]*(\d+)/i,
@@ -162,13 +177,48 @@ export class SmartFieldDetector {
 
     const numericFields = new Set(['miles', 'rate', 'deadhead', 'weight', 'detention', 'lumper', 'layover', 'hazmat']);
 
-    for (const [field, pattern] of Object.entries(patterns)) {
-      const match = ocrText.match(pattern);
-      if (match && match[1]) {
+    for (const [field, patternOrArray] of Object.entries(patterns)) {
+      let match = null;
+      let matchValue = null;
+      
+      // Handle rate field with multiple priority patterns
+      if (field === 'rate' && Array.isArray(patternOrArray)) {
+        // Try patterns in order of priority
+        for (const pattern of patternOrArray) {
+          match = ocrText.match(pattern);
+          if (match && match[1]) {
+            matchValue = match[1];
+            if (debug) {
+              debugLog(`Rate detected with pattern: ${pattern.toString()}, value: ${matchValue}`);
+            }
+            break;
+          }
+        }
+      } else {
+        // Handle other fields with single pattern
+        const pattern = patternOrArray as RegExp;
+        match = ocrText.match(pattern);
+        if (match && match[1]) {
+          matchValue = match[1];
+        }
+      }
+      
+      if (matchValue) {
+        // For rate field, prefer higher confidence if detected with priority patterns
+        let confidence: 'high' | 'medium' | 'low' = numericFields.has(field) ? 'medium' : 'low';
+        
+        if (field === 'rate' && Array.isArray(patternOrArray)) {
+          // Higher confidence for priority patterns (first pattern in array)
+          const firstPatternMatch = ocrText.match(patternOrArray[0]);
+          if (firstPatternMatch && firstPatternMatch[1] === matchValue) {
+            confidence = 'high';
+          }
+        }
+        
         fields.push({
           field: field as DetectedField['field'],
-          value: match[1],
-          confidence: numericFields.has(field) ? 'medium' : 'low'
+          value: matchValue,
+          confidence
         });
       }
     }
@@ -189,6 +239,7 @@ export class SmartFieldDetector {
   }
 
   private static validateFields(fields: DetectedField[]): DetectedField[] {
+    const debug = isDebugMode();
     return fields.filter(field => {
       // Basic validation rules with improved numeric parsing
       if (!field.value || field.value.trim() === '') return false;
@@ -209,9 +260,15 @@ export class SmartFieldDetector {
         case 'lumper':
         case 'layover':
         case 'hazmat': {
-          // Allow dollar amounts: "$1,250.00", "1250", "2.50"
-          const cleanRate = field.value.replace(/[$,]/g, '');
-          return /^\d+(?:\.\d{1,2})?$/.test(cleanRate) && parseFloat(cleanRate) > 0;
+          // Enhanced validation for dollar amounts: "$1,250.00", "1250", "2.50", "1,405.24"
+          const cleanRate = field.value.replace(/[$,\s]/g, '');
+          const isValid = /^\d+(?:\.\d{1,2})?$/.test(cleanRate) && parseFloat(cleanRate) > 0;
+          
+          if (debug && field.field === 'rate') {
+            debugLog(`Rate validation - original: ${field.value}, cleaned: ${cleanRate}, valid: ${isValid}`);
+          }
+          
+          return isValid;
         }
         case 'origin':
         case 'destination':

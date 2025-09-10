@@ -60,6 +60,13 @@
   - Enhanced OpenAI edge function with increased token limit for better responses
   - Added sophisticated data warnings (rate, weight, distance, accessorial validation)
   - Maintained cost-effectiveness by keeping GPT-4o-mini model
+- [x] **Enhanced Rate Detection**: Improved rate extraction from trucking documents
+  - Added priority detection for "OFFER AMOUNT", "TOTAL PAY", "GROSS AMOUNT", "LOAD PAY" labels
+  - Enhanced LLM prompts with specific trucking terminology and rate patterns
+  - Improved fallback regex with priority-based pattern matching
+  - Enhanced validation for comma-separated amounts (e.g., "$1,405.24")
+  - Added debug logging for rate detection troubleshooting
+  - Fixed issue where smaller amounts were incorrectly selected over main rate amounts
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types
