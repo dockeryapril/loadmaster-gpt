@@ -238,7 +238,7 @@ const Index = () => {
       return (
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Link to="/landing">
+            <Link to="/product">
               <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
                 <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
               </div>

@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Core from "./pages/Core";
 import Landing from "./pages/Landing";
+import MVPLanding from "./pages/MVPLanding";
 import FAQ from "./pages/FAQ";
 import Upgrade from "./pages/Upgrade";
 import WeeklyLimitReached from "./pages/WeeklyLimitReached";
@@ -44,16 +45,17 @@ const AppContent = () => {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/weekly-limit-reached" element={<WeeklyLimitReached />} />
-        <Route path="/" element={
+        <Route path="/app" element={
           user ? (
             <ProtectedRoute>
               <Index />
             </ProtectedRoute>
           ) : (
-            <Landing />
+            <Auth />
           )
         } />
-        <Route path="/landing" element={<Landing />} />
+        <Route path="/product" element={<Landing />} />
+        <Route path="/" element={<MVPLanding />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
