@@ -385,16 +385,6 @@ const Index = () => {
             <div className="grid gap-3">
               <Button
                 variant="outline"
-                onClick={() => window.open('/core', '_blank')}
-                className="flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2">
-                  <Calculator className="h-4 w-4" />
-                  Try LoadMaster Free 
-                </span>
-              </Button>
-              <Button
-                variant="outline"
                 onClick={() => setCurrentView('negotiation-settings')}
                 className="flex items-center justify-between"
               >
