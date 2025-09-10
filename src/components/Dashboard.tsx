@@ -100,6 +100,8 @@ export function Dashboard({
   };
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {
+    console.log('🔍 DASHBOARD DEBUG - handleFieldsDetected called with:', result);
+
     const fieldsMap = result.detectedFields.reduce((acc, field) => {
       acc[field.field] = field.value;
       return acc;
@@ -108,16 +110,52 @@ export function Dashboard({
     const data: Partial<Load> = {
       origin: fieldsMap.origin || '',
       destination: fieldsMap.destination || '',
-      miles: fieldsMap.miles ? parseFloat(fieldsMap.miles) : undefined,
-      rate: fieldsMap.rate ? parseFloat(fieldsMap.rate) : undefined,
-      fsc: fieldsMap.fsc ? parseFloat(fieldsMap.fsc) : undefined,
-      weight: fieldsMap.weight ? parseFloat(fieldsMap.weight) : undefined,
-      deadheadMiles: fieldsMap.deadhead ? parseFloat(fieldsMap.deadhead) : undefined,
-      fuelCost: fieldsMap.fuelCost ? parseFloat(fieldsMap.fuelCost) : undefined,
-      tolls: fieldsMap.tolls ? parseFloat(fieldsMap.tolls) : undefined,
+      miles: fieldsMap.miles ? (() => {
+        const cleaned = fieldsMap.miles.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 DASHBOARD DEBUG - Miles: "${fieldsMap.miles}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      rate: fieldsMap.rate ? (() => {
+        const cleaned = fieldsMap.rate.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 DASHBOARD DEBUG - Rate: "${fieldsMap.rate}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      fsc: fieldsMap.fsc ? (() => {
+        const cleaned = fieldsMap.fsc.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 DASHBOARD DEBUG - FSC: "${fieldsMap.fsc}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      weight: fieldsMap.weight ? (() => {
+        const cleaned = fieldsMap.weight.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 DASHBOARD DEBUG - Weight: "${fieldsMap.weight}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      deadheadMiles: fieldsMap.deadhead ? (() => {
+        const cleaned = fieldsMap.deadhead.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 DASHBOARD DEBUG - Deadhead: "${fieldsMap.deadhead}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      fuelCost: fieldsMap.fuelCost ? (() => {
+        const cleaned = fieldsMap.fuelCost.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);  
+        console.log(`🔍 DASHBOARD DEBUG - FuelCost: "${fieldsMap.fuelCost}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      tolls: fieldsMap.tolls ? (() => {
+        const cleaned = fieldsMap.tolls.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 DASHBOARD DEBUG - Tolls: "${fieldsMap.tolls}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
       notes: '',
     };
 
+    console.log('🔍 DASHBOARD DEBUG - Final processed data:', data);
     setOcrData(data);
     setShowCalculator(true);
   };

@@ -164,25 +164,64 @@ const Index = () => {
   };
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {
+    console.log('🔍 INDEX DEBUG - handleFieldsDetected called with:', result);
+    
     // Convert detectedFields array to an object for easier access
     const fieldsMap = result.detectedFields.reduce((acc, field) => {
       acc[field.field] = field.value;
       return acc;
     }, {} as Record<string, string>);
 
-    // Create a partial Load object from the OCR result
+    // Create a partial Load object from the OCR result with enhanced processing
     const ocrDetectedData: Partial<Load> = {
       origin: fieldsMap.origin || '',
       destination: fieldsMap.destination || '',
-      miles: fieldsMap.miles ? parseFloat(fieldsMap.miles) : undefined,
-      rate: fieldsMap.rate ? parseFloat(fieldsMap.rate) : undefined,
-      fsc: fieldsMap.fsc ? parseFloat(fieldsMap.fsc) : undefined,
-      weight: fieldsMap.weight ? parseFloat(fieldsMap.weight) : undefined,
-      deadheadMiles: fieldsMap.deadhead ? parseFloat(fieldsMap.deadhead) : undefined,
-      fuelCost: fieldsMap.fuelCost ? parseFloat(fieldsMap.fuelCost) : undefined,
-      tolls: fieldsMap.tolls ? parseFloat(fieldsMap.tolls) : undefined,
+      miles: fieldsMap.miles ? (() => {
+        const cleaned = fieldsMap.miles.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 INDEX DEBUG - Miles: "${fieldsMap.miles}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      rate: fieldsMap.rate ? (() => {
+        const cleaned = fieldsMap.rate.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 INDEX DEBUG - Rate: "${fieldsMap.rate}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      fsc: fieldsMap.fsc ? (() => {
+        const cleaned = fieldsMap.fsc.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 INDEX DEBUG - FSC: "${fieldsMap.fsc}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      weight: fieldsMap.weight ? (() => {
+        const cleaned = fieldsMap.weight.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 INDEX DEBUG - Weight: "${fieldsMap.weight}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      deadheadMiles: fieldsMap.deadhead ? (() => {
+        const cleaned = fieldsMap.deadhead.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 INDEX DEBUG - Deadhead: "${fieldsMap.deadhead}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      fuelCost: fieldsMap.fuelCost ? (() => {
+        const cleaned = fieldsMap.fuelCost.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 INDEX DEBUG - FuelCost: "${fieldsMap.fuelCost}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
+      tolls: fieldsMap.tolls ? (() => {
+        const cleaned = fieldsMap.tolls.replace(/[$,\s]/g, '');
+        const num = parseFloat(cleaned);
+        console.log(`🔍 INDEX DEBUG - Tolls: "${fieldsMap.tolls}" → "${cleaned}" → ${num}`);
+        return isNaN(num) ? undefined : num;
+      })() : undefined,
       notes: '',
     };
+    
+    console.log('🔍 INDEX DEBUG - Final processed data:', ocrDetectedData);
     
     // Store OCR data separately, don't treat as existing load
     setOcrData(ocrDetectedData);

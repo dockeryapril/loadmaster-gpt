@@ -233,32 +233,39 @@ const Core = () => {
   };
 
   const handleFieldsDetected = (detectionResult: FieldDetectionResult) => {
-    console.log('🎯 OCR: Applying detected fields to calculator', detectionResult);
+    console.log('🎯 CORE DEBUG - Applying detected fields to calculator', detectionResult);
     
     const fieldsPopulated: string[] = [];
     
-    // Populate form fields from OCR results
+    // Populate form fields from OCR results with enhanced debugging
     detectionResult.detectedFields.forEach(field => {
-      const cleanValue = field.value.replace(/[^0-9.]/g, '');
-      if (cleanValue) {
+      console.log(`🔍 CORE DEBUG - Processing field: ${field.field}, original value: "${field.value}"`);
+      
+      // Enhanced cleaning that preserves decimals but removes all other non-numeric chars
+      const cleanValue = field.value.replace(/[$,\s€£¥₹]/g, '');
+      console.log(`🔍 CORE DEBUG - Cleaned value: "${cleanValue}"`);
+      
+      if (cleanValue && !isNaN(parseFloat(cleanValue))) {
         switch (field.field) {
           case 'miles':
             setMiles(cleanValue);
             fieldsPopulated.push('Miles');
-            console.log('📏 OCR: Set miles to', cleanValue);
+            console.log('📏 CORE DEBUG - Set miles to', cleanValue);
             break;
           case 'rate':
             setOfferAllIn(cleanValue);
             fieldsPopulated.push('Rate');
-            console.log('💰 OCR: Set rate to', cleanValue);
+            console.log('💰 CORE DEBUG - Set rate to', cleanValue);
             break;
           case 'weight':
             setWeightLbs(cleanValue);
             fieldsPopulated.push('Weight');
-            console.log('⚖️ OCR: Set weight to', cleanValue);
+            console.log('⚖️ CORE DEBUG - Set weight to', cleanValue);
             break;
           // Add other fields as needed
         }
+      } else {
+        console.warn(`⚠️ CORE DEBUG - Skipped invalid value for ${field.field}: "${cleanValue}"`);
       }
     });
 
@@ -274,7 +281,8 @@ const Core = () => {
       duration: 4000,
     });
     
-    console.log('✨ OCR: Successfully populated fields:', fieldsPopulated);
+    console.log('✨ CORE DEBUG - Successfully populated fields:', fieldsPopulated);
+    console.log('🔍 CORE DEBUG - Final form state:', { miles, offerAllIn, weightLbs });
     
     // Scroll to top to show the populated form
     setTimeout(() => {
