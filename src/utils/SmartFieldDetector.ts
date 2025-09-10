@@ -9,7 +9,7 @@ const HINT_WORDS = Object.values(lexicon as Record<string, Record<string, string
   .join(', ');
 
 export interface DetectedField {
-  field: 'miles' | 'rate' | 'origin' | 'destination' | 'deadhead' | 'weight' | 'fsc' | 'tolls' | 'fuelCost';
+  field: 'miles' | 'rate' | 'origin' | 'destination' | 'deadhead' | 'weight' | 'fsc' | 'tolls' | 'fuelCost' | 'detention' | 'lumper' | 'layover' | 'hazmat';
   value: string;
   confidence: 'high' | 'medium' | 'low';
   position?: { start: number; end: number };
@@ -51,12 +51,19 @@ export class SmartFieldDetector {
       - deadhead (deadhead miles, DH, empty miles, positioning miles)
       - weight (cargo weight in lbs, pounds, weight, gross weight)
       - fsc (fuel surcharge, fuel supplement, FSC, fuel allowance)
-      - tolls (toll costs, tolls, toll charges, toll reimbursement)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost, fuel expense, fuel charges if enabled)' : ''}
+      - tolls (toll costs, tolls, toll charges, toll reimbursement)
+      - detention (detention pay, wait time pay, delay compensation)
+      - lumper (lumper fee, unloading fee, labor charge)
+      - layover (layover pay, restart pay, overnight compensation)
+      - hazmat (hazmat premium, dangerous goods surcharge, HAZMAT pay)${enableFuelCostTracking ? '\n      - fuelCost (fuel cost, fuel expense, fuel charges if enabled)' : ''}
       
       CALCULATION RULES:
       - If you see "$/mile" rates, multiply by miles to get total rate
       - Convert weight formats: "25K" = 25000, "15,000#" = 15000
       - Recognize city abbreviations: "CHI" = Chicago, "ATL" = Atlanta
+      - Fix common OCR errors: "5" vs "S", "0" vs "O", "$" vs "S", "1" vs "l"
+      - Validate state codes: convert full state names to 2-letter codes
+      - Clean currency: remove extra symbols, fix decimal placement
       
       CONFIDENCE GUIDELINES (be generous but accurate):
       - "high": Clear numeric values with proper labels and context
@@ -68,6 +75,7 @@ export class SmartFieldDetector {
       - Rate: Dollar amounts near "rate", "pay", "total", per-mile calculations
       - Locations: City/State pairs, ZIP codes, facility names
       - Weight: Numbers near "lbs", "#", "pounds", "weight"
+      - Accessorials: Look for detention, lumper, layover, hazmat with associated amounts
       
       Return ONLY a JSON object in this exact format:
       {
@@ -145,10 +153,14 @@ export class SmartFieldDetector {
       origin: /(?:from|pickup|origin)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
       destination: /(?:to|delivery|dest)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
       deadhead: /(?:deadhead|dh|dead\s*head|empty\s*miles?)[\s:]*(\d+)/i,
-      weight: /(\d+(?:,\d{3})*)\s*(?:lbs?|pounds?)/i
+      weight: /(\d+(?:,\d{3})*)\s*(?:lbs?|pounds?)/i,
+      detention: /(?:detention|wait\s*time|delay)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,
+      lumper: /(?:lumper|unload|labor)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,
+      layover: /(?:layover|restart|overnight)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,
+      hazmat: /(?:hazmat|dangerous\s*goods|haz)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i
     };
 
-    const numericFields = new Set(['miles', 'rate', 'deadhead', 'weight']);
+    const numericFields = new Set(['miles', 'rate', 'deadhead', 'weight', 'detention', 'lumper', 'layover', 'hazmat']);
 
     for (const [field, pattern] of Object.entries(patterns)) {
       const match = ocrText.match(pattern);
@@ -192,7 +204,11 @@ export class SmartFieldDetector {
         case 'rate':
         case 'fsc':
         case 'tolls':
-        case 'fuelCost': {
+        case 'fuelCost':
+        case 'detention':
+        case 'lumper':
+        case 'layover':
+        case 'hazmat': {
           // Allow dollar amounts: "$1,250.00", "1250", "2.50"
           const cleanRate = field.value.replace(/[$,]/g, '');
           return /^\d+(?:\.\d{1,2})?$/.test(cleanRate) && parseFloat(cleanRate) > 0;

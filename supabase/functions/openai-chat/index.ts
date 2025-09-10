@@ -172,7 +172,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages,
-        max_completion_tokens: 1000,
+        max_completion_tokens: 1500,
         response_format: {
           type: 'json_schema',
           json_schema: {

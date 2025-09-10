@@ -25,6 +25,10 @@ export const LoadExtractSchema = z.object({
   jobsite: z.coerce.boolean().optional(),
   itemType: z.string().optional(),
   pickupAt: z.coerce.date().optional(),
+  detentionPay: numeric(0, 10_000).optional(),
+  lumperPay: numeric(0, 5_000).optional(),
+  layoverPay: numeric(0, 5_000).optional(),
+  hazmatPay: numeric(0, 10_000).optional(),
 })
 
 export type LoadExtract = z.infer<typeof LoadExtractSchema>
@@ -37,9 +41,32 @@ export const validateAndNormalize = (input: unknown) => {
 
 export const findWarnings = (extract: LoadExtract): string[] => {
   const warnings: string[] = []
-  if (extract.weightLbs && extract.weightLbs > 80000) warnings.push("Overweight load")
-  if (extract.widthFt && extract.widthFt > 8.5) warnings.push("Overwidth load")
-  if (extract.heightFt && extract.heightFt > 13.5) warnings.push("Overheight load")
+  
+  // Weight warnings
+  if (extract.weightLbs && extract.weightLbs > 80000) warnings.push("Overweight load - may require permits")
+  if (extract.weightLbs && extract.weightLbs < 100) warnings.push("Unusually light load - verify weight")
+  
+  // Dimension warnings  
+  if (extract.widthFt && extract.widthFt > 8.5) warnings.push("Overwidth load - may require permits")
+  if (extract.heightFt && extract.heightFt > 13.5) warnings.push("Overheight load - may require permits")
+  
+  // Distance warnings
+  if (extract.distanceMi && extract.distanceMi > 2500) warnings.push("Very long haul - verify miles")
+  if (extract.distanceMi && extract.distanceMi < 10) warnings.push("Very short haul - verify miles")
+  
+  // Rate warnings
+  if (extract.offerFlat && extract.distanceMi) {
+    const rpm = extract.offerFlat / extract.distanceMi
+    if (rpm < 1.0) warnings.push("Low RPM - below $1.00 per mile")
+    if (rpm > 10.0) warnings.push("Very high RPM - verify rate")
+  }
+  
+  // Accessorial warnings
+  if (extract.detentionPay && extract.detentionPay > 2000) warnings.push("High detention pay - verify amount")
+  if (extract.lumperPay && extract.lumperPay > 1000) warnings.push("High lumper fee - verify amount")
+  if (extract.layoverPay && extract.layoverPay > 1000) warnings.push("High layover pay - verify amount")
+  if (extract.hazmatPay && extract.hazmatPay > 2000) warnings.push("High hazmat premium - verify amount")
+  
   return warnings
 }
 

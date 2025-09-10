@@ -7,6 +7,7 @@ export interface LoadFields {
   tarp?: boolean; jobsite?: boolean; itemType?: string; detentionHours?: number;
   weekend?: boolean; afterHours?: boolean; inside?: boolean; residential?: boolean;
   liftgate?: boolean; palletJack?: boolean;
+  detentionPay?: number; lumperPay?: number; layoverPay?: number; hazmatPay?: number;
   offerFlat: number; equipment: Equipment;
 }
 

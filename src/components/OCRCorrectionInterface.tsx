@@ -74,7 +74,11 @@ export function OCRCorrectionInterface({
       deadhead: 'Deadhead Miles',
       weight: 'Weight (lbs)',
       fsc: 'Fuel Surcharge ($)',
-      tolls: 'Tolls ($)'
+      tolls: 'Tolls ($)',
+      detention: 'Detention Pay ($)',
+      lumper: 'Lumper Fee ($)',
+      layover: 'Layover Pay ($)',
+      hazmat: 'Hazmat Premium ($)'
     };
     return names[field as keyof typeof names] || field;
   };

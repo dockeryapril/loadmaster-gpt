@@ -1,6 +1,6 @@
 # LoadMaster GPT - Development Tasks
 
-## Current Sprint - Setup System Improvements
+## Current Sprint - Enhanced OCR + LLM Pipeline
 
 ### ✅ Completed Tasks
 - [x] Added variable deadhead compensation options (varies_by_load, negotiated_per_load, tiered_by_distance, customer_dependent, minimum_plus_variable)
@@ -50,6 +50,16 @@
   - Maps simple setup values to comprehensive business setup record with reasonable defaults
   - Creates complete business_setup table record that satisfies isSetupComplete() validation
   - Users now properly redirected to dashboard after completing Simple Business Setup
+- [x] **Enhanced OCR + LLM Pipeline**: Upgraded OCR feature with improved field detection and validation
+  - Added detection for high-priority accessorials: detention pay, lumper fees, layover pay, hazmat premiums
+  - Enhanced SmartFieldDetector with improved OCR error correction prompts
+  - Added comprehensive validation warnings (flag suspicious data, don't reject)
+  - Enhanced field validation patterns for better trucking document recognition
+  - Updated LoadFields interface to support new accessorial fields
+  - Improved OCR correction interface to display new accessorial fields
+  - Enhanced OpenAI edge function with increased token limit for better responses
+  - Added sophisticated data warnings (rate, weight, distance, accessorial validation)
+  - Maintained cost-effectiveness by keeping GPT-4o-mini model
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types
