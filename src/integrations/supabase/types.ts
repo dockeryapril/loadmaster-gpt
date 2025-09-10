@@ -524,7 +524,9 @@ export type Database = {
           updated_at: string
           use_equipment_defaults: boolean | null
           user_id: string
+          week_start_date: string
           weekly_fixed_costs: number | null
+          weekly_upload_count: number
           weight_limit: number
         }
         Insert: {
@@ -548,7 +550,9 @@ export type Database = {
           updated_at?: string
           use_equipment_defaults?: boolean | null
           user_id: string
+          week_start_date?: string
           weekly_fixed_costs?: number | null
+          weekly_upload_count?: number
           weight_limit?: number
         }
         Update: {
@@ -572,7 +576,9 @@ export type Database = {
           updated_at?: string
           use_equipment_defaults?: boolean | null
           user_id?: string
+          week_start_date?: string
           weekly_fixed_costs?: number | null
+          weekly_upload_count?: number
           weight_limit?: number
         }
         Relationships: []

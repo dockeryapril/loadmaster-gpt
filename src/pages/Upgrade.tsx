@@ -1,174 +1,284 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Truck, Zap, TrendingUp, FileText, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Check, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { usePlan } from "@/hooks/usePlan";
 
 export default function Upgrade() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { plan, isPro } = usePlan();
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
-  const coreFeatures = [
-    "5 AI load analyses per day",
-    "AI photo analysis",
-    "RPM calculator",
-    "Basic negotiation panel",
-    "Load history tracking"
+  const handleUpgradeToPro = async () => {
+    setIsUpgrading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-pro-subscription');
+      
+      if (error) {
+        console.error('Error creating checkout session:', error);
+        toast({
+          title: "Upgrade Error",
+          description: "Unable to start upgrade process. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error in handleUpgradeToPro:', error);
+      toast({
+        title: "Upgrade Error", 
+        description: "Unable to start upgrade process. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
+  // Free plan features
+  const freeFeatures = [
+    "4 uploads per week",
+    "Core calculator + insights"
   ];
 
+  const freeLimitations = [
+    "Limited to weekly reset"
+  ];
+
+  // Pro plan features
   const proFeatures = [
-    "Up to 100 AI load analyses per day",
-    "Advanced negotiation templates",
-    "Export load history to CSV/Excel",
-    "Enhanced RPM analytics",
-    "Custom rate optimization"
+    "Up to 100 uploads per week",
+    "Full feature access", 
+    "Built for serious owner-operators",
+    "Priority updates + support"
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary rounded-lg">
-                <Truck className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">LoadMaster</h1>
-                <p className="text-sm text-muted-foreground">Upgrade to PRO</p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/?view=entry-method')}
+      <div className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto flex items-center justify-between p-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="gap-2"
             >
+              <ArrowLeft className="h-4 w-4" />
               Back to App
             </Button>
+            <div>
+              <h1 className="text-xl font-bold">LoadMaster</h1>
+              <p className="text-sm text-muted-foreground">Pricing Plans</p>
+            </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto p-6">
+        
+        {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get unlimited AI-powered load analysis and advanced tools to maximize your profits.
+          <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
+          <p className="text-lg text-muted-foreground mb-2">
+            One plan. All features. Built for serious owner-operators.
+          </p>
+          <p className="text-muted-foreground">
+            Start with LoadMaster Free or upgrade to PRO for unlimited access.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Core Plan */}
-          <Card className="relative">
+        {/* Pricing Cards */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
+          
+          {/* LoadMaster Free */}
+          <Card className={`relative ${!isPro ? 'ring-2 ring-primary' : ''}`}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl">LITE</CardTitle>
-                <Badge variant="secondary">Current</Badge>
+                <CardTitle className="text-xl">LoadMaster Free</CardTitle>
+                {!isPro && (
+                  <Badge variant="outline" className="text-xs">
+                    Current Plan
+                  </Badge>
+                )}
               </div>
-              <CardDescription>Perfect for getting started</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">Free</span>
+              <CardDescription>
+                Perfect for getting started with load evaluation
+              </CardDescription>
+              <div className="pt-2">
+                <div className="text-3xl font-bold">$0</div>
+                <div className="text-sm text-muted-foreground">Forever free</div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <ul className="space-y-3">
-                {coreFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+              {/* Features */}
+              <div className="space-y-3">
+                {freeFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <Check className="h-4 w-4 text-green-500" />
                     <span className="text-sm">{feature}</span>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
+              
+              {/* Limitations */}
+              <div className="space-y-3">
+                {freeLimitations.map((limitation, index) => (
+                  <div key={index} className="flex items-center gap-3 opacity-60">
+                    <div className="h-4 w-4 rounded-full border border-muted-foreground/30" />
+                    <span className="text-sm">{limitation}</span>
+                  </div>
+                ))}
+              </div>
+
               <Button 
-                variant="outline" 
-                className="w-full"
-                disabled
+                variant={!isPro ? "outline" : "secondary"} 
+                className="w-full mt-6" 
+                disabled={!isPro}
+                onClick={() => !isPro && navigate('/')}
               >
-                Current Plan
+                {!isPro ? "Current Plan" : "Downgrade"}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Pro Plan */}
-          <Card className="relative border-primary shadow-lg">
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
-            </div>
+          {/* LoadMaster PRO */}
+          <Card className={`relative ${isPro ? 'ring-2 ring-primary' : 'border-primary/20'}`}>
             <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                PRO
-                <Zap className="h-5 w-5 text-primary" />
-              </CardTitle>
-              <CardDescription>Nearly unlimited power for serious drivers</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">$29</span>
-                <span className="text-muted-foreground">/month</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xl">LoadMaster PRO</CardTitle>
+                  <Badge className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Most Popular
+                  </Badge>
+                </div>
+                {isPro && (
+                  <Badge variant="outline" className="text-xs">
+                    Current Plan
+                  </Badge>
+                )}
+              </div>
+              <CardDescription>
+                Full access for serious owner-operators
+              </CardDescription>
+              <div className="pt-2">
+                <div className="text-3xl font-bold">$10</div>
+                <div className="text-sm text-muted-foreground">per month</div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                Everything in LITE, plus:
-              </div>
-              <ul className="space-y-3">
+              {/* Features */}
+              <div className="space-y-3">
                 {proFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
+                  <div key={index} className="flex items-center gap-3">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium">{feature}</span>
+                  </div>
                 ))}
-              </ul>
-              <Button className="w-full">
-                Upgrade to PRO
+              </div>
+
+              <Button 
+                onClick={handleUpgradeToPro}
+                disabled={isPro || isUpgrading}
+                className="w-full mt-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+              >
+                {isPro ? "Current Plan" : isUpgrading ? "Opening Checkout..." : "Go PRO – Unlock 100 uploads/week"}
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                Cancel anytime. No contracts.
-              </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Feature Comparison */}
-        <div className="mt-16 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">Feature Comparison</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-8">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold mb-4">Feature Comparison</h3>
+            <p className="text-muted-foreground">
+              See what's included in each plan
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Upload Limits */}
             <Card>
               <CardHeader className="text-center">
-                <BarChart3 className="h-8 w-8 text-primary mx-auto mb-2" />
-                <CardTitle className="text-lg">Advanced Analytics</CardTitle>
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">Upload Limits</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground text-center">
-                  PRO users get detailed RPM trends, lane analysis, and profit optimization insights.
-                </p>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Free</span>
+                    <span className="text-sm font-medium">4 per week</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">PRO</span>
+                    <span className="text-sm font-medium text-primary">100 per week</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
+            {/* Full Access */}
             <Card>
               <CardHeader className="text-center">
-                <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
-                <CardTitle className="text-lg">Export & Reports</CardTitle>
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Check className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">Feature Access</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground text-center">
-                  Export your load history to Excel to create your own custom reports and track performance over time.
-                </p>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Free</span>
+                    <span className="text-sm font-medium">Core features</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">PRO</span>
+                    <span className="text-sm font-medium text-primary">Full access</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
+            {/* Support */}
             <Card>
               <CardHeader className="text-center">
-                <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
-                <CardTitle className="text-lg">Smart Negotiation</CardTitle>
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-lg">Support & Updates</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground text-center">
-                  Advanced templates and AI-powered suggestions to maximize your negotiation success.
-                </p>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Free</span>
+                    <span className="text-sm font-medium">Standard</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">PRO</span>
+                    <span className="text-sm font-medium text-primary">Priority</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

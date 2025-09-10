@@ -23,7 +23,8 @@ import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
-import { useOCRUsage, incrementOCRUsage, decrementOCRUsage } from '@/hooks/useOCRUsage';
+import { useWeeklyUploads } from '@/hooks/useWeeklyUploads';
+import { useNavigate } from 'react-router-dom';
 
 
 const fileToBase64 = (file: File): Promise<string> =>
@@ -45,7 +46,8 @@ interface LoadEntryMethodProps {
   isPro?: boolean; // Add isPro prop to control OCR usage display
 }
 
-export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPro = true }: LoadEntryMethodProps) {
+export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPro = false }: LoadEntryMethodProps) {
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOCRFallback, setShowOCRFallback] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
@@ -72,7 +74,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
-  const ocrUsage = useOCRUsage(isPro);
+  const weeklyUploads = useWeeklyUploads();
 
   const handleOCR = async (file: File) => {
     console.log('Starting OCR process for file:', file.name);
@@ -187,7 +189,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
         try {
           // Increment usage only when we're about to make the API call
           if (!usageIncremented) {
-            incrementOCRUsage();
+            await weeklyUploads.incrementUsage();
             usageIncremented = true;
           }
           
@@ -207,10 +209,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
           }
           
           if (err instanceof RateLimitExceededError) {
-            // Rollback usage increment on rate limit error
-            if (usageIncremented) {
-              decrementOCRUsage();
-            }
+            // Rollback usage increment on rate limit error - weekly uploads don't have rollback
+            // since it's stored in database and managed differently
             handleRateLimitError(err);
             return;
           }

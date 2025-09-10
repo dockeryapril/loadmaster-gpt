@@ -63,20 +63,15 @@ export function setTier(tier: Tier): void {
 }
 
 /**
- * Get tier for display purposes (shows original user preference when possible)
+ * Get tier for display purposes (shows "Free" instead of "lite")
  */
 export function getTierDisplay(): string {
-  if (typeof window === 'undefined') return 'lite';
+  if (typeof window === 'undefined') return 'Free';
   
   const current = getTier();
-  const stored = localStorage.getItem('lm_tier');
   
-  // If user explicitly set 'core', show 'core' for display
-  if (stored === 'core' || new URLSearchParams(window.location.search).get('tier')?.toLowerCase() === 'core') {
-    return current === 'lite' ? 'core' : current;
-  }
-  
-  return current;
+  // Always show 'Free' for lite tier, 'PRO' for pro tier
+  return current === 'lite' ? 'Free' : 'PRO';
 }
 
 /**
