@@ -75,7 +75,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
   const isPro = propIsPro !== undefined ? propIsPro : isProTier;
   
   // Feature flags
-  const SHOW_FULL_NEGOTIATION = false; // Temporarily disabled - can be re-enabled later
+  const SHOW_FULL_NEGOTIATION = true; // Full Negotiation Workspace enabled for Pro users
   
   const { advancedTemplates, ocrExtraction } = getFeatureFlags(user);
   
@@ -1194,8 +1194,8 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                   </Button>
                 )}
 
-                {/* Full Negotiation button temporarily hidden - can be restored by setting SHOW_FULL_NEGOTIATION to true */}
-                {SHOW_FULL_NEGOTIATION && (
+                {/* Full Negotiation Workspace - Pro users only */}
+                {SHOW_FULL_NEGOTIATION && isPro && (
                   <Button
                     type="button"
                     variant="outline"
@@ -1206,6 +1206,26 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                   >
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Full Negotiation
+                    <Badge variant="secondary" className="ml-2 text-xs px-2 py-0.5">
+                      PRO
+                    </Badge>
+                  </Button>
+                )}
+
+                {/* Upgrade prompt for Free users when Full Negotiation would be available */}
+                {SHOW_FULL_NEGOTIATION && !isPro && !tierLoading && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="flex-1"
+                    title="Upgrade to Pro to access the full negotiation workspace"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Full Negotiation
+                    <Badge variant="secondary" className="ml-2 text-xs px-2 py-0.5">
+                      PRO
+                    </Badge>
                   </Button>
                 )}
 
