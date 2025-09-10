@@ -156,7 +156,14 @@ export class SmartFieldDetector {
 
     // Enhanced regex patterns for better trucking terminology recognition
     const patterns = {
-      miles: /(\d+)\s*(miles?|mi\.?)/i,
+      miles: [
+        // High confidence: Clear miles patterns with units
+        /(\d+)\s*(miles?|mi\.?)\b/i,
+        // Medium confidence: Distance-related patterns
+        /(?:distance|loaded\s*miles?)[\s:]*(\d+)/i,
+        // Low confidence: Standalone numbers near mile context
+        /(\d+)(?=.*(?:miles?|distance|loaded))/i
+      ],
       rate: [
         // Priority patterns for specific rate labels
         /(?:offer\s*amount|total\s*pay|gross\s*amount|load\s*pay|contract\s*amount|pay\s*rate|total\s*amount)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,
@@ -175,21 +182,22 @@ export class SmartFieldDetector {
       hazmat: /(?:hazmat|dangerous\s*goods|haz)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i
     };
 
-    const numericFields = new Set(['miles', 'rate', 'deadhead', 'weight', 'detention', 'lumper', 'layover', 'hazmat']);
-
     for (const [field, patternOrArray] of Object.entries(patterns)) {
       let match = null;
       let matchValue = null;
+      let patternIndex = -1;
       
-      // Handle rate field with multiple priority patterns
-      if (field === 'rate' && Array.isArray(patternOrArray)) {
+      // Handle fields with multiple priority patterns
+      if (Array.isArray(patternOrArray)) {
         // Try patterns in order of priority
-        for (const pattern of patternOrArray) {
+        for (let i = 0; i < patternOrArray.length; i++) {
+          const pattern = patternOrArray[i];
           match = ocrText.match(pattern);
           if (match && match[1]) {
             matchValue = match[1];
+            patternIndex = i;
             if (debug) {
-              debugLog(`Rate detected with pattern: ${pattern.toString()}, value: ${matchValue}`);
+              debugLog(`${field} detected with pattern ${i}: ${pattern.toString()}, value: ${matchValue}`);
             }
             break;
           }
@@ -200,19 +208,16 @@ export class SmartFieldDetector {
         match = ocrText.match(pattern);
         if (match && match[1]) {
           matchValue = match[1];
+          patternIndex = 0;
         }
       }
       
       if (matchValue) {
-        // For rate field, prefer higher confidence if detected with priority patterns
-        let confidence: 'high' | 'medium' | 'low' = numericFields.has(field) ? 'medium' : 'low';
+        // Calculate confidence based on pattern quality and field type
+        const confidence = this.calculatePatternConfidence(field, matchValue, patternIndex, match, ocrText);
         
-        if (field === 'rate' && Array.isArray(patternOrArray)) {
-          // Higher confidence for priority patterns (first pattern in array)
-          const firstPatternMatch = ocrText.match(patternOrArray[0]);
-          if (firstPatternMatch && firstPatternMatch[1] === matchValue) {
-            confidence = 'high';
-          }
+        if (debug) {
+          debugLog(`${field} confidence calculation: value=${matchValue}, patternIndex=${patternIndex}, confidence=${confidence}`);
         }
         
         fields.push({
@@ -236,6 +241,108 @@ export class SmartFieldDetector {
       confidence: overallConfidence,
       aiResponse: isDebugMode() ? aiResponse : undefined
     };
+  }
+
+  private static calculatePatternConfidence(
+    field: string, 
+    value: string, 
+    patternIndex: number, 
+    match: RegExpMatchArray | null, 
+    ocrText: string
+  ): 'high' | 'medium' | 'low' {
+    // Start with base confidence based on pattern priority
+    let confidence: 'high' | 'medium' | 'low' = 'low';
+    
+    switch (field) {
+      case 'miles':
+        if (patternIndex === 0) {
+          // Pattern: /(\d+)\s*(miles?|mi\.?)\b/i - Clear unit indicator
+          confidence = 'high';
+        } else if (patternIndex === 1) {
+          // Pattern with distance/loaded miles labels
+          confidence = 'medium';
+        } else {
+          // Standalone number near mile context
+          confidence = 'low';
+        }
+        break;
+        
+      case 'rate':
+        if (patternIndex === 0) {
+          // Priority rate labels (OFFER AMOUNT, etc.)
+          confidence = 'high';
+        } else if (patternIndex === 1) {
+          // General rate patterns
+          confidence = 'medium';
+        } else {
+          // Generic dollar amount
+          confidence = 'low';
+        }
+        break;
+        
+      case 'deadhead':
+      case 'weight':
+        // These fields have specific labels, so pattern match = medium confidence
+        confidence = 'medium';
+        break;
+        
+      case 'origin':
+      case 'destination':
+        // Location patterns are generally reliable when matched
+        confidence = 'medium';
+        break;
+        
+      default:
+        // Accessorial charges and other fields
+        confidence = 'medium';
+        break;
+    }
+    
+    // Apply value-based quality adjustments
+    confidence = this.adjustConfidenceByValue(field, value, confidence);
+    
+    return confidence;
+  }
+
+  private static adjustConfidenceByValue(
+    field: string, 
+    value: string, 
+    baseConfidence: 'high' | 'medium' | 'low'
+  ): 'high' | 'medium' | 'low' {
+    const numericValue = parseFloat(value.replace(/[^\d.]/g, ''));
+    
+    switch (field) {
+      case 'miles':
+        // Very short or very long distances are suspicious
+        if (numericValue < 10 || numericValue > 3000) {
+          return baseConfidence === 'high' ? 'medium' : 'low';
+        }
+        // Typical trucking distances (50-2000 miles) get confidence boost
+        if (numericValue >= 50 && numericValue <= 2000 && baseConfidence === 'medium') {
+          return 'high';
+        }
+        break;
+        
+      case 'rate':
+        // Very small amounts are likely not the main rate
+        if (numericValue < 50) {
+          return 'low';
+        }
+        // Large amounts get confidence boost
+        if (numericValue >= 500 && baseConfidence === 'medium') {
+          return 'high';
+        }
+        break;
+        
+      case 'weight':
+        // Unrealistic weights
+        if (numericValue < 100 || numericValue > 80000) {
+          return baseConfidence === 'high' ? 'medium' : 'low';
+        }
+        break;
+    }
+    
+    return baseConfidence;
   }
 
   private static validateFields(fields: DetectedField[]): DetectedField[] {

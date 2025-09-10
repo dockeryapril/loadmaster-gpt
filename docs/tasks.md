@@ -67,6 +67,13 @@
   - Enhanced validation for comma-separated amounts (e.g., "$1,405.24")
   - Added debug logging for rate detection troubleshooting
   - Fixed issue where smaller amounts were incorrectly selected over main rate amounts
+- [x] **Enhanced Miles Confidence Detection**: Upgraded miles field confidence assignment
+  - Implemented smart pattern scoring instead of hardcoded "medium" confidence
+  - Added multiple priority patterns for miles detection (high: "817 mi", medium: "distance: 817", low: context-based)
+  - Created confidence calculation based on pattern quality and value reasonableness
+  - Enhanced fallback detection with pattern-specific confidence assignment
+  - Added value-based confidence adjustments for realistic mile ranges (50-2000 miles)
+  - Clear patterns like "817 mi" now correctly receive "high" confidence
 
 ### 🔄 In Progress Tasks
 - [ ] Testing setup completion detection with all question types
