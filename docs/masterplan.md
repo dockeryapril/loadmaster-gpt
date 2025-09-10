@@ -71,9 +71,11 @@ LoadMaster GPT is a mobile-friendly web app designed to help non-forced dispatch
 - Quick access to insights without clutter
 
 ## 🔐 Security Considerations
-- All data stored locally (no backend in MVP+)
-- No user authentication required initially
-- Optional image retention toggle (future)
+- User authentication via Supabase Auth (email/password)
+- Row Level Security (RLS) policies for data isolation
+- Rate limiting to prevent abuse
+- Secure edge functions for AI processing
+- CORS protection for API endpoints
 
 ## 🪜 Development Phases or Milestones
 ### Phase 1 (MVP+):
