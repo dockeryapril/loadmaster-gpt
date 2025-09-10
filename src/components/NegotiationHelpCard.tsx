@@ -35,9 +35,9 @@ export function NegotiationHelpCard({ className }: NegotiationHelpCardProps) {
               </p>
               <div className="text-xs text-muted-foreground">
                 • Text, Email, Phone channels<br />
-                • Professional, Driver, Firm tones<br />
+                • Professional, Driver-Centered Language, Firm tones<br />
                 • Ask, Settle, Bottom scripts<br />
-                • AI enhancement (Pro only)
+                • AI enhancement (PRO only)
               </div>
             </div>
           </div>

@@ -83,7 +83,7 @@ export function ClearAllLoadsDialog({
               <Trash2 className="h-4 w-4 text-destructive mt-0.5" />
               <div className="text-sm text-destructive">
                 <p className="font-medium">Permanent deletion</p>
-                <p>Your loads will be permanently deleted from the database. Export to CSV if you want to keep a backup of your data.</p>
+                <p>Your loads will be permanently deleted from the database. Check the box to export to CSV if you want to keep a backup of your data.</p>
               </div>
             </div>
           </div>

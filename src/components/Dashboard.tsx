@@ -192,7 +192,7 @@ export function Dashboard({
           </div>
         </div>
         <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
-          LoadMasterPRO
+          LoadMaster
         </h1>
         <br></br>
       </header>
