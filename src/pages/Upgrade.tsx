@@ -159,7 +159,7 @@ export default function Upgrade() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-xl">LoadMaster PRO</CardTitle>
+                  <CardTitle className="text-xl">LoadMasterPRO</CardTitle>
                   <Badge className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
                     <Sparkles className="h-3 w-3 mr-1" />
                     Most Popular

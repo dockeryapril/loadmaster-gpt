@@ -946,7 +946,7 @@ const Core = () => {
         
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
-          <p>LoadMasterLITE - Free Forever</p>
+          <p>LoadMaster Free</p>
           <p className="mt-2">
             Want more?{' '}
             <Link 

@@ -45,7 +45,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
               <Zap className="h-4 w-4 text-primary" />
               <div>
                 <p className="font-medium text-sm">Up to 100 AI-powered load checks per day</p>
-                <p className="text-xs text-muted-foreground">vs 5 on LITE plan</p>
+                <p className="text-xs text-muted-foreground">vs 4 on the free plan</p>
               </div>
             </div>
             

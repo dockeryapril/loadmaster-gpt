@@ -24,17 +24,17 @@ export function CoreDataMigrationModal({ open, onOpenChange }: CoreDataMigration
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="h-5 w-5" />
-            Import LoadMasterLITE Data
+            Import LoadMaster Free Data
           </DialogTitle>
           <DialogDescription>
-            We found {coreItemCount} calculations from LoadMasterLITE. 
+            We found {coreItemCount} calculations from LoadMaster Free. 
             Would you like to import them to your PRO account?
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
           <div className="text-sm text-muted-foreground">
-            This will import your LITE calculations as load records and negotiations, 
+            This will import your previous calculations from the free version as load records and negotiations, 
             making them available in your full LoadMasterPRO dashboard.
           </div>
           
