@@ -356,42 +356,80 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
   };
 
   const handleFieldsDetected = (result: FieldDetectionResult) => {
+    console.log('🔍 OCR DEBUG - handleFieldsDetected called with:', result);
+
     // Auto-fill form fields based on AI detection
     result.detectedFields.forEach((field) => {
-      const value = field.value.replace(/[$,]/g, '');
+      console.log(`🔍 OCR DEBUG - Processing field: ${field.field}, original value: "${field.value}"`);
+      
+      // Enhanced value processing for numeric fields
+      let processedValue = field.value;
+      
+      // For numeric fields, clean and validate the value
+      if (['miles', 'rate', 'deadhead', 'weight', 'fsc', 'tolls', 'fuelCost'].includes(field.field)) {
+        // Remove currency symbols, commas, and whitespace
+        processedValue = field.value.replace(/[$,\s]/g, '');
+        console.log(`🔍 OCR DEBUG - Cleaned numeric value: "${processedValue}"`);
+        
+        // Validate it's a valid number
+        const numValue = parseFloat(processedValue);
+        if (isNaN(numValue)) {
+          console.warn(`⚠️ OCR DEBUG - Invalid numeric value for ${field.field}: "${processedValue}"`);
+          return; // Skip this field if it's not a valid number
+        }
+        
+        // Convert back to string for form
+        processedValue = numValue.toString();
+        console.log(`🔍 OCR DEBUG - Final processed value: "${processedValue}"`);
+      }
 
+      // Set form values with enhanced debugging
       switch (field.field) {
         case 'miles':
-          form.setValue('miles', value, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Setting miles to: "${processedValue}"`);
+          form.setValue('miles', processedValue, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Miles value after setValue:`, form.getValues('miles'));
           break;
         case 'rate':
-          form.setValue('rate', value, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Setting rate to: "${processedValue}"`);
+          form.setValue('rate', processedValue, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Rate value after setValue:`, form.getValues('rate'));
           break;
         case 'origin':
+          console.log(`🔍 OCR DEBUG - Setting origin to: "${field.value}"`);
           form.setValue('origin', field.value, { shouldValidate: true });
           break;
         case 'destination':
+          console.log(`🔍 OCR DEBUG - Setting destination to: "${field.value}"`);
           form.setValue('destination', field.value, { shouldValidate: true });
           break;
         case 'deadhead':
-          form.setValue('deadheadMiles', value, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Setting deadheadMiles to: "${processedValue}"`);
+          form.setValue('deadheadMiles', processedValue, { shouldValidate: true });
           break;
         case 'weight':
-          form.setValue('weight', value, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Setting weight to: "${processedValue}"`);
+          form.setValue('weight', processedValue, { shouldValidate: true });
           break;
         case 'fsc':
-          form.setValue('fsc', value, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Setting fsc to: "${processedValue}"`);
+          form.setValue('fsc', processedValue, { shouldValidate: true });
           break;
         case 'tolls':
-          form.setValue('tolls', value, { shouldValidate: true });
+          console.log(`🔍 OCR DEBUG - Setting tolls to: "${processedValue}"`);
+          form.setValue('tolls', processedValue, { shouldValidate: true });
           break;
         case 'fuelCost':
           if (settings.enableFuelCostTracking) {
-            form.setValue('fuelCost', value, { shouldValidate: true });
+            console.log(`🔍 OCR DEBUG - Setting fuelCost to: "${processedValue}"`);
+            form.setValue('fuelCost', processedValue, { shouldValidate: true });
           }
           break;
       }
     });
+
+    // Debug: Log all form values after processing
+    console.log('🔍 OCR DEBUG - All form values after processing:', form.getValues());
 
     setShowLoadEntry(false);
 
@@ -569,11 +607,10 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                       <FormItem>
                         <FormLabel>Rate ($)</FormLabel>
                         <FormControl>
-                          <Input
+                           <Input
                             type="number"
                             step="0.01"
                             min={0}
-                            max={10000}
                             placeholder="0"
                             {...field}
                           />
