@@ -258,7 +258,7 @@ const Landing = () => {
             Join owner-operators using LoadMaster to make smarter decisions and increase their margins.
           </p>
           <Button size="lg" onClick={handleGetStarted} className="text-lg px-12 py-6">
-            Start with LoadMaster Free
+            Start with LoadMaster for Free
           </Button>
         </div>
       </section>
