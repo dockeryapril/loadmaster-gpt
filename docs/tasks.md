@@ -131,6 +131,13 @@
   - Added data migration to update existing records with old constraint values
 - [x] Testing setup completion detection with all question types
 - [x] Validating conditional question logic for complex compensation structures
+- [x] **SECURITY FIX: Fixed Email Harvesting Vulnerability**: Resolved critical security issue where any authenticated user could access all email addresses
+  - Created secure user roles system with admin/user role separation using Supabase security definer functions
+  - Updated email_signups RLS policy to restrict SELECT access to admin users only
+  - Implemented automatic role assignment (new users get 'user' role, first user becomes 'admin')
+  - Prevented RLS recursion with proper security definer function implementation
+  - Email addresses now protected from unauthorized access by spammers/competitors
+  - EmailAdmin page functionality maintained for legitimate admin users
 
 - [x] **Implemented Free/Pro Weekly Upload System**: Complete restructure from Lite/Core/Pro to Free/Pro model
   - Added weekly upload tracking (Free: 4/week, Pro: 100/week) with Sunday reset
