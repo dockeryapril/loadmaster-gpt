@@ -110,6 +110,11 @@
   - Removed all Lite/Core references and replaced with Free/Pro terminology
   - Integrated weekly limit checking with upload buttons (OCR/camera)
   - Manual entry remains unlimited for all users as requested
+- [x] **Fixed Full Negotiation Button UI**: Resolved broken UI on LoadCalculator Full Negotiation button
+  - Unified Full Negotiation button experience for all users (removed Pro/Free distinction)
+  - Removed duplicate button logic that was causing UI conflicts
+  - Aligned with unified feature flags that make all UI features available to free users
+  - Button now displays consistently without Pro badge or upgrade prompts
 - [ ] Add business setup profiles for different trucking arrangements (owner-operator, lease-operator, company driver)
 - [ ] Implement setup validation against industry benchmarks
 - [ ] Add setup data export/import functionality

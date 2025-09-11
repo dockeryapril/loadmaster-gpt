@@ -1194,8 +1194,8 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                   </Button>
                 )}
 
-                {/* Full Negotiation Workspace - Pro users only */}
-                {SHOW_FULL_NEGOTIATION && isPro && (
+                {/* Full Negotiation Workspace - Available to all users */}
+                {SHOW_FULL_NEGOTIATION && !tierLoading && (
                   <Button
                     type="button"
                     variant="outline"
@@ -1206,26 +1206,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                   >
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Full Negotiation
-                    <Badge variant="secondary" className="ml-2 text-xs px-2 py-0.5">
-                      PRO
-                    </Badge>
-                  </Button>
-                )}
-
-                {/* Upgrade prompt for Free users when Full Negotiation would be available */}
-                {SHOW_FULL_NEGOTIATION && !isPro && !tierLoading && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="flex-1"
-                    title="Upgrade to Pro to access the full negotiation workspace"
-                  >
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Full Negotiation
-                    <Badge variant="secondary" className="ml-2 text-xs px-2 py-0.5">
-                      PRO
-                    </Badge>
                   </Button>
                 )}
 
