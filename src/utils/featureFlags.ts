@@ -14,7 +14,7 @@ export interface FeatureFlags {
   negotiationPanel: boolean;
   loadHistory: boolean;
   
-  // Pro features (Pro tier only)
+  // Pro features (upload limits managed by useWeeklyUploads hook)
   advancedTemplates: boolean;
   historyExport: boolean;
   unlimitedLimits: boolean;
@@ -30,10 +30,10 @@ export function flagsFor(tier: Tier): FeatureFlags {
     negotiationPanel: true,
     loadHistory: true,
     
-    // Pro features (disabled for free tier)
-    advancedTemplates: false,
-    historyExport: false,
-    unlimitedLimits: false,
+    // All UI features available to free tier (only upload limits differ)
+    advancedTemplates: true,
+    historyExport: true,
+    unlimitedLimits: true,
     prioritySupport: false,
   };
 

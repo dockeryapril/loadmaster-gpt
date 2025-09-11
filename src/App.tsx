@@ -10,7 +10,6 @@ import { DebugBanner } from "@/components/DebugBanner";
 import { SessionMonitor } from "@/components/SessionMonitor";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Core from "./pages/Core";
 import Landing from "./pages/Landing";
 import MVPLanding from "./pages/MVPLanding";
 import EmailAdmin from "./pages/EmailAdmin";
@@ -42,7 +41,6 @@ const AppContent = () => {
       <DebugBanner />
       <Routes>
         <Route path="/auth" element={<Auth />} />
-        <Route path="/core" element={<Core />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/weekly-limit-reached" element={<WeeklyLimitReached />} />
