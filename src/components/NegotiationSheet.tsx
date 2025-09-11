@@ -51,8 +51,8 @@ export function NegotiationSheet({ open, onClose, load, onSaveNegotiation, isPro
     message = message.replace(/{miles}/g, load.miles?.toString() || '[Miles]');
     message = message.replace(/{weight}/g, load.weight?.toString() || '[Weight]');
     message = message.replace(/{pickup_date}/g, '[Pickup Date]');
-    message = message.replace(/\${anchor_rate}/g, `$${(calculation.anchor_rate / (load.miles || 1)).toFixed(2)}`);
-    message = message.replace(/\${multi_stop_premium}/g, '$25'); // Based on default multi-stop value
+    message = message.replace(/{anchor_rate}/g, `$${(calculation.anchor_rate / (load.miles || 1)).toFixed(2)}`);
+    message = message.replace(/{multi_stop_premium}/g, '$25'); // Based on default multi-stop value
 
     return message;
   };
