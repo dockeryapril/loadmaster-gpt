@@ -74,6 +74,14 @@
   - Enhanced fallback detection with pattern-specific confidence assignment
   - Added value-based confidence adjustments for realistic mile ranges (50-2000 miles)
   - Clear patterns like "817 mi" now correctly receive "high" confidence
+- [x] **Unified Usage Limits System**: Implemented correct Free (4/week) and Pro (100/month) usage tracking
+  - Created unified `useUsageLimits` hook replacing both `useWeeklyUploads` and `useOCRUsage`
+  - Updated database schema with monthly usage tracking and subscription date support
+  - Fixed limits: Free tier gets 4 OCR operations per week (resets Sunday), Pro gets 100 per month
+  - Updated all components (LoadEntryMethod, useOCRProcessor, WeeklyLimitBanner) to use unified system
+  - Added database function for automatic period resets based on user plan
+  - Proper monthly reset logic for Pro users based on subscription start date
+  - All usage now tracked in Supabase for consistency and reliability
 
 ### ✅ Recently Completed Tasks
 - [x] **Documentation Conflicts Resolution**: Fixed existing documentation conflicts

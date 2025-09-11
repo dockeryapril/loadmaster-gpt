@@ -14,7 +14,7 @@ import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
-import { incrementOCRUsage, decrementOCRUsage, useOCRUsage } from '@/hooks/useOCRUsage';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -53,14 +53,14 @@ export function useOCRProcessor(isPro = false) {
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
-  const ocrUsage = useOCRUsage(isPro);
+  const { canUse, limit, incrementUsage } = useUsageLimits();
 
   const processOCR = async (file: File, onSuccess: (result: FieldDetectionResult) => void, onFallback: () => void) => {
-    // Pre-flight check for LITE users
-    if (!isPro && !ocrUsage.canUseOCR) {
+    // Pre-flight check for usage limits
+    if (!canUse) {
       toast({
-        title: "Daily limit reached",
-        description: `You've used all ${ocrUsage.dailyLimit} daily image scans. Resets at ${ocrUsage.resetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+        title: "Limit reached",
+        description: `You've used all ${limit} uploads this ${limit === 4 ? 'week' : 'month'}`,
         variant: "destructive",
       });
       onFallback();
@@ -179,7 +179,7 @@ export function useOCRProcessor(isPro = false) {
         try {
           // Increment usage only when we're about to make the API call
           if (!usageIncremented) {
-            incrementOCRUsage();
+            await incrementUsage();
             usageIncremented = true;
           }
           
@@ -198,10 +198,7 @@ export function useOCRProcessor(isPro = false) {
           }
           
           if (err instanceof RateLimitExceededError) {
-            // Rollback usage increment on rate limit error
-            if (usageIncremented) {
-              decrementOCRUsage();
-            }
+            // Note: No rollback needed for unified system as it's managed in database
             handleRateLimitError(err);
             return;
           }
@@ -353,19 +350,13 @@ export function useOCRProcessor(isPro = false) {
       }
     } catch (error) {
       if (error instanceof Error && error.message === 'Upload cancelled') {
-        // Rollback usage increment on cancellation
-        if (usageIncremented) {
-          decrementOCRUsage();
-        }
+        // Note: No rollback needed for unified system as it's managed in database
         logOCREnd('useOCRProcessor', startTime, false, 'cancelled');
         return;
       }
       
       if (error instanceof RateLimitExceededError) {
-        // Rollback usage increment on rate limit error
-        if (usageIncremented) {
-          decrementOCRUsage();
-        }
+        // Note: No rollback needed for unified system as it's managed in database
         handleRateLimitError(error);
         return;
       } else {

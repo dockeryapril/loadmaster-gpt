@@ -536,6 +536,7 @@ export type Database = {
           equipment_rpm_overrides: Json | null
           fuel_price: number
           id: string
+          monthly_usage_count: number
           mpg: number
           plan: string
           preferred_lanes: string[] | null
@@ -545,12 +546,13 @@ export type Database = {
           rpm_threshold_good: number
           setup_completion_percentage: number | null
           show_setup_reminders: boolean | null
+          subscription_start_date: string | null
           updated_at: string
+          usage_count: number
           use_equipment_defaults: boolean | null
           user_id: string
           week_start_date: string
           weekly_fixed_costs: number | null
-          weekly_upload_count: number
           weight_limit: number
         }
         Insert: {
@@ -562,6 +564,7 @@ export type Database = {
           equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
+          monthly_usage_count?: number
           mpg?: number
           plan?: string
           preferred_lanes?: string[] | null
@@ -571,12 +574,13 @@ export type Database = {
           rpm_threshold_good?: number
           setup_completion_percentage?: number | null
           show_setup_reminders?: boolean | null
+          subscription_start_date?: string | null
           updated_at?: string
+          usage_count?: number
           use_equipment_defaults?: boolean | null
           user_id: string
           week_start_date?: string
           weekly_fixed_costs?: number | null
-          weekly_upload_count?: number
           weight_limit?: number
         }
         Update: {
@@ -588,6 +592,7 @@ export type Database = {
           equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
+          monthly_usage_count?: number
           mpg?: number
           plan?: string
           preferred_lanes?: string[] | null
@@ -597,12 +602,13 @@ export type Database = {
           rpm_threshold_good?: number
           setup_completion_percentage?: number | null
           show_setup_reminders?: boolean | null
+          subscription_start_date?: string | null
           updated_at?: string
+          usage_count?: number
           use_equipment_defaults?: boolean | null
           user_id?: string
           week_start_date?: string
           weekly_fixed_costs?: number | null
-          weekly_upload_count?: number
           weight_limit?: number
         }
         Relationships: []
@@ -615,6 +621,10 @@ export type Database = {
       increment_rate_limit: {
         Args: { p_day?: string; p_device_id: string }
         Returns: number
+      }
+      reset_usage_if_needed: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {

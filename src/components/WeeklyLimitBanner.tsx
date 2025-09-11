@@ -2,7 +2,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useWeeklyUploads } from "@/hooks/useWeeklyUploads";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
 
 interface WeeklyLimitBannerProps {
   show: boolean;
@@ -11,7 +11,7 @@ interface WeeklyLimitBannerProps {
 
 export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
   const navigate = useNavigate();
-  const { weeklyCount, weeklyLimit, remaining, resetDate, isPro } = useWeeklyUploads();
+  const { currentCount, limit, remaining, resetDate, isPro, resetPeriod } = useUsageLimits();
 
   if (!show) return null;
 
@@ -35,7 +35,7 @@ export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
         <AlertDescription className="flex items-center justify-between">
           <div className="flex-1">
             <div className="text-red-800 dark:text-red-200 font-medium">
-              Weekly limit reached ({weeklyCount}/{weeklyLimit})
+              {resetPeriod === 'weekly' ? 'Weekly' : 'Monthly'} limit reached ({currentCount}/{limit})
             </div>
             <div className="text-sm text-red-700 dark:text-red-300 mt-1 flex items-center gap-2">
               <Calendar className="h-3 w-3" />
@@ -72,10 +72,10 @@ export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
         <AlertDescription className="flex items-center justify-between">
           <div className="flex-1">
             <div className="text-amber-800 dark:text-amber-200 font-medium">
-              Last upload remaining ({weeklyCount}/{weeklyLimit})
+              Last upload remaining ({currentCount}/{limit})
             </div>
             <div className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-              Upgrade to PRO for 100 uploads per week
+              Upgrade to PRO for 100 uploads per month
             </div>
           </div>
           <div className="flex gap-2 ml-4">

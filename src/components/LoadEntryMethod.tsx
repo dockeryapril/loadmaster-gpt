@@ -23,7 +23,7 @@ import { findWarnings, validateAndNormalize } from '@/lib/normalize';
 import { extractionSchema } from '@/ai/extractionSchema';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { RateLimitExceededError } from '@/utils/apiWrapper';
-import { useWeeklyUploads } from '@/hooks/useWeeklyUploads';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -74,7 +74,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
-  const weeklyUploads = useWeeklyUploads();
+  const { canUse, currentCount, limit, incrementUsage } = useUsageLimits();
 
   const handleOCR = async (file: File) => {
     console.log('Starting OCR process for file:', file.name);
@@ -189,7 +189,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
         try {
           // Increment usage only when we're about to make the API call
           if (!usageIncremented) {
-            await weeklyUploads.incrementUsage();
+            await incrementUsage();
             usageIncremented = true;
           }
           
@@ -442,11 +442,11 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     
-    // Pre-flight check: Don't allow OCR if user exceeded weekly limits
-    if (!weeklyUploads.canUpload) {
+    // Pre-flight check: Don't allow OCR if user exceeded limits
+    if (!canUse) {
       toast({
-        title: "Weekly limit reached",
-        description: `You've used all ${weeklyUploads.weeklyLimit} weekly uploads. Resets ${weeklyUploads.resetDate.toLocaleDateString()}`,
+        title: "Limit reached",
+        description: `You've used all ${limit} uploads this ${limit === 4 ? 'week' : 'month'}`,
         variant: "destructive",
       });
       if (event.target) {
@@ -494,7 +494,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
 
   const handleUploadClick = () => {
     // Check if user can upload (has remaining uploads)
-    if (!weeklyUploads.canUpload) {
+    if (!canUse) {
       navigate('/weekly-limit-reached');
       return;
     }
@@ -503,11 +503,11 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   };
 
   const handleCameraClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Pre-flight check: Don't allow OCR if user exceeded weekly limits
-    if (!weeklyUploads.canUpload) {
+    // Pre-flight check: Don't allow OCR if user exceeded limits
+    if (!canUse) {
       toast({
-        title: "Weekly limit reached", 
-        description: `You've used all ${weeklyUploads.weeklyLimit} weekly uploads. Resets ${weeklyUploads.resetDate.toLocaleDateString()}`,
+        title: "Limit reached", 
+        description: `You've used all ${limit} uploads this ${limit === 4 ? 'week' : 'month'}`,
         variant: "destructive",
       });
       navigate('/weekly-limit-reached');
@@ -779,18 +779,18 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
           <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
             <div className="flex items-center gap-2">
               <div className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                LoadMaster Free • {weeklyUploads.remaining} uploads remaining this week
+                LoadMaster Free • {currentCount}/{limit} uploads this {limit === 4 ? 'week' : 'month'}
               </div>
             </div>
-            {!weeklyUploads.canUpload ? (
+            {!canUse ? (
               <div className="mt-2">
                 <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Upgrade to PRO for 100 uploads per week • Manual entry is always unlimited
+                  Upgrade to PRO for 100 uploads per month • Manual entry is always unlimited
                 </p>
               </div>
             ) : (
               <p className="text-xs text-muted-foreground mt-1">
-                {weeklyUploads.remaining} uploads remaining this week • Manual entry is unlimited
+                {limit - currentCount} uploads remaining this {limit === 4 ? 'week' : 'month'} • Manual entry is unlimited
               </p>
             )}
           </div>
@@ -812,20 +812,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleUploadClick}
-                disabled={!weeklyUploads.canUpload} // Only disable for Free users who exceeded limits
+                disabled={!canUse} // Only disable for Free users who exceeded limits
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className={`icon-badge ${weeklyUploads.canUpload ? 'bg-primary/20' : 'bg-muted'}`}>
-                    <Upload className={`h-6 w-6 ${weeklyUploads.canUpload ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`icon-badge ${canUse ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Upload className={`h-6 w-6 ${canUse ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Upload Image/Screenshot</div>
                      <div className="text-sm text-muted-foreground">
-                       {weeklyUploads.canUpload 
-                         ? "Select photos from your device" 
-                         : "Weekly limit reached"
-                       }
-                    </div>
+                        {canUse 
+                          ? "Select photos from your device" 
+                          : "Limit reached"
+                        }
+                     </div>
                   </div>
                 </div>
               </Button>
@@ -838,20 +838,20 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                 variant="ghost"
                 className="w-full h-auto p-0 hover:bg-transparent"
                 onClick={handleCameraClick}
-                disabled={!weeklyUploads.canUpload} // Only disable for Free users who exceeded limits
+                disabled={!canUse} // Only disable for Free users who exceeded limits
               >
                 <div className="flex items-center justify-center gap-4">
-                  <div className={`icon-badge ${weeklyUploads.canUpload ? 'bg-primary/20' : 'bg-muted'}`}>
-                    <Camera className={`h-6 w-6 ${weeklyUploads.canUpload ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`icon-badge ${canUse ? 'bg-primary/20' : 'bg-muted'}`}>
+                    <Camera className={`h-6 w-6 ${canUse ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Take Photo</div>
                      <div className="text-sm text-muted-foreground">
-                       {weeklyUploads.canUpload 
-                         ? "Use your camera to capture load documents"
-                         : "Weekly limit reached"
-                       }
-                    </div>
+                        {canUse 
+                          ? "Use your camera to capture load documents"
+                          : "Limit reached"
+                        }
+                     </div>
                   </div>
                 </div>
               </Button>
