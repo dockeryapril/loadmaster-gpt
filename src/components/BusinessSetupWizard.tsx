@@ -184,8 +184,11 @@ export const BusinessSetupWizard = ({
         title: "Setup Complete!",
         description: "Your business setup is saved. Load calculations will now be personalized.",
       });
-      onComplete?.();
-      onClose?.();
+      // Add small delay to ensure data is saved before calling completion callback
+      setTimeout(() => {
+        onComplete?.();
+        onClose?.();
+      }, 100);
     }
   };
 

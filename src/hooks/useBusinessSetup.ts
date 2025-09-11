@@ -95,11 +95,27 @@ export const useBusinessSetup = () => {
 
       if (error) {
         logError('Error saving business setup:', error);
-        toast({
-          title: "Error",
-          description: "Failed to save business setup",
-          variant: "destructive",
-        });
+        
+        // Handle specific constraint violations with user-friendly messages
+        if (error.message?.includes('fsc_handling_check')) {
+          toast({
+            title: "Invalid FSC Setting", 
+            description: "Please select a valid fuel surcharge handling option",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('check constraint')) {
+          toast({
+            title: "Invalid Settings",
+            description: "Please check your business setup values and try again",
+            variant: "destructive", 
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to save business setup. Please try again.",
+            variant: "destructive",
+          });
+        }
         return false;
       }
 

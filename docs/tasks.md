@@ -123,6 +123,12 @@
   - Improved user experience with pre-filled template data that users can modify
   - All business setup now flows through the comprehensive 8-section wizard
   - Eliminated confusion between quick and comprehensive setup completion tracking
+- [x] **Fixed Business Setup Save Error**: Resolved database constraint mismatch preventing setup completion
+  - Fixed fsc_handling constraint mismatch between database (included_in_rpm/separate_payment/split_with_carrier) and application (driver_receives_fsc/carrier_keeps_fsc/fsc_in_margin)  
+  - Updated database constraint to accept correct application values
+  - Enhanced error handling in useBusinessSetup with specific constraint violation messages
+  - Fixed navigation logic to properly redirect users to dashboard after successful setup completion
+  - Added data migration to update existing records with old constraint values
 - [x] Testing setup completion detection with all question types
 - [x] Validating conditional question logic for complex compensation structures
 

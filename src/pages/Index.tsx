@@ -344,6 +344,7 @@ const Index = () => {
           <BusinessSetupWizard
             mode="page"
             onComplete={() => {
+              // Mark navigation and redirect to dashboard
               sessionStorage.setItem('user_has_navigated', 'true');
               setCurrentView('dashboard');
               toast({
