@@ -14,7 +14,7 @@ export interface FeatureFlags {
   negotiationPanel: boolean;
   loadHistory: boolean;
   
-  // Pro features (upload limits managed by useWeeklyUploads hook)
+  // Pro features (upload limits managed by useUsageLimits hook)
   advancedTemplates: boolean;
   historyExport: boolean;
   unlimitedLimits: boolean;

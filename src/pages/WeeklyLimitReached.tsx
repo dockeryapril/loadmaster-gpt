@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Upload } from "lucide-react";
-import { useWeeklyUploads } from "@/hooks/useWeeklyUploads";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function WeeklyLimitReached() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { weeklyCount, weeklyLimit, resetDate } = useWeeklyUploads();
+  const { currentCount, limit, resetDate, resetPeriod } = useUsageLimits();
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Format reset date
@@ -78,7 +78,7 @@ export default function WeeklyLimitReached() {
               </div>
             </div>
             <CardTitle className="text-2xl font-bold text-amber-900 dark:text-amber-100">
-              You've reached your weekly limit.
+              You've reached your {resetPeriod} limit.
             </CardTitle>
           </CardHeader>
 
@@ -86,23 +86,23 @@ export default function WeeklyLimitReached() {
             {/* Usage Stats */}
             <div className="text-center">
               <div className="text-sm text-muted-foreground mb-2">
-                Weekly Usage
+                {resetPeriod === 'weekly' ? 'Weekly' : 'Monthly'} Usage
               </div>
               <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">
-                {weeklyCount} / {weeklyLimit}
+                {currentCount} / {limit}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
-                uploads used this week
+                uploads used this {resetPeriod === 'weekly' ? 'week' : 'month'}
               </div>
             </div>
 
             {/* Main Message */}
             <div className="text-center space-y-2">
               <p className="text-lg text-foreground">
-                You've hit your <strong>{weeklyLimit} uploads</strong> for this week. 
+                You've hit your <strong>{limit} uploads</strong> for this {resetPeriod === 'weekly' ? 'week' : 'month'}. 
               </p>
               <p className="text-muted-foreground">
-                Upgrade to <strong>PRO</strong> for up to <strong>100 uploads per week</strong> and full access to LoadMaster.
+                Upgrade to <strong>PRO</strong> for up to <strong>100 uploads per month</strong> and full access to LoadMaster.
               </p>
             </div>
 
@@ -126,7 +126,7 @@ export default function WeeklyLimitReached() {
               
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">
-                  Your uploads reset every Sunday if you'd rather wait.
+                  Your uploads reset {resetPeriod === 'weekly' ? 'every Sunday' : 'monthly on your subscription date'} if you'd rather wait.
                 </p>
               </div>
 
@@ -145,7 +145,7 @@ export default function WeeklyLimitReached() {
               <div className="grid grid-cols-1 gap-2 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Up to 100 uploads per week</span>
+                  <span>Up to 100 uploads per month</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
