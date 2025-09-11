@@ -11,8 +11,9 @@ import { usePlan } from "@/hooks/usePlan";
 export default function Upgrade() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { plan, isPro } = usePlan();
+  const { plan, isPro, checkSubscription, subscriptionEnd } = usePlan();
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isManaging, setIsManaging] = useState(false);
 
   const handleUpgradeToPro = async () => {
     setIsUpgrading(true);
@@ -32,6 +33,15 @@ export default function Upgrade() {
       if (data?.url) {
         // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
+        
+        // Check subscription status after a delay to see if they completed checkout
+        setTimeout(async () => {
+          await checkSubscription();
+          toast({
+            title: "Checking subscription status...",
+            description: "We'll update your plan automatically if you completed the checkout.",
+          });
+        }, 5000);
       }
     } catch (error) {
       console.error('Error in handleUpgradeToPro:', error);
@@ -42,6 +52,37 @@ export default function Upgrade() {
       });
     } finally {
       setIsUpgrading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setIsManaging(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) {
+        console.error('Error opening customer portal:', error);
+        toast({
+          title: "Portal Error",
+          description: "Unable to open subscription management. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.url) {
+        // Open customer portal in a new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error in handleManageSubscription:', error);
+      toast({
+        title: "Portal Error",
+        description: "Unable to open subscription management. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsManaging(false);
     }
   };
 
@@ -190,13 +231,31 @@ export default function Upgrade() {
                 ))}
               </div>
 
-              <Button 
-                onClick={handleUpgradeToPro}
-                disabled={isPro || isUpgrading}
-                className="w-full mt-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
-              >
-                {isPro ? "Current Plan" : isUpgrading ? "Opening Checkout..." : "Go PRO – Unlock 100 uploads/week"}
-              </Button>
+              {isPro ? (
+                <div className="space-y-3 mt-6">
+                  <Button 
+                    onClick={handleManageSubscription}
+                    disabled={isManaging}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {isManaging ? "Opening Portal..." : "Manage Subscription"}
+                  </Button>
+                  {subscriptionEnd && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Renews {new Date(subscriptionEnd).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <Button 
+                  onClick={handleUpgradeToPro}
+                  disabled={isUpgrading}
+                  className="w-full mt-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+                >
+                  {isUpgrading ? "Opening Checkout..." : "Go PRO – Unlock 100 uploads/week"}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
