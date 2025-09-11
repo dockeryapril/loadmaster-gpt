@@ -85,6 +85,8 @@ const Index = () => {
         setup_completed_at: new Date().toISOString(),
       });
 
+      // Mark that user has navigated to prevent auto-redirect
+      sessionStorage.setItem('user_has_navigated', 'true');
       setCurrentView('dashboard');
       toast({
         title: "Business setup saved!",
@@ -100,16 +102,25 @@ const Index = () => {
     }
   };
 
+  const handleSkipSetup = () => {
+    // Mark that user has navigated to prevent auto-redirect
+    sessionStorage.setItem('user_has_navigated', 'true');
+    setCurrentView('dashboard');
+  };
+
   // Show business setup for users who haven't completed the comprehensive setup
   const shouldShowSetup = user && !setupLoading && !isSetupComplete();
 
   useEffect(() => {
     if (shouldShowSetup && currentView === 'dashboard') {
       // Only auto-redirect to business setup on initial dashboard load
-      // Don't override user navigation choices
-      setCurrentView('business-setup');
+      // Don't override user navigation choices after they've interacted
+      const hasUserNavigated = sessionStorage.getItem('user_has_navigated');
+      if (!hasUserNavigated) {
+        setCurrentView('business-setup');
+      }
     }
-  }, [user, shouldShowSetup, currentView]); // Use comprehensive setup logic
+  }, [user, shouldShowSetup, currentView]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -369,7 +380,7 @@ const Index = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <SimpleBusinessSetup
               onSave={handleBusinessSetup}
-              onSkip={() => setCurrentView('dashboard')}
+              onSkip={handleSkipSetup}
               initialRevenueSplit={settings?.revenueSplitPercentage || 100}
               initialWeeklyCosts={settings?.weeklyFixedCosts || 0}
             />

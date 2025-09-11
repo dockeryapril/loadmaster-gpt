@@ -47,11 +47,17 @@ export function SimpleBusinessSetup({
 }: SimpleBusinessSetupProps) {
   const [revenueSplit, setRevenueSplit] = useState(initialRevenueSplit.toString());
   const [weeklyCosts, setWeeklyCosts] = useState(initialWeeklyCosts.toString());
-  const [equipment, setEquipment] = useState<Equipment | undefined>(initialEquipment);
+  const [equipment, setEquipment] = useState<Equipment | undefined>(initialEquipment || 'cargo_van');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = () => {
-    onSave(parseFloat(revenueSplit) || 0, parseFloat(weeklyCosts) || 0, equipment);
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      await onSave(parseFloat(revenueSplit) || 0, parseFloat(weeklyCosts) || 0, equipment);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const equipmentOptions = [
@@ -64,6 +70,17 @@ export function SimpleBusinessSetup({
     setRevenueSplit(template.revenueSplit.toString());
     setWeeklyCosts(template.weeklyCosts.toString());
     setSelectedTemplate(template.name);
+    
+    // Set reasonable equipment defaults based on template
+    if (!equipment) {
+      if (template.name === 'Company Driver') {
+        setEquipment('straight_truck');
+      } else if (template.name === 'Independent Contractor') {
+        setEquipment('cargo_van');
+      } else {
+        setEquipment('cargo_van');
+      }
+    }
   };
 
   const handleRevenueSplitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,8 +242,8 @@ export function SimpleBusinessSetup({
               Skip for Now
             </Button>
           )}
-          <Button onClick={handleSave} className="flex-1" disabled={!equipment}>
-            Save Setup
+          <Button onClick={handleSave} className="flex-1" disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save Setup"}
           </Button>
         </div>
       </CardContent>
