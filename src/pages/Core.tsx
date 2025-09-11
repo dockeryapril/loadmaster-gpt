@@ -78,7 +78,7 @@ const calculateNegotiation = (
     premiums_applied: premiums,
     suggested_strategy: 'Negotiate higher',
     quality_note: qualityNote,
-    equipment_context: `${equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} avg: $${equipmentInfo.rpmTargets.yellow.toFixed(2)}/mi`,
+    equipment_context: `${equipment?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Equipment'} avg: $${equipmentInfo.rpmTargets.yellow.toFixed(2)}/mi`,
     gross_rpm: grossRpm,
     net_rpm: netRpm,
     revenue_impact: revenueSplitPercentage < 100 ? `${100 - revenueSplitPercentage}% to company` : null,
@@ -242,7 +242,7 @@ const Core = () => {
       console.log(`🔍 CORE DEBUG - Processing field: ${field.field}, original value: "${field.value}"`);
       
       // Enhanced cleaning that preserves decimals but removes all other non-numeric chars
-      const cleanValue = field.value.replace(/[$,\s€£¥₹]/g, '');
+      const cleanValue = field.value?.replace(/[$,\s€£¥₹]/g, '') || '';
       console.log(`🔍 CORE DEBUG - Cleaned value: "${cleanValue}"`);
       
       if (cleanValue && !isNaN(parseFloat(cleanValue))) {
@@ -798,7 +798,7 @@ const Core = () => {
                   <div className="text-center">
                     <h2 className="text-xl font-semibold mb-2">Calculate Load Rate</h2>
                     <p className="text-sm text-muted-foreground">
-                      Get negotiation strategies for your {equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      Get negotiation strategies for your {equipment?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'equipment'}
                     </p>
                     
                     {/* OCR Usage Display - Only show for LITE users */}
