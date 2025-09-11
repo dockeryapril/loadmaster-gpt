@@ -9,6 +9,8 @@ interface ExtractedData {
   offerAllIn?: string;
   weightLbs?: string;
   pickupInHours?: string;
+  origin?: string;
+  destination?: string;
 }
 
 interface LiteOCRInterfaceProps {
@@ -141,6 +143,36 @@ export function LiteOCRInterface({ onSuccess, onClose }: LiteOCRInterfaceProps) 
       const match = text.match(pattern);
       if (match && match[1]) {
         extractedData.pickupInHours = match[1];
+        break;
+      }
+    }
+    
+    // Origin/pickup location extraction
+    const originPatterns = [
+      /(?:from|pickup|origin|shipper)[\s:]*([A-Z][A-Z\s]+,?\s*[A-Z]{2})/i,
+      /(?:from|pickup|origin|shipper)[\s:]*([A-Z][a-z]+[A-Z\s]*,?\s*[A-Z]{2})/i,
+      /(?:from|pickup|origin)[\s:]*([A-Z]{2,}[A-Z\s,]*)/i
+    ];
+    
+    for (const pattern of originPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        extractedData.origin = match[1].trim();
+        break;
+      }
+    }
+    
+    // Destination/delivery location extraction
+    const destinationPatterns = [
+      /(?:to|delivery|dest|destination|consignee)[\s:]*([A-Z][A-Z\s]+,?\s*[A-Z]{2})/i,
+      /(?:to|delivery|dest|destination|consignee)[\s:]*([A-Z][a-z]+[A-Z\s]*,?\s*[A-Z]{2})/i,
+      /(?:to|delivery|dest|destination)[\s:]*([A-Z]{2,}[A-Z\s,]*)/i
+    ];
+    
+    for (const pattern of destinationPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        extractedData.destination = match[1].trim();
         break;
       }
     }

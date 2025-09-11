@@ -46,8 +46,8 @@ export class SmartFieldDetector {
       Extract the following fields with confidence levels:
       - miles (trip distance, total miles, mi, distance, loaded miles)
       - rate (total pay amount, rate per mile, total rate, gross pay, OFFER AMOUNT, TOTAL PAY, GROSS AMOUNT, LOAD PAY, CONTRACT AMOUNT, PAY RATE, may include $ symbol and commas)
-      - origin (pickup location, from, origin city/state, shipper location)
-      - destination (delivery location, to, destination city/state, consignee location)
+      - origin (pickup location, from, origin city/state, shipper location, facility names, addresses. Common formats: "CHICAGO, IL", "Chicago IL", "ATL GA", "ATLANTA GEORGIA")
+      - destination (delivery location, to, destination city/state, consignee location, facility names, addresses. Common formats: "DALLAS TX", "Dallas, TX", "DAL TEXAS")
       - deadhead (deadhead miles, DH, empty miles, positioning miles)
       - weight (cargo weight in lbs, pounds, weight, gross weight)
       - fsc (fuel surcharge, fuel supplement, FSC, fuel allowance)
@@ -67,10 +67,12 @@ export class SmartFieldDetector {
       
       OCR ERROR CORRECTION:
       - Convert weight formats: "25K" = 25000, "15,000#" = 15000
-      - Recognize city abbreviations: "CHI" = Chicago, "ATL" = Atlanta
+      - Recognize city abbreviations: "CHI" = Chicago, "ATL" = Atlanta, "LA" = Los Angeles, "NYC" = New York
       - Fix common OCR errors: "5" vs "S", "0" vs "O", "$" vs "S", "1" vs "l", "," vs "."
-      - Validate state codes: convert full state names to 2-letter codes
+      - Validate state codes: convert full state names to 2-letter codes (TEXAS→TX, CALIFORNIA→CA, FLORIDA→FL)
       - Clean currency: remove extra symbols, fix decimal placement
+      - Location format normalization: "CHICAGO IL" → "Chicago, IL", "dallas tx" → "Dallas, TX"
+      - Handle facility codes: "WALMART DC 123" should preserve full facility name
       
       CONFIDENCE GUIDELINES (be generous but accurate):
       - "high": Clear numeric values with proper labels and context, especially rates with clear labels
@@ -80,9 +82,14 @@ export class SmartFieldDetector {
       PATTERN RECOGNITION:
       - Miles: Numbers near "mi", "miles", "distance", "loaded"
       - Rate: Dollar amounts near "rate", "pay", "total", "offer amount", "gross amount", per-mile calculations
-      - Locations: City/State pairs, ZIP codes, facility names
+      - Locations: City/State pairs (both "CHICAGO, IL" and "Chicago IL" formats), ZIP codes, facility names, distribution centers
       - Weight: Numbers near "lbs", "#", "pounds", "weight"
       - Accessorials: Look for detention, lumper, layover, hazmat with associated amounts
+      
+      LOCATION EXTRACTION PRIORITY:
+      - Prioritize locations that follow trucking document patterns: "FROM: CHICAGO IL" or "TO: DALLAS, TX"
+      - Handle ALL-CAPS format common in load boards: "ATLANTA GA", "LOS ANGELES CA"
+      - Recognize facility names: "WALMART DC 123", "TARGET STORE", "AMAZON FULFILLMENT"
       
       Return ONLY a JSON object in this exact format:
       {
@@ -172,8 +179,22 @@ export class SmartFieldDetector {
         // Fallback for any dollar amount (lowest priority)
         /\$(\d+(?:,\d{3})*(?:\.\d{2})?)/
       ],
-      origin: /(?:from|pickup|origin)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
-      destination: /(?:to|delivery|dest)[\s:]*([A-Z][a-z]+,?\s*[A-Z]{2})/i,
+      origin: [
+        // High confidence: Clear pickup/origin with city,state format
+        /(?:from|pickup|origin|shipper)[\s:]*([A-Z][A-Z\s]+,?\s*[A-Z]{2})/i,
+        // Medium confidence: Mixed case city,state format  
+        /(?:from|pickup|origin|shipper)[\s:]*([A-Z][a-z]+[A-Z\s]*,?\s*[A-Z]{2})/i,
+        // Low confidence: Any location-like pattern after keywords
+        /(?:from|pickup|origin|shipper)[\s:]*([A-Z]{2,}[A-Z\s,]*)/i
+      ],
+      destination: [
+        // High confidence: Clear delivery/destination with city,state format
+        /(?:to|delivery|dest|destination|consignee)[\s:]*([A-Z][A-Z\s]+,?\s*[A-Z]{2})/i,
+        // Medium confidence: Mixed case city,state format
+        /(?:to|delivery|dest|destination|consignee)[\s:]*([A-Z][a-z]+[A-Z\s]*,?\s*[A-Z]{2})/i,
+        // Low confidence: Any location-like pattern after keywords
+        /(?:to|delivery|dest|destination|consignee)[\s:]*([A-Z]{2,}[A-Z\s,]*)/i
+      ],
       deadhead: /(?:deadhead|dh|dead\s*head|empty\s*miles?)[\s:]*(\d+)/i,
       weight: /(\d+(?:,\d{3})*)\s*(?:lbs?|pounds?)/i,
       detention: /(?:detention|wait\s*time|delay)[\s:]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)/i,

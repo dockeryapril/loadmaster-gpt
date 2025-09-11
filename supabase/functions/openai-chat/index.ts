@@ -28,12 +28,13 @@ serve(async (req) => {
   console.log('🔍 CORS: Checking origin:', normalizedOrigin);
   console.log('🔍 CORS: Is local origin:', isLocalOrigin);
   console.log('🔍 CORS: Is Lovable preview origin:', isLovablePreviewOrigin);
-  console.log('🔍 CORS: Is origin allowed:', isOriginAllowed);
 
   const isOriginAllowed = allowedOrigins.length === 0 ||
     allowedOrigins.includes(normalizedOrigin) ||
     isLocalOrigin ||
     isLovablePreviewOrigin;
+    
+  console.log('🔍 CORS: Is origin allowed:', isOriginAllowed);
     
   const corsHeaders: Record<string, string> = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',
