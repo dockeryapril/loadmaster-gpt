@@ -1201,11 +1201,11 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                     variant="outline"
                     onClick={() => setShowNegotiationSheet(true)}
                     disabled={!requiredFilled || hasErrors}
-                    className="flex-1 whitespace-nowrap text-sm"
+                    className="flex-1"
                     title="Open full negotiation workspace with advanced templates, outcome tracking, and detailed load analysis"
                   >
-                    <TrendingUp className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">Negotiate</span>
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Negotiate
                   </Button>
                 )}
 
