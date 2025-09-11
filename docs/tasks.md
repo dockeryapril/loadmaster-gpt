@@ -115,6 +115,14 @@
   - Fixed auto-redirect logic to not override user navigation choices using sessionStorage
   - Created separate handleSkipSetup function with proper navigation handling
   - Both "Save Setup" and "Skip for Now" buttons now properly navigate to dashboard
+- [x] **Consolidated Business Setup System**: Unified to single comprehensive setup flow
+  - Removed SimpleBusinessSetup component entirely and replaced with BusinessSetupWizard
+  - Added quick setup templates (75/25 Lease, Independent Contractor, Company Driver) to comprehensive wizard
+  - Enhanced BusinessSetupWizard with template selection step at the beginning
+  - Fixed completion percentage calculation to show 100% when comprehensive setup is complete
+  - Improved user experience with pre-filled template data that users can modify
+  - All business setup now flows through the comprehensive 8-section wizard
+  - Eliminated confusion between quick and comprehensive setup completion tracking
 - [x] Testing setup completion detection with all question types
 - [x] Validating conditional question logic for complex compensation structures
 

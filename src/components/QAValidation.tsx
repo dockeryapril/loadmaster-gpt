@@ -243,7 +243,7 @@ export function QAValidation() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>• Run full test suite with <code className="bg-muted px-1 rounded">npm test</code></p>
-          <p>• Test SimpleBusinessSetup component in UI</p>
+          <p>• Test BusinessSetupWizard component in UI</p>
           <p>• Validate OCR accuracy with sample load board images</p>
           <p>• Check Supabase data persistence</p>
           <p>• Test camera interface and correction flows</p>

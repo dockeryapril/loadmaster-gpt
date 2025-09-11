@@ -21,9 +21,9 @@ import { exportLoadsToCSV } from '@/utils/csvExport';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { useRateLimit } from '@/contexts/RateLimitContext';
 import { getFeatureFlags } from '@/utils/featureFlags';
-import { SimpleBusinessSetup } from '@/components/SimpleBusinessSetup';
+import { BusinessSetupWizard } from '@/components/BusinessSetupWizard';
 import { QAValidation } from '@/components/QAValidation';
-import type { Equipment } from '@/types/equipment';
+import { Equipment } from '@/types/equipment';
 import { useBusinessSetup } from '@/hooks/useBusinessSetup';
 
 
@@ -64,43 +64,7 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Business setup handlers
-  const handleBusinessSetup = async (revenueSplit: number, weeklyCosts: number, equipment?: Equipment) => {
-    try {
-      // Update user settings for backwards compatibility
-      await updateSettings({
-        revenueSplitPercentage: revenueSplit,
-        weeklyFixedCosts: weeklyCosts,
-      });
-
-      // Create comprehensive business setup record
-      await saveSetup({
-        revenue_split_percentage: revenueSplit,
-        weekly_truck_payment: weeklyCosts * 0.6, // Reasonable default: 60% of costs for truck payment
-        weekly_insurance_payment: weeklyCosts * 0.3, // 30% for insurance
-        weekly_escrow_payment: weeklyCosts * 0.1, // 10% for escrow
-        pay_structure_type: revenueSplit >= 90 ? 'percentage_split' : 'gross_revenue',
-        fuel_responsibility: 'driver_pays',
-        equipment_type: equipment || 'cargo_van',
-        setup_completed_at: new Date().toISOString(),
-      });
-
-      // Mark that user has navigated to prevent auto-redirect
-      sessionStorage.setItem('user_has_navigated', 'true');
-      setCurrentView('dashboard');
-      toast({
-        title: "Business setup saved!",
-        description: "Your load calculations will now reflect your business arrangement.",
-      });
-    } catch (error) {
-      console.error('Failed to save business setup:', error);
-      toast({
-        title: "Setup failed",
-        description: "There was an error saving your business setup. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  // Business setup handlers (legacy - now handled by BusinessSetupWizard)
 
   const handleSkipSetup = () => {
     // Mark that user has navigated to prevent auto-redirect
@@ -377,14 +341,18 @@ const Index = () => {
 
       case 'business-setup':
         return (
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <SimpleBusinessSetup
-              onSave={handleBusinessSetup}
-              onSkip={handleSkipSetup}
-              initialRevenueSplit={settings?.revenueSplitPercentage || 100}
-              initialWeeklyCosts={settings?.weeklyFixedCosts || 0}
-            />
-          </div>
+          <BusinessSetupWizard
+            mode="page"
+            onComplete={() => {
+              sessionStorage.setItem('user_has_navigated', 'true');
+              setCurrentView('dashboard');
+              toast({
+                title: "Business setup complete!",
+                description: "Your load calculations will now reflect your business arrangement.",
+              });
+            }}
+            onClose={() => setCurrentView('dashboard')}
+          />
         );
 
       case 'qa-validation':
