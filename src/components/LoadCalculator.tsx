@@ -43,6 +43,10 @@ import {
   sanitizeText, 
   sanitizeLocation 
 } from '@/utils/inputValidation';
+import { useBusinessSetup } from '@/hooks/useBusinessSetup';
+import { calculateNetTakeHome, isBusinessSetupSufficient, getSetupCompletenessWarnings } from '@/utils/businessSetupCalculations';
+import { BusinessSetupWarning } from './BusinessSetupWarning';
+import { BusinessCostBreakdown } from './BusinessCostBreakdown';
 
 interface LoadCalculatorProps {
   onSaveLoad?: (load: Omit<Load, 'id' | 'createdAt'>) => void;
@@ -50,6 +54,7 @@ interface LoadCalculatorProps {
   ocrData?: Partial<Load>;
   onClose?: () => void;
   isPro?: boolean; // Add isPro prop to control upgrade card visibility
+  onOpenBusinessSetup?: () => void; // Callback to open business setup
 }
 
 interface LoadFormValues {
@@ -65,7 +70,7 @@ interface LoadFormValues {
   notes: string;
 }
 
-export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPro: propIsPro }: LoadCalculatorProps) {
+export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPro: propIsPro, onOpenBusinessSetup }: LoadCalculatorProps) {
   // Use prop isPro if provided, otherwise fall back to tier detection for backward compatibility
   const { isPro: isProTier, tier, loading: tierLoading } = useTierDetection();
   const { plan, isPro: isPlanPro, loading: planLoading } = usePlan(); // Keep for transition
@@ -94,6 +99,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
   });
 
   const { settings, loading: settingsLoading } = useSupabaseSettings();
+  const { setup: businessSetup, loading: businessSetupLoading } = useBusinessSetup();
   const { toast } = useToast();
   const [showLoadEntry, setShowLoadEntry] = useState(false);
   const [showNegotiationSheet, setShowNegotiationSheet] = useState(false);
@@ -200,7 +206,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
   const [contentVisible, setContentVisible] = useState(false);
 
   useEffect(() => {
-    if (!settingsLoading) {
+    if (!settingsLoading && !businessSetupLoading) {
       const timer = setTimeout(() => setShowSkeleton(false), 300);
       setContentVisible(true);
       return () => clearTimeout(timer);
@@ -208,7 +214,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
       setShowSkeleton(true);
       setContentVisible(false);
     }
-  }, [settingsLoading]);
+  }, [settingsLoading, businessSetupLoading]);
 
   const calculateLoad = (): LoadCalculationResult => {
     const milesNum = parseFloat(miles) || 0;
@@ -219,6 +225,60 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
     const fuelCostNum = settings.enableFuelCostTracking ? (parseFloat(fuelCost) || 0) : 0;
     const weightNum = parseFloat(weight) || 0;
 
+    // Use comprehensive business setup calculation if available
+    if (businessSetup && isBusinessSetupSufficient(businessSetup)) {
+      const enhancedCalc = calculateNetTakeHome(
+        milesNum,
+        rateNum,
+        fscNum,
+        tollsNum,
+        deadheadNum,
+        fuelCostNum,
+        businessSetup,
+        settings
+      );
+      
+      const quality = calculateLoadQuality(enhancedCalc.rpm, settings);
+      const weightImpact = getWeightImpact(weightNum, settings);
+      
+      const loadData = {
+        origin,
+        destination,
+        miles: milesNum,
+        rate: rateNum,
+        fsc: fscNum,
+        tolls: tollsNum,
+        weight: weightNum,
+        deadheadMiles: deadheadNum,
+        fuelCost: fuelCostNum,
+        rpm: enhancedCalc.rpm,
+        profit: enhancedCalc.profit
+      };
+      
+      const tags = generateSmartTags(loadData, settings);
+
+      return {
+        rpm: enhancedCalc.rpm,
+        profit: enhancedCalc.profit,
+        totalMiles: enhancedCalc.totalMiles,
+        netRate: enhancedCalc.netRate,
+        quality,
+        weightImpact,
+        tags,
+        // Enhanced RPM breakdown
+        grossRpm: enhancedCalc.grossRpm,
+        netRpm: enhancedCalc.netRpm,
+        revenueSplit: businessSetup.revenue_split_percentage || 100,
+        weeklyCosts: enhancedCalc.businessCostBreakdown.weeklyFixedCosts,
+        weeklyFixedCostPerMile: enhancedCalc.businessCostBreakdown.weeklyFixedCostPerMile,
+        // Business setup specific data
+        businessCostBreakdown: enhancedCalc.businessCostBreakdown,
+        isBusinessSetupUsed: enhancedCalc.isBusinessSetupUsed,
+        missingSetupWarnings: enhancedCalc.missingSetupWarnings
+      };
+    }
+
+    // Fallback to legacy calculation if business setup not available
     const totalMiles = milesNum + deadheadNum;
     const grossRevenue = rateNum + fscNum;
     
@@ -440,6 +500,15 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
   };
 
   const calculation = calculateLoad();
+  
+  // Debug business setup integration
+  console.log('💰 Business Setup Integration:', {
+    hasBusinessSetup: !!businessSetup,
+    isBusinessSetupSufficient: isBusinessSetupSufficient(businessSetup),
+    isBusinessSetupUsed: calculation.isBusinessSetupUsed,
+    missingWarnings: calculation.missingSetupWarnings,
+    businessCostBreakdown: calculation.businessCostBreakdown
+  });
 
   return (
     <Form {...form}>
@@ -453,11 +522,11 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
           />
         )}
 
-        {showSkeleton && (
+        {showSkeleton && (settingsLoading || businessSetupLoading) && (
           <Card
             className={cn(
               "p-6 transition-opacity duration-500",
-              settingsLoading ? "opacity-100" : "opacity-0"
+              (settingsLoading || businessSetupLoading) ? "opacity-100" : "opacity-0"
             )}
           >
             <div className="space-y-4">
@@ -469,12 +538,13 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
           </Card>
         )}
 
-        <div
-          className={cn(
-            "space-y-6 transition-opacity duration-500",
-            contentVisible ? "opacity-100" : "opacity-0"
-          )}
-        >
+        {!settingsLoading && !businessSetupLoading && (
+          <div
+            className={cn(
+              "space-y-6 transition-opacity duration-500",
+              contentVisible ? "opacity-100" : "opacity-0"
+            )}
+          >
           <Card className="gradient-card border-0">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center justify-between text-foreground">
@@ -962,6 +1032,22 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                 />
               </div>
 
+              {/* Business Setup Warning */}
+              <BusinessSetupWarning 
+                businessSetup={businessSetup}
+                onOpenSetup={() => {
+                  if (onOpenBusinessSetup) {
+                    onOpenBusinessSetup();
+                  } else {
+                    toast({
+                      title: "Complete Business Setup",
+                      description: "Go to Settings > Business Setup to configure your financial arrangements for accurate calculations."
+                    });
+                  }
+                }}
+                className="mb-4"
+              />
+
             <div className="bg-muted/50 rounded-lg p-4 space-y-4">
               {/* Enhanced RPM Breakdown */}
               {isPro && calculation.grossRpm && calculation.netRpm ? (
@@ -1225,6 +1311,7 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
             </CardContent>
             </Card>
           </div>
+        )}
         </form>
         <NegotiationSheet
           open={showNegotiationSheet}

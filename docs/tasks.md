@@ -10,6 +10,14 @@
   - Added BusinessSetupValidationSummary component for better user feedback
   - Improved completion percentage calculation with detailed debugging
   - Added field-level navigation in validation summary
+- [x] **Net Take-Home Calculator Integration** - Fixed broken net take-home calculations by integrating business setup data
+  - Created comprehensive businessSetupCalculations.ts utility with support for all business arrangements
+  - Enhanced LoadCalculator to use business setup data when available with graceful fallback
+  - Added BusinessSetupWarning component to prompt users to complete setup for accuracy
+  - Added BusinessCostBreakdown component showing detailed revenue/cost analysis
+  - Updated LoadCalculationResult interface to include business cost breakdown data
+  - Integrated revenue splits, FSC handling, deadhead compensation, fixed costs, and fees
+  - Added debug logging and validation warnings for incomplete business setups
 - [x] Added variable deadhead compensation options (varies_by_load, negotiated_per_load, tiered_by_distance, customer_dependent, minimum_plus_variable)
 - [x] Updated business setup questions with new deadhead compensation types
 - [x] Fixed setup completion logic for new conditional questions

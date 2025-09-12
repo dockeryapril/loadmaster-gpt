@@ -1,5 +1,6 @@
 import type { Equipment } from './equipment';
 import type { Channel, Tone } from '../features/negotiation/templates';
+import type { BusinessCostBreakdown } from '@/utils/businessSetupCalculations';
 
 export interface NegotiationScript {
   channel: Channel;
@@ -104,6 +105,10 @@ export interface LoadCalculationResult {
   revenueSplit?: number;
   weeklyCosts?: number;
   weeklyFixedCostPerMile?: number;
+  // Business setup integration
+  businessCostBreakdown?: BusinessCostBreakdown;
+  isBusinessSetupUsed?: boolean;
+  missingSetupWarnings?: string[];
 }
 
 export const calculateLoadQuality = (rpm: number, settings?: UserSettings): Load['quality'] => {
