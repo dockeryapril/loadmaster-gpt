@@ -3,6 +3,13 @@
 ## Current Sprint - Enhanced OCR + LLM Pipeline
 
 ### ✅ Completed Tasks
+- [x] **CRITICAL FIX: Business Setup Validation Error** - Fixed database constraint mismatch causing "Invalid Settings" error
+  - Updated deadhead_compensation_type constraint to include all 9 frontend options (was only 4)
+  - Updated fsc_handling constraint to match frontend options  
+  - Enhanced error handling with specific field validation messages
+  - Added BusinessSetupValidationSummary component for better user feedback
+  - Improved completion percentage calculation with detailed debugging
+  - Added field-level navigation in validation summary
 - [x] Added variable deadhead compensation options (varies_by_load, negotiated_per_load, tiered_by_distance, customer_dependent, minimum_plus_variable)
 - [x] Updated business setup questions with new deadhead compensation types
 - [x] Fixed setup completion logic for new conditional questions

@@ -446,19 +446,27 @@ export const calculateCompletionPercentage = (setup: Partial<BusinessSetup>): nu
     return value !== undefined && value !== null && value !== '';
   });
   
-  // Debug logging
-  console.log('Setup completion calculation:', {
-    totalQuestions: allQuestions.length,
-    requiredQuestions: requiredQuestions.length,
-    completedQuestions: completedQuestions.length,
-    requiredQuestionIds: requiredQuestions.map(q => q.id),
-    completedQuestionIds: completedQuestions.map(q => q.id),
-    missingQuestions: requiredQuestions.filter(q => {
-      const value = setup[q.id];
-      return value === undefined || value === null || value === '';
-    }).map(q => q.id),
-    currentSetup: setup
+  const missingQuestions = requiredQuestions.filter(q => {
+    const value = setup[q.id];
+    return value === undefined || value === null || value === '';
   });
+  
+  // Enhanced debug logging with better context
+  if (missingQuestions.length > 0) {
+    console.log('Business setup completion analysis:', {
+      totalQuestions: allQuestions.length,
+      requiredQuestions: requiredQuestions.length,
+      completedQuestions: completedQuestions.length,
+      completionPercentage: requiredQuestions.length > 0 ? Math.round((completedQuestions.length / requiredQuestions.length) * 100) : 0,
+      missingRequiredFields: missingQuestions.map(q => ({
+        id: q.id,
+        label: q.label,
+        currentValue: setup[q.id],
+        dependsOn: q.dependsOn
+      })),
+      currentSetup: setup
+    });
+  }
   
   return requiredQuestions.length > 0 ? Math.round((completedQuestions.length / requiredQuestions.length) * 100) : 0;
 };

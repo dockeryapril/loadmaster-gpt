@@ -5,9 +5,10 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, Lightbulb, X, Truck, DollarSign, CheckCircle } from 'lucide-react';
 import { useBusinessSetup } from '@/hooks/useBusinessSetup';
-import { BusinessSetup, businessSetupSections, shouldShowQuestion } from '@/types/businessSetup';
+import { BusinessSetup, businessSetupSections, shouldShowQuestion, calculateCompletionPercentage } from '@/types/businessSetup';
 import { QuestionCard } from './QuestionCard';
 import { SetupPreview } from './SetupPreview';
+import { BusinessSetupValidationSummary } from './BusinessSetupValidationSummary';
 import { useToast } from '@/components/ui/use-toast';
 
 // Quick setup templates from the removed SimpleBusinessSetup
@@ -178,6 +179,19 @@ export const BusinessSetupWizard = ({
   };
 
   const handleComplete = async () => {
+    // Final validation before completion
+    const completionPercentage = calculateCompletionPercentage(formData);
+    
+    if (completionPercentage < 100) {
+      toast({
+        title: "Setup Incomplete",
+        description: `Please complete all required fields (${completionPercentage}% complete)`,
+        variant: "destructive",
+      });
+      setShowPreview(false); // Show main form with validation
+      return;
+    }
+    
     const success = await saveSetup(formData);
     if (success) {
       toast({
@@ -193,6 +207,17 @@ export const BusinessSetupWizard = ({
   };
 
   const handleSkipToEnd = () => {
+    const completionPercentage = calculateCompletionPercentage(formData);
+    if (completionPercentage < 100) {
+      // Show validation summary instead of preview
+      setShowPreview(false);
+      toast({
+        title: "Setup Incomplete",
+        description: `Please complete the required fields below (${completionPercentage}% complete)`,
+        variant: "destructive",
+      });
+      return;
+    }
     setShowPreview(true);
   };
 
@@ -385,6 +410,25 @@ export const BusinessSetupWizard = ({
               </p>
             </div>
           </div>
+        )}
+
+        {/* Validation Summary - show when completion is less than 100% and user has interacted */}
+        {overallProgress < 100 && (currentSectionIndex >= businessSetupSections.length - 1 || overallProgress > 50) && (
+          <BusinessSetupValidationSummary 
+            setup={formData}
+            onFieldClick={(fieldId) => {
+              // Navigate to the question for this field
+              for (let sectionIndex = 0; sectionIndex < businessSetupSections.length; sectionIndex++) {
+                const section = businessSetupSections[sectionIndex];
+                const questionIndex = section.questions.findIndex(q => q.id === fieldId && shouldShowQuestion(q, formData));
+                if (questionIndex !== -1) {
+                  setSectionIndex(sectionIndex);
+                  setQuestionIndex(questionIndex);
+                  break;
+                }
+              }
+            }}
+          />
         )}
 
         {/* Navigation */}

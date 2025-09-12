@@ -78,6 +78,13 @@ export const useBusinessSetup = () => {
 
     try {
       setSaving(true);
+      
+      // Validate required fields before saving
+      const validation = validateSetup(setupData);
+      if (!validation.isValid && validation.warnings.length > 0) {
+        console.warn('Business setup validation warnings:', validation.warnings);
+      }
+      
       const completionPercentage = calculateCompletionPercentage(setupData);
       const isCompleted = completionPercentage === 100;
 
@@ -97,16 +104,34 @@ export const useBusinessSetup = () => {
         logError('Error saving business setup:', error);
         
         // Handle specific constraint violations with user-friendly messages
-        if (error.message?.includes('fsc_handling_check')) {
+        if (error.message?.includes('deadhead_compensation_type_check')) {
+          toast({
+            title: "Invalid Deadhead Compensation",
+            description: "Please select a valid deadhead compensation type",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('fsc_handling_check')) {
           toast({
             title: "Invalid FSC Setting", 
             description: "Please select a valid fuel surcharge handling option",
             variant: "destructive",
           });
+        } else if (error.message?.includes('admin_fee_percentage')) {
+          toast({
+            title: "Invalid Admin Fee",
+            description: "Admin fee percentage must be between 0 and 8%",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('revenue_split_percentage')) {
+          toast({
+            title: "Invalid Revenue Split",
+            description: "Revenue split percentage must be between 20 and 98%",
+            variant: "destructive",
+          });
         } else if (error.message?.includes('check constraint')) {
           toast({
             title: "Invalid Settings",
-            description: "Please check your business setup values and try again",
+            description: `Please check your business setup values. Error: ${error.message}`,
             variant: "destructive", 
           });
         } else {
