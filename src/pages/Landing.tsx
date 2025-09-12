@@ -1,12 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Truck, Calculator, Camera, MessageSquare, LayoutDashboard } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import cargoVan from "@/assets/cargo-van.jpg";
 import flatbedTruck from "@/assets/flatbed-truck.jpg";
 import straightTruck from "@/assets/straight-truck.jpg";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   const handleGetStarted = () => {
     navigate("/auth?mode=signup");
@@ -14,6 +21,55 @@ const Landing = () => {
 
   const handleLogin = () => {
     navigate("/auth");
+  };
+
+  const handleStartProPlan = async () => {
+    try {
+      // Check if user is authenticated
+      if (!user) {
+        // Redirect to signup with PRO intent
+        navigate("/auth?mode=signup&intent=pro");
+        return;
+      }
+
+      setIsUpgrading(true);
+
+      // Create Stripe checkout session
+      const { data, error } = await supabase.functions.invoke('create-pro-subscription', {
+        body: {}
+      });
+
+      if (error) {
+        console.error('Stripe checkout error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to start checkout process. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.url) {
+        // Open Stripe checkout in new tab
+        window.open(data.url, '_blank');
+      } else {
+        toast({
+          title: "Error",
+          description: "No checkout URL received. Please try again.",
+          variant: "destructive",
+        });
+      }
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpgrading(false);
+    }
   };
 
   return (
@@ -243,8 +299,12 @@ const Landing = () => {
                 </div>
               </div>
               
-              <Button onClick={handleGetStarted} className="w-full">
-                Start Free Trial
+              <Button 
+                onClick={handleStartProPlan} 
+                className="w-full"
+                disabled={isUpgrading}
+              >
+                {isUpgrading ? "Starting..." : "Start PRO Plan"}
               </Button>
             </div>
           </div>
