@@ -1261,13 +1261,6 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                       return null;
                     })()}
 
-                    {negotiation.notes.length > 0 && (
-                      <div className="space-y-1 text-sm">
-                        {negotiation.notes.map((note, index) => (
-                          <div key={index}>• {note.message}</div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
