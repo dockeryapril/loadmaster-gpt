@@ -26,6 +26,7 @@ export function useUsageLimits(): UsageLimitInfo & {
   const { isPro } = usePlan();
   const [currentCount, setCurrentCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [subscriptionStartDate, setSubscriptionStartDate] = useState<Date | null>(null);
 
   // Calculate limits based on plan
   const limit = isPro ? 100 : 4;
@@ -70,6 +71,7 @@ export function useUsageLimits(): UsageLimitInfo & {
   const fetchUsage = async (): Promise<void> => {
     if (!user) {
       setCurrentCount(0);
+      setSubscriptionStartDate(null);
       setLoading(false);
       return;
     }
@@ -88,19 +90,32 @@ export function useUsageLimits(): UsageLimitInfo & {
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
         console.error('Error fetching usage:', error);
         setCurrentCount(0);
+        setSubscriptionStartDate(null);
         setLoading(false);
         return;
       }
 
-      // Use the appropriate count based on plan
-      if (data?.plan === 'pro') {
-        setCurrentCount(data.monthly_usage_count || 0);
+      if (data) {
+        if (data.plan === 'pro' && data.subscription_start_date) {
+          setSubscriptionStartDate(new Date(data.subscription_start_date));
+        } else {
+          setSubscriptionStartDate(null);
+        }
+
+        // Use the appropriate count based on plan
+        if (data.plan === 'pro') {
+          setCurrentCount(data.monthly_usage_count || 0);
+        } else {
+          setCurrentCount(data.usage_count || 0);
+        }
       } else {
-        setCurrentCount(data?.usage_count || 0);
+        setSubscriptionStartDate(null);
+        setCurrentCount(0);
       }
     } catch (error) {
       console.error('Error in fetchUsage:', error);
       setCurrentCount(0);
+      setSubscriptionStartDate(null);
     } finally {
       setLoading(false);
     }
@@ -126,7 +141,7 @@ export function useUsageLimits(): UsageLimitInfo & {
         return;
       }
 
-      let updateData: any = {};
+      const updateData: any = {};
 
       if (data?.plan === 'pro') {
         const newCount = (data.monthly_usage_count || 0) + 1;
@@ -159,8 +174,11 @@ export function useUsageLimits(): UsageLimitInfo & {
   // Calculate reset date based on plan
   const getResetDate = (): Date => {
     if (isPro) {
-      // For Pro users, we need subscription start date
-      // For now, default to first of next month if no subscription date
+      if (subscriptionStartDate) {
+        return getNextMonthReset(subscriptionStartDate);
+      }
+
+      // Fallback to first of next month if subscription date is unavailable
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + 1, 1);
       nextMonth.setHours(0, 0, 0, 0);
