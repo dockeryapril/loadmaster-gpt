@@ -611,6 +611,7 @@ export type Database = {
           equipment_rpm_overrides: Json | null
           fuel_price: number
           id: string
+          current_month_start: string | null
           monthly_usage_count: number
           mpg: number
           plan: string
@@ -621,7 +622,6 @@ export type Database = {
           rpm_threshold_good: number
           setup_completion_percentage: number | null
           show_setup_reminders: boolean | null
-          subscription_start_date: string | null
           updated_at: string
           usage_count: number
           use_equipment_defaults: boolean | null
@@ -639,6 +639,7 @@ export type Database = {
           equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
+          current_month_start?: string | null
           monthly_usage_count?: number
           mpg?: number
           plan?: string
@@ -649,7 +650,6 @@ export type Database = {
           rpm_threshold_good?: number
           setup_completion_percentage?: number | null
           show_setup_reminders?: boolean | null
-          subscription_start_date?: string | null
           updated_at?: string
           usage_count?: number
           use_equipment_defaults?: boolean | null
@@ -667,6 +667,7 @@ export type Database = {
           equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
+          current_month_start?: string | null
           monthly_usage_count?: number
           mpg?: number
           plan?: string
@@ -677,7 +678,6 @@ export type Database = {
           rpm_threshold_good?: number
           setup_completion_percentage?: number | null
           show_setup_reminders?: boolean | null
-          subscription_start_date?: string | null
           updated_at?: string
           usage_count?: number
           use_equipment_defaults?: boolean | null
