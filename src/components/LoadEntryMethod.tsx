@@ -69,7 +69,11 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
-  const { canUse, currentCount, limit, incrementUsage } = useUsageLimits();
+  const { canUse, currentCount, limit, incrementUsage, remaining, resetDate } = useUsageLimits();
+  const formattedResetDate = resetDate.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+  });
 
   const handleOCR = async (file: File) => {
     console.log('Starting OCR process for file:', file.name);
@@ -204,7 +208,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
           }
           
           if (err instanceof RateLimitExceededError) {
-            // Rollback usage increment on rate limit error - weekly uploads don't have rollback
+            // Rollback usage increment on rate limit error - monthly scans don't have rollback
             // since it's stored in database and managed differently
             handleRateLimitError(err);
             return;
@@ -391,7 +395,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       // Check if this was a cancellation
       if (error instanceof Error && error.message === 'Upload cancelled') {
         console.log('OCR process was cancelled by user');
-        // Note: Weekly uploads don't rollback like daily counters since they're stored in database
+        // Note: Monthly scans don't rollback like daily counters since they're stored in database
         logOCREnd('LoadEntryMethod', startTime, false, 'cancelled');
         recordExtractionEvent({
           source: 'LoadEntryMethod',
@@ -404,7 +408,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       }
       
       if (error instanceof RateLimitExceededError) {
-        // Weekly uploads don't rollback like daily counters
+        // Monthly scans don't rollback like daily counters
         handleRateLimitError(error);
         return;
       } else {
@@ -493,7 +497,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   };
 
   const handleUploadClick = () => {
-    // Check if user can upload (has remaining uploads)
+    // Check if the user can start a scan (has remaining scans available)
     if (!canUse) {
       navigate('/weekly-limit-reached');
       return;
@@ -725,26 +729,41 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
         </p>
         
         {/* Usage Display */}
-        {!isPro && (
-          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                LoadMaster Free • {currentCount}/{limit} uploads this {limit === 4 ? 'week' : 'month'}
-              </div>
-            </div>
-            {!canUse ? (
-              <div className="mt-2">
-                <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Upgrade to PRO for 100 uploads per month to keep adding loads.
-                </p>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground mt-1">
-                {limit - currentCount} uploads remaining this {limit === 4 ? 'week' : 'month'}.
-              </p>
-            )}
+        <div
+          className={`mb-4 rounded-lg border p-3 ${
+            isPro
+              ? 'border-primary/20 bg-primary/5 dark:bg-primary/10 dark:border-primary/30'
+              : 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20'
+          }`}
+        >
+          <div
+            className={`text-sm font-medium ${
+              isPro ? 'text-foreground' : 'text-amber-800 dark:text-amber-200'
+            }`}
+          >
+            LoadMaster {isPro ? 'Pro' : 'Free'} • {currentCount} of {limit} scans used this month
           </div>
-        )}
+          {!canUse ? (
+            <div className="mt-2 space-y-1">
+              <p
+                className={`text-xs ${
+                  isPro ? 'text-muted-foreground' : 'text-amber-700 dark:text-amber-300'
+                }`}
+              >
+                {isPro
+                  ? `You've used all ${limit} scans this month.`
+                  : 'Upgrade to PRO for 100 scans per month to keep adding loads.'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Monthly scans reset on {formattedResetDate}.
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-1">
+              {remaining} scans remaining this month.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* OCR Options */}

@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function WeeklyLimitReached() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentCount, limit, resetDate, resetPeriod } = useUsageLimits();
+  const { currentCount, limit, resetDate } = useUsageLimits();
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Format reset date
@@ -78,28 +78,26 @@ export default function WeeklyLimitReached() {
               </div>
             </div>
             <CardTitle className="text-2xl font-bold text-amber-900 dark:text-amber-100">
-              You've reached your {resetPeriod} limit.
+              You've reached your monthly scan limit.
             </CardTitle>
           </CardHeader>
 
           <CardContent className="space-y-6">
             {/* Usage Stats */}
             <div className="text-center">
-              <div className="text-sm text-muted-foreground mb-2">
-                {resetPeriod === 'weekly' ? 'Weekly' : 'Monthly'} Usage
-              </div>
+              <div className="text-sm text-muted-foreground mb-2">Monthly Scan Usage</div>
               <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">
                 {currentCount} / {limit}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
-                uploads used this {resetPeriod === 'weekly' ? 'week' : 'month'}
+                scans used this month
               </div>
             </div>
 
             {/* Main Message */}
             <div className="text-center space-y-2">
               <p className="text-lg text-foreground">
-                You've hit your <strong>{limit} uploads</strong> for this {resetPeriod === 'weekly' ? 'week' : 'month'}. 
+                You've hit your limit of <strong>{limit} scans</strong> for this month.
               </p>
               <p className="text-muted-foreground">
                 Upgrade to <strong>PRO</strong> for up to <strong>100 scans per month</strong> and full access to LoadMaster.
@@ -110,7 +108,7 @@ export default function WeeklyLimitReached() {
             <div className="flex items-center justify-center gap-2 p-3 bg-background/50 rounded-lg">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Your uploads reset on {formatResetDate(resetDate)}
+                Your monthly scans reset on {formatResetDate(resetDate)}
               </span>
             </div>
 
@@ -126,10 +124,10 @@ export default function WeeklyLimitReached() {
               
               <div className="text-center space-y-2 text-muted-foreground">
                 <p className="text-sm">
-                  Need more scans before then? Upgrade to PRO for up to 100 scans per month, or wait until {formatResetDate(resetDate)} when your monthly limit resets.
+                  Need more scans before then? Upgrade to PRO for up to 100 scans per month, or wait until {formatResetDate(resetDate)} when your monthly scans reset.
                 </p>
                 <p className="text-xs">
-                  Your uploads reset {resetPeriod === 'weekly' ? 'every Sunday' : 'monthly on your subscription date'} if you'd rather wait.
+                  Your scans reset on the first of each month if you'd rather wait.
                 </p>
               </div>
             </div>
