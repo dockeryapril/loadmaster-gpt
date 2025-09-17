@@ -85,8 +85,8 @@
 - **Resolution:** Image quality guidance, manual correction training
 
 **2. Rate Limit Exceeded (15% of tickets)**
-- **Symptoms:** "Daily limit reached" error, upload blocked
-- **Common Causes:** Free user exceeding 4/week limit
+- **Symptoms:** "Monthly limit reached" error, scan blocked
+- **Common Causes:** Free user exceeding 5/month limit
 - **Resolution:** Explain limits, offer Pro upgrade, manual entry option
 
 **3. Login/Authentication Failures (12% of tickets)**
@@ -219,7 +219,7 @@ AND created_at > NOW() - INTERVAL '30 days';
 ### Understanding Rate Limits
 
 **Current Limits:**
-- **Free Users:** 4 OCR uploads per week (resets Sunday midnight)
+- **Free Users:** 5 scans per month (resets 1st of each month)
 - **Pro Users:** 100 OCR uploads per week (resets Sunday midnight)
 - **Manual Entry:** Unlimited for all users
 - **API Calls:** Standard Supabase rate limits apply
@@ -228,8 +228,8 @@ AND created_at > NOW() - INTERVAL '30 days';
 
 **Error Types:**
 ```
-"Rate limit exceeded. You've used 4 of 4 weekly uploads."
-"Daily limit reached. Try again tomorrow or upgrade to Pro."
+"Rate limit exceeded. You've used 5 of 5 monthly scans."
+"Monthly limit reached. Try again next month or upgrade to Pro."
 "Too many requests. Please try again in a few minutes."
 ```
 
@@ -247,7 +247,7 @@ WHERE user_id = 'user-uuid';
 ```
 
 **Step 2: Check Reset Schedule**
-- Weekly limits reset every Sunday at midnight UTC
+- Monthly limits reset on the 1st of each month at midnight UTC
 - If user reports incorrect count, verify week_start_date
 - Manual reset may be needed if user upgraded mid-week
 
@@ -264,11 +264,11 @@ WHERE user_id = 'user-uuid';
 
 **Free User Exceeded Limit:**
 ```
-I see you've reached your weekly limit of 4 OCR uploads. Here are your options:
+I see you've reached your monthly limit of 5 scans. Here are your options:
 
 1. **Wait for Reset:** Your limit resets this Sunday at midnight
 2. **Use Manual Entry:** Unlimited manual load entry is always available
-3. **Upgrade to Pro:** Get 100 uploads per week for $10/month
+3. **Upgrade to Pro:** Get 100 scans per month for $5/month
 
 Would you like help with manual entry or information about upgrading to Pro?
 ```

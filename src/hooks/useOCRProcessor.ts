@@ -60,7 +60,7 @@ export function useOCRProcessor(isPro = false) {
     if (!canUse) {
       toast({
         title: "Limit reached",
-        description: `You've used all ${limit} uploads this ${limit === 4 ? 'week' : 'month'}`,
+        description: `You've used all ${limit} scans this month`,
         variant: "destructive",
       });
       onFallback();

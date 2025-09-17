@@ -57,7 +57,7 @@ The app will guide you through essential business configuration:
 **Load Entry Buttons:**
 - **📸 Upload Screenshot:** Use OCR to extract load details from screenshots
 - **📝 Manual Entry:** Enter load details manually
-- **Usage Counter:** Shows remaining uploads for the week (Free: 4/week, Pro: 100/week)
+- **Usage Counter:** Shows remaining scans for the month (Free: 5/month, Pro: 100/month)
 
 **Recent Loads List:**
 - Last 5 loads with quick RPM and profit indicators
@@ -95,9 +95,9 @@ The app will guide you through essential business configuration:
 - Good lighting improves accuracy
 - Supported formats: JPG, PNG, WebP
 
-**Weekly Upload Limits:**
-- **Free Plan:** 4 OCR uploads per week (resets Sunday midnight)
-- **Pro Plan:** 100 OCR uploads per week
+**Monthly Scan Limits:**
+- **Free Plan:** 5 scans per month (resets 1st of each month)
+- **Pro Plan:** 100 scans per month
 - **Manual Entry:** Unlimited for all users
 
 ### 📝 Manual Entry
@@ -241,11 +241,11 @@ The app will guide you through essential business configuration:
 ✅ **Load History:** Save and view all your loads  
 ✅ **CSV Export:** Download your data  
 ✅ **Basic Settings:** Fuel price, MPG, thresholds  
-✅ **4 OCR Uploads/Week:** AI-powered screenshot processing  
+✅ **5 Scans/Month:** AI-powered screenshot processing  
 
-### Pro Plan Features ($10/month)
+### Pro Plan Features ($5/month)
 ✅ **All Free Features** plus:  
-✅ **100 OCR Uploads/Week:** Extensive AI processing  
+✅ **100 Scans/Month:** Extensive AI processing
 ✅ **Enhanced RPM Display:** Gross vs Net take-home breakdown  
 ✅ **Business Impact Analysis:** Revenue split and cost analysis  
 ✅ **Negotiation Workspace:** AI-powered message enhancement  
@@ -276,10 +276,10 @@ The app will guide you through essential business configuration:
 
 **Problem:** "Rate limit exceeded" error
 **Solutions:**
-1. **Check Usage:** View remaining uploads on dashboard
-2. **Wait for Reset:** Weekly limits reset Sunday at midnight
+1. **Check Usage:** View remaining scans on dashboard
+2. **Wait for Reset:** Monthly limits reset on 1st of each month
 3. **Use Manual Entry:** No limits on manual load entry
-4. **Upgrade to Pro:** Get 100 uploads per week
+4. **Upgrade to Pro:** Get 100 scans per month
 
 ### Authentication Issues
 

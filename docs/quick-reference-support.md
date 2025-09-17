@@ -13,7 +13,7 @@
 4. **Clear cache:** Browser settings → Clear data
 
 ### OCR Upload Failed
-1. **Check upload limit:** Free=4/week, Pro=100/week
+1. **Check scan limit:** Free=5/month, Pro=100/month
 2. **Try manual entry:** Always unlimited
 3. **Smaller image:** Compress if over 10MB
 4. **Different format:** Try PNG if JPG fails
@@ -95,7 +95,7 @@
 **Upload Limit Reached**
 ```
 ✅ Immediate Fixes:
-• Check counter on dashboard (Free: 4/week)
+• Check counter on dashboard (Free: 5/month)
 • Use manual entry (unlimited)
 • Upgrade to Pro (100/week)
 • Wait for Sunday reset

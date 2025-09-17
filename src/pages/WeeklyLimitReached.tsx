@@ -102,7 +102,7 @@ export default function WeeklyLimitReached() {
                 You've hit your <strong>{limit} uploads</strong> for this {resetPeriod === 'weekly' ? 'week' : 'month'}. 
               </p>
               <p className="text-muted-foreground">
-                Upgrade to <strong>PRO</strong> for up to <strong>100 uploads per month</strong> and full access to LoadMaster.
+                Upgrade to <strong>PRO</strong> for up to <strong>100 scans per month</strong> and full access to LoadMaster.
               </p>
             </div>
 
@@ -145,7 +145,7 @@ export default function WeeklyLimitReached() {
               <div className="grid grid-cols-1 gap-2 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Up to 100 uploads per month</span>
+                  <span>Up to 100 scans per month</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>

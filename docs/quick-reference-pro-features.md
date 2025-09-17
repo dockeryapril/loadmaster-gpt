@@ -1,6 +1,6 @@
 # Pro Features - Quick Reference
 
-**💎 $10/month Pro Plan | 🚀 Advanced LoadMaster GPT Features**
+**💎 $5/month Pro Plan | 🚀 Advanced LoadMaster GPT Features**
 
 ---
 
@@ -15,7 +15,7 @@
 - **Priority Support** (24hr response vs 72hr)
 
 ### 💳 Billing
-- **Cost:** $10/month
+- **Cost:** $5/month
 - **Billing:** Automatic monthly via Stripe
 - **Cancel:** Anytime, keeps features until period ends
 - **Upgrade:** Instant activation after payment
@@ -249,8 +249,8 @@ Quick Access → Recently used templates
 ## 💰 ROI Calculation
 
 ### Break-Even Analysis
-**$10/month Pro cost**
-- **Rate improvement:** Just $0.10/mile extra on 100 loads = $10+
+**$5/month Pro cost**
+- **Rate improvement:** Just $0.05/mile extra on 100 loads = $5+
 - **Time savings:** OCR vs manual entry = 5+ hours/month
 - **Better decisions:** Enhanced RPM prevents bad loads
 - **Professional image:** Better broker relationships
@@ -278,7 +278,7 @@ Quick Access → Recently used templates
 - **Priority support:** 24hr response guarantee
 
 ### Grandfathered Benefits
-- **Locked-in pricing** - $10/month rate guaranteed
+- **Locked-in pricing** - $5/month rate guaranteed
 - **Feature additions** - New Pro features included free
 - **No surprises** - Clear cancellation policy
 - **Data portability** - Export anytime

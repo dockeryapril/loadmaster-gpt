@@ -27,7 +27,7 @@ export function RateLimitProvider({ children }: { children: ReactNode }) {
     
     // Also show a toast notification
     toast({
-      title: "Daily limit reached",
+      title: "Monthly limit reached",
       description: error.message,
       variant: "destructive",
     });

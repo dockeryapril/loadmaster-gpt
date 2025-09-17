@@ -216,6 +216,9 @@
 - [x] Removed manual entry fallbacks when scan limit reached
 - [x] Updated error handling to show upgrade modal instead of manual entry
 - [x] Both plans reset on the 1st of each month (Free) or subscription date (Pro)
+- [x] Updated all copy throughout app and docs for $5/month PRO pricing
+- [x] Updated Stripe integration to use $5/month (500 cents) instead of $10/month
+- [x] Updated all documentation files with new pricing and limits
 
 ### 🧪 Testing Required
 1. **Setup Completion Logic**: Test all question combinations to ensure 100% completion is achievable

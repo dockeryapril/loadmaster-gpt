@@ -42,8 +42,8 @@ export function UpgradeCard({ className }: UpgradeCardProps) {
           <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border">
             <Zap className="h-4 w-4 text-primary flex-shrink-0" />
             <div className="text-xs">
-              <p className="font-medium">Up to 100 load screenshots per day</p>
-              <p className="text-muted-foreground">vs 4 on the free plan</p>
+              <p className="font-medium">Up to 100 scans per month</p>
+              <p className="text-muted-foreground">vs 5 on the free plan</p>
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@ export function UpgradeCard({ className }: UpgradeCardProps) {
             Upgrade to PRO
           </Button>
           <p className="text-xs text-center text-muted-foreground">
-            You have 4 image uploads on the free plan.
+            You have 5 scans per month on the free plan.
           </p>
         </div>
       </CardContent>

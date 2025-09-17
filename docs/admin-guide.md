@@ -47,8 +47,8 @@ LoadMaster GPT serves independent truckers and small fleet operations with intel
 
 ### User Accounts & Authentication
 **Account Types:**
-- **Free Users:** 4 OCR uploads/week, basic features
-- **Pro Users:** 100 OCR uploads/week, advanced features ($10/month)
+- **Free Users:** 5 scans/month, basic features
+- **Pro Users:** 100 scans/month, advanced features ($5/month)
 
 **Authentication System:**
 - Supabase Auth with email/password
@@ -273,13 +273,13 @@ LoadMaster GPT serves independent truckers and small fleet operations with intel
 
 ### Subscription Management
 **Free Plan Features:**
-- 4 OCR uploads per week (resets Sunday midnight)
+- 5 scans per month (resets 1st of each month)
 - Unlimited manual entry
 - Basic RPM calculations
 - Load history and CSV export
 - Basic settings and configuration
 
-**Pro Plan Features ($10/month):**
+**Pro Plan Features ($5/month):**
 - 100 OCR uploads per week
 - Enhanced RPM display (Gross vs Net)
 - Business impact analysis
@@ -332,7 +332,7 @@ LoadMaster GPT serves independent truckers and small fleet operations with intel
 
 ### Rate Limiting & Performance
 **API Rate Limits:**
-- **OCR Processing:** Weekly limits based on subscription tier
+- **OCR Processing:** Monthly limits based on subscription tier
 - **Database Operations:** Standard Supabase rate limits
 - **AI Enhancement:** Rate limited to prevent abuse
 - **Export Operations:** Reasonable limits to prevent system overload

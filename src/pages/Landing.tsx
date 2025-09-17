@@ -171,7 +171,7 @@ const Landing = () => {
               Everything You Need to Maximize Your Profits
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Start with LoadMaster Free (4 uploads per week) or upgrade to PRO for unlimited access and advanced features.
+              Start with LoadMaster Free (5 scans per month) or upgrade to PRO for more scans and advanced features.
             </p>
           </div>
 
@@ -183,7 +183,7 @@ const Landing = () => {
               <h3 className="text-xl font-semibold text-foreground mb-3">Smart Image Upload</h3>
               <p className="text-muted-foreground">
                 Upload screenshots or photos of load offers and instantly extract key details. 
-                Free: 4 uploads per week. PRO: Up to 100 per week.
+                Free: 5 scans per month. PRO: Up to 100 per month.
               </p>
             </div>
 
@@ -244,7 +244,7 @@ const Landing = () => {
                   <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                     <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                   </div>
-                  <span className="text-sm">4 uploads per week</span>
+                  <span className="text-sm">5 scans per month</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
@@ -274,7 +274,7 @@ const Landing = () => {
               </div>
               
               <h3 className="text-2xl font-bold text-foreground mb-2">LoadMasterPRO</h3>
-              <div className="text-4xl font-bold text-foreground mb-1">$10</div>
+              <div className="text-4xl font-bold text-foreground mb-1">$5</div>
               <div className="text-muted-foreground mb-4">per month</div>
               <p className="text-muted-foreground mb-6">Built for serious owner-operators</p>
               
@@ -283,7 +283,7 @@ const Landing = () => {
                   <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                     <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                   </div>
-                  <span className="text-sm font-medium">Up to 100 uploads per week</span>
+                  <span className="text-sm font-medium">Up to 100 scans per month</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">

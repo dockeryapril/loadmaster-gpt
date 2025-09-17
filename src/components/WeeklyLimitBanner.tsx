@@ -75,7 +75,7 @@ export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
               Last upload remaining ({currentCount}/{limit})
             </div>
             <div className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-              Upgrade to PRO for 100 uploads per month
+              Upgrade to PRO for 100 scans per month
             </div>
           </div>
           <div className="flex gap-2 ml-4">

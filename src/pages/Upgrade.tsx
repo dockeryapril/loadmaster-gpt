@@ -88,17 +88,17 @@ export default function Upgrade() {
 
   // Free plan features
   const freeFeatures = [
-    "4 uploads per week",
+    "5 scans per month",
     "Core calculator + insights"
   ];
 
   const freeLimitations = [
-    "Limited to weekly reset"
+    "Limited to monthly reset"
   ];
 
   // Pro plan features
   const proFeatures = [
-    "Up to 100 uploads per week",
+    "Up to 100 scans per month",
     "Full feature access", 
     "Built for serious owner-operators",
     "Priority updates + support"
@@ -137,7 +137,7 @@ export default function Upgrade() {
             One plan. All features. Built for serious owner-operators.
           </p>
           <p className="text-muted-foreground">
-            Start with LoadMaster Free or upgrade to PRO for unlimited access.
+            Start with LoadMaster Free or upgrade to PRO for more scans and full access.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export default function Upgrade() {
               </CardDescription>
               <div className="pt-2">
                 <div className="text-3xl font-bold">$0</div>
-                <div className="text-sm text-muted-foreground">Forever free *with daily limits* OR use unlimited manual entries</div>
+                <div className="text-sm text-muted-foreground">Forever free *with monthly limits* OR use unlimited manual entries</div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -216,7 +216,7 @@ export default function Upgrade() {
                 Full access for serious owner-operators
               </CardDescription>
               <div className="pt-2">
-                <div className="text-3xl font-bold">$10</div>
+                <div className="text-3xl font-bold">$5</div>
                 <div className="text-sm text-muted-foreground">per month</div>
               </div>
             </CardHeader>
@@ -253,7 +253,7 @@ export default function Upgrade() {
                   disabled={isUpgrading}
                   className="w-full mt-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
                 >
-                  {isUpgrading ? "Opening Checkout..." : "Go PRO – Unlock 100 uploads/week"}
+                  {isUpgrading ? "Opening Checkout..." : "Go PRO – Unlock 100 scans/month"}
                 </Button>
               )}
             </CardContent>
@@ -282,11 +282,11 @@ export default function Upgrade() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Free</span>
-                    <span className="text-sm font-medium">4 per week</span>
+                    <span className="text-sm font-medium">5 per month</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">PRO</span>
-                    <span className="text-sm font-medium text-primary">100 per week</span>
+                    <span className="text-sm font-medium text-primary">100 per month</span>
                   </div>
                 </div>
               </CardContent>

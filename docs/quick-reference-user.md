@@ -12,8 +12,8 @@
 - **📐 Hold steady** - Avoid blurry images
 - **💾 Supported:** JPG, PNG, WebP
 
-### 📊 Weekly Limits
-- **Free:** 4 uploads/week (resets Sundays)
+### 📊 Monthly Limits
+- **Free:** 5 scans/month (resets 1st of month)
 - **Pro:** 100 uploads/week (resets Sundays)
 - **Manual:** Unlimited for all users
 
@@ -70,13 +70,13 @@
 ## 💎 Free vs Pro Features
 
 ### ✅ Free Plan Includes
-- ✨ 4 OCR uploads/week
+- ✨ 5 OCR scans/month
 - 📝 Unlimited manual entry  
 - 📊 Basic RPM calculation
 - 📱 Load history & CSV export
 - ⚙️ Basic settings
 
-### 🚀 Pro Plan Adds ($10/month)
+### 🚀 Pro Plan Adds ($5/month)
 - ✨ 100 OCR uploads/week
 - 💰 **Enhanced RPM** (Gross vs Net breakdown)
 - 🤖 **AI Negotiation** workspace

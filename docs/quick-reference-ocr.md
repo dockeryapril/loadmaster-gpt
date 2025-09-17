@@ -107,9 +107,9 @@
 
 ---
 
-## 📊 Weekly Upload Limits
+## 📊 Monthly Scan Limits
 
-### Free Plan (4/week)
+### Free Plan (5/month)
 - **Resets:** Every Sunday at midnight
 - **Counter:** Shows on dashboard "X of 4 used"
 - **When limit reached:** Use manual entry (unlimited)

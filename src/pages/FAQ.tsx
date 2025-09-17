@@ -86,7 +86,7 @@ const FAQ = () => {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-6">
                   <div className="space-y-2">
-                    <p>• 4 uploads per week</p>
+                    <p>• 5 scans per month</p>
                     <p>• Core calculator (RPM, FSC, weight impact)</p>
                     <p>• Color-coded RPM thresholds (green/yellow/red)</p>
                     <p>• Load history saved on your device</p>
@@ -100,7 +100,7 @@ const FAQ = () => {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-6">
                   <div className="space-y-2">
-                    <p><strong>Up to 100 uploads per week</strong></p>
+                    <p><strong>Up to 100 scans per month</strong></p>
                     <p>Everything in Free, plus:</p>
                     <p>• Unlimited access to load storage & editing</p>
                     <p>• Trend tracking and offer history</p>
@@ -149,10 +149,10 @@ const FAQ = () => {
 
               <AccordionItem value="free-limit" className="bg-card border border-border rounded-xl px-6">
                 <AccordionTrigger className="text-left text-lg font-semibold">
-                  Why is Free limited to 4 uploads per week?
+                  Why is Free limited to 5 scans per month?
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-6">
-                  The free tier is designed to let drivers try LoadMaster without risk. For serious owner-operators who run daily, PRO is the plan that makes sense. Four uploads per week = enough to test it, not enough to run your business on.
+                  The free tier is designed to let drivers try LoadMaster without risk. For serious owner-operators who run multiple loads monthly, PRO is the plan that makes sense. Five scans per month = enough to test it, not enough to run your business on.
                 </AccordionContent>
               </AccordionItem>
 
@@ -164,9 +164,9 @@ const FAQ = () => {
                   <div className="space-y-3">
                     <p>You'll see this message:</p>
                     <div className="bg-muted/50 p-3 rounded-lg italic">
-                      "You've hit your 4 uploads for this week. Upgrade to PRO for up to 100 uploads per week and full access."
+                      "You've used your 5 scans for this month. Upgrade to PRO for up to 100 scans per month and full access."
                     </div>
-                    <p>You can either wait until the next week (uploads reset Sunday) or upgrade to PRO instantly.</p>
+                    <p>You can either wait until next month (scans reset on the 1st) or upgrade to PRO instantly.</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -211,8 +211,8 @@ const FAQ = () => {
                   <div className="space-y-3">
                     <p>Pricing is simple:</p>
                     <div className="space-y-2">
-                      <p><strong>LoadMaster Free:</strong> 4 uploads/week</p>
-                      <p><strong>LoadMaster PRO:</strong> Up to 100 uploads/week + full access for $10/month</p>
+                      <p><strong>LoadMaster Free:</strong> 5 scans/month</p>
+                      <p><strong>LoadMaster PRO:</strong> Up to 100 scans/month + full access for $5/month</p>
                     </div>
                   </div>
                 </AccordionContent>

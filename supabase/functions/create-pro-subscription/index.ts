@@ -57,7 +57,7 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
     
-    // Create checkout session for $10/month LoadMaster PRO subscription
+    // Create checkout session for $5/month LoadMaster PRO subscription
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -67,9 +67,9 @@ serve(async (req) => {
             currency: "usd",
             product_data: { 
               name: "LoadMaster PRO",
-              description: "Up to 100 uploads per week + full access"
+              description: "Up to 100 scans per month + full access"
             },
-            unit_amount: 1000, // $10.00 in cents
+            unit_amount: 500, // $5.00 in cents
             recurring: { interval: "month" },
           },
           quantity: 1,
