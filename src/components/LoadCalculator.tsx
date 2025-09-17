@@ -689,6 +689,8 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                       </FormItem>
                     )}
                   />
+                {/* FSC field - only show if driver receives FSC */}
+                {businessSetup?.fsc_handling !== 'carrier_keeps_fsc' && (
                   <FormField
                     control={form.control}
                     name="fsc"
@@ -722,43 +724,47 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                       </FormItem>
                     )}
                   />
+                )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="tolls"
-                    rules={{
-                      validate: (value) => {
-                        if (value === '') return true;
-                        const num = parseFloat(value);
-                        if (num < 0) {
-                          return 'Tolls cannot be negative';
-                        }
-                        if (num > 10000) {
-                          return 'Tolls cannot exceed 10000';
-                        }
-                        return true;
-                      },
-                    }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tolls ($)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min={0}
-                            max={10000}
-                            placeholder="0"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                {/* Tolls field - only show if driver pays for tolls */}
+                {businessSetup?.toll_responsibility !== 'carrier_pays' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="tolls"
+                      rules={{
+                        validate: (value) => {
+                          if (value === '') return true;
+                          const num = parseFloat(value);
+                          if (num < 0) {
+                            return 'Tolls cannot be negative';
+                          }
+                          if (num > 10000) {
+                            return 'Tolls cannot exceed 10000';
+                          }
+                          return true;
+                        },
+                      }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tolls ($)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={0}
+                              max={10000}
+                              placeholder="0"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
 
                 {equipment === 'hotshot' && (
                   <div className="space-y-3">

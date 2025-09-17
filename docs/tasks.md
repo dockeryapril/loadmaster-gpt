@@ -202,6 +202,12 @@
   - Users can now track which specific rate tier was accepted and build negotiation analytics
   - Replaced old NegotiationSheet with unified interface in LoadCalculator
 
+- [x] **Conditional Field Display**: Implemented business setup-based field visibility
+  - FSC field now only appears when fsc_handling is NOT 'carrier_keeps_fsc'
+  - Tolls field now only appears when toll_responsibility is NOT 'carrier_pays'
+  - Fields automatically hide/show based on user's business setup configuration
+  - Prevents unnecessary data entry for fields not relevant to user's arrangement
+
 ### 🧪 Testing Required
 1. **Setup Completion Logic**: Test all question combinations to ensure 100% completion is achievable
 2. **Conditional Questions**: Verify deadhead compensation questions show/hide correctly based on selection
