@@ -440,55 +440,70 @@ export type Database = {
       negotiations: {
         Row: {
           anchor_rate: number
+          channel: string | null
           created_at: string
           final_rate: number | null
+          final_rpm: number | null
           floor_rate: number
           id: string
           iterations: number
           load_id: string | null
           message_sent: string | null
+          negotiation_scripts: Json | null
           notes: string | null
           original_offer: number
           outcome: string | null
+          rate_tier_accepted: string | null
           response_time_minutes: number | null
           strategy_used: string
           target_rate: number
+          tone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           anchor_rate: number
+          channel?: string | null
           created_at?: string
           final_rate?: number | null
+          final_rpm?: number | null
           floor_rate: number
           id?: string
           iterations?: number
           load_id?: string | null
           message_sent?: string | null
+          negotiation_scripts?: Json | null
           notes?: string | null
           original_offer: number
           outcome?: string | null
+          rate_tier_accepted?: string | null
           response_time_minutes?: number | null
           strategy_used: string
           target_rate: number
+          tone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           anchor_rate?: number
+          channel?: string | null
           created_at?: string
           final_rate?: number | null
+          final_rpm?: number | null
           floor_rate?: number
           id?: string
           iterations?: number
           load_id?: string | null
           message_sent?: string | null
+          negotiation_scripts?: Json | null
           notes?: string | null
           original_offer?: number
           outcome?: string | null
+          rate_tier_accepted?: string | null
           response_time_minutes?: number | null
           strategy_used?: string
           target_rate?: number
+          tone?: string | null
           updated_at?: string
           user_id?: string
         }

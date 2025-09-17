@@ -186,6 +186,15 @@
 - [ ] Add setup data export/import functionality
 - [ ] Create setup completion analytics and insights
 
+- [x] **Unified Negotiation Interface**: Combined QuickScripts and Full Negotiation into single powerful interface
+  - Enhanced negotiations database table with granular outcome tracking (channel, tone, scripts, rate tier accepted)
+  - Created UnifiedNegotiationSheet with 3 tabs: Quick Scripts, Templates, Track Outcome
+  - Built useUnifiedNegotiation hook combining negotiation engine with dynamic script generation
+  - Added rate-tier tracking (Ask/Settle/Bottom acceptance rates for analytics)
+  - Integrated channel/tone preferences with outcome persistence
+  - Users can now track which specific rate tier was accepted and build negotiation analytics
+  - Replaced old NegotiationSheet with unified interface in LoadCalculator
+
 ### 🧪 Testing Required
 1. **Setup Completion Logic**: Test all question combinations to ensure 100% completion is achievable
 2. **Conditional Questions**: Verify deadhead compensation questions show/hide correctly based on selection

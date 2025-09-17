@@ -20,7 +20,7 @@ import { Calculator, Save, X, Camera, TrendingUp, Loader2 } from 'lucide-react';
 import { Load, LoadCalculationResult, calculateLoadQuality, getWeightImpact, generateSmartTags, calculateProfit } from '@/types/load';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { LoadEntryMethod } from './LoadEntryMethod';
-import { NegotiationSheet } from './NegotiationSheet';
+import { UnifiedNegotiationSheet } from '@/components/UnifiedNegotiationSheet';
 import { NegotiationPanel } from '@/features/negotiation/NegotiationPanel';
 import { NegotiationHelpCard } from './NegotiationHelpCard';
 import type { Channel, Tone } from '@/features/negotiation/templates';
@@ -1324,10 +1324,9 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
           </div>
         )}
         </form>
-        <NegotiationSheet
+        <UnifiedNegotiationSheet
           open={showNegotiationSheet}
           onClose={() => setShowNegotiationSheet(false)}
-          isPro={isPro} // Pass isPro prop
           load={{
             origin,
             destination,
