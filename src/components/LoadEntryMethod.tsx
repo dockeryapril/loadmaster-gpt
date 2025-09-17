@@ -218,8 +218,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
           setCorrectedFields({});
           toast({
             title: 'Field detection failed',
-            description:
-              'Could not detect load information. Switching to manual entry.',
+            description: 'Could not detect load information from the scan.',
             variant: 'destructive',
           });
           logOCREnd('LoadEntryMethod', startTime, false, 'field_detection_failed');
@@ -229,7 +228,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
             duration: Date.now() - startTime,
             error: 'field_detection_failed'
           }).catch(() => {});
-          onManualEntry();
           return;
         }
 
@@ -413,10 +411,9 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
         recordError(error, { source: 'LoadEntryMethod' }).catch(() => {});
         toast({
           title: "Imaging failed",
-          description: "Could not extract text after several tries. Retake the photo in good lighting or enter details manually.",
+          description: "Could not extract text after several tries. Please try again with better lighting and a clearer image.",
           variant: "destructive",
         });
-        setShowOCRFallback(true);
         logOCREnd('LoadEntryMethod', startTime, false, error);
         recordExtractionEvent({
           source: 'LoadEntryMethod',
@@ -440,14 +437,22 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
     // Pre-flight check: Don't allow OCR if user exceeded limits
     if (!canUse) {
       toast({
-        title: "Limit reached",
-        description: `You've used all ${limit} uploads this ${limit === 4 ? 'week' : 'month'}`,
+        title: "Monthly scan limit reached",
+        description: `You've used all ${limit} scans this month. Upgrade to Pro or wait for next month's reset.`,
         variant: "destructive",
       });
       if (event.target) {
         event.target.value = '';
       }
-      navigate('/weekly-limit-reached');
+      // Trigger the upgrade modal instead of navigating away
+      const rateLimitError = new RateLimitExceededError({
+        error: 'rate_limit',
+        message: `You've used all ${limit} scans this month`,
+        currentCount: currentCount,
+        limit: limit,
+        tier: isPro ? 'pro' : 'free'
+      });
+      handleRateLimitError(rateLimitError);
       return;
     }
     

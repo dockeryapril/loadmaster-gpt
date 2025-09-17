@@ -14,8 +14,8 @@ export interface UsageLimitInfo {
 }
 
 /**
- * Unified hook to manage usage limits for both Free (4/week) and Pro (100/month) plans
- * Free: 4 operations per week, resets Sunday at midnight
+ * Unified hook to manage usage limits for both Free (5/month) and Pro (100/month) plans
+ * Free: 5 operations per month, resets on 1st of each month
  * Pro: 100 operations per month, resets based on subscription date
  */
 export function useUsageLimits(): UsageLimitInfo & {
@@ -29,25 +29,23 @@ export function useUsageLimits(): UsageLimitInfo & {
   const [subscriptionStartDate, setSubscriptionStartDate] = useState<Date | null>(null);
 
   // Calculate limits based on plan
-  const limit = isPro ? 100 : 4;
-  const resetPeriod = isPro ? 'monthly' : 'weekly';
+  const limit = isPro ? 100 : 5;
+  const resetPeriod = 'monthly'; // Both tiers use monthly limits now
 
-  // Calculate current week's Sunday at midnight
-  const getCurrentWeekStart = (): Date => {
+  // Calculate first day of current month
+  const getCurrentMonthStart = (): Date => {
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - dayOfWeek);
-    weekStart.setHours(0, 0, 0, 0);
-    return weekStart;
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
+    return monthStart;
   };
 
-  // Calculate next week's Sunday (reset date for free users)
-  const getNextWeekStart = (): Date => {
-    const currentWeekStart = getCurrentWeekStart();
-    const nextWeek = new Date(currentWeekStart);
-    nextWeek.setDate(currentWeekStart.getDate() + 7);
-    return nextWeek;
+  // Calculate first day of next month (reset date for free users)
+  const getNextMonthStart = (): Date => {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    nextMonth.setHours(0, 0, 0, 0);
+    return nextMonth;
   };
 
   // Calculate next month reset date for Pro users
@@ -103,11 +101,8 @@ export function useUsageLimits(): UsageLimitInfo & {
         }
 
         // Use the appropriate count based on plan
-        if (data.plan === 'pro') {
-          setCurrentCount(data.monthly_usage_count || 0);
-        } else {
-          setCurrentCount(data.usage_count || 0);
-        }
+        // Both free and pro use monthly usage count now
+        setCurrentCount(data.monthly_usage_count || 0);
       } else {
         setSubscriptionStartDate(null);
         setCurrentCount(0);
@@ -141,17 +136,10 @@ export function useUsageLimits(): UsageLimitInfo & {
         return;
       }
 
-      const updateData: any = {};
-
-      if (data?.plan === 'pro') {
-        const newCount = (data.monthly_usage_count || 0) + 1;
-        updateData.monthly_usage_count = newCount;
-        setCurrentCount(newCount);
-      } else {
-        const newCount = (data?.usage_count || 0) + 1;
-        updateData.usage_count = newCount;
-        setCurrentCount(newCount);
-      }
+      // Both free and pro use monthly usage count now
+      const newCount = (data?.monthly_usage_count || 0) + 1;
+      const updateData = { monthly_usage_count: newCount };
+      setCurrentCount(newCount);
 
       await supabase
         .from('user_settings')
@@ -173,19 +161,12 @@ export function useUsageLimits(): UsageLimitInfo & {
 
   // Calculate reset date based on plan
   const getResetDate = (): Date => {
-    if (isPro) {
-      if (subscriptionStartDate) {
-        return getNextMonthReset(subscriptionStartDate);
-      }
-
-      // Fallback to first of next month if subscription date is unavailable
-      const nextMonth = new Date();
-      nextMonth.setMonth(nextMonth.getMonth() + 1, 1);
-      nextMonth.setHours(0, 0, 0, 0);
-      return nextMonth;
+    if (isPro && subscriptionStartDate) {
+      // Pro users reset based on subscription start date
+      return getNextMonthReset(subscriptionStartDate);
     } else {
-      // Free users reset every Sunday
-      return getNextWeekStart();
+      // Free users (and Pro without subscription date) reset on 1st of month
+      return getNextMonthStart();
     }
   };
 

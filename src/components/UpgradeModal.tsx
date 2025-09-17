@@ -9,9 +9,9 @@ interface UpgradeModalProps {
 }
 
 const upgradeMessages = [
-  "You've hit today's 5 free load checks. Upgrade to PRO and keep rolling with plenty of AI insights to improve your cashflow.",
-  "That's 5 free inquiries for today. PRO drivers unlock up to 100/day plus smarter negotiation tools. Ready to upgrade?",
-  "Daily limit reached. Don't miss your next high-paying load — go PRO for more checks and advanced tools."
+  "You've used your free scans for this month.",
+  "Upgrade to Pro for 100 scans per month, or wait until your scans reset next month.",
+  "Monthly scan limit reached. Upgrade to Pro to continue scanning load boards."
 ];
 
 export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
@@ -44,8 +44,8 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
               <Zap className="h-4 w-4 text-primary" />
               <div>
-                <p className="font-medium text-sm">Up to 100 AI-powered load checks per day</p>
-                <p className="text-xs text-muted-foreground">vs 4 on the free plan</p>
+                <p className="font-medium text-sm">Up to 100 AI-powered scans per month</p>
+                <p className="text-xs text-muted-foreground">vs 5 on the free plan</p>
               </div>
             </div>
             

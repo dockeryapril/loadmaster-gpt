@@ -208,6 +208,15 @@
   - Fields automatically hide/show based on user's business setup configuration
   - Prevents unnecessary data entry for fields not relevant to user's arrangement
 
+### ✅ Usage Limit Updates - COMPLETED 2025-01-17
+- [x] Changed Free tier from 4 scans/week to 5 scans/month
+- [x] Both Free and Pro tiers now use monthly limits (5 and 100 respectively)
+- [x] Updated usage counter display to show "X of Y scans used this month"
+- [x] Updated UpgradeModal messaging for monthly limits
+- [x] Removed manual entry fallbacks when scan limit reached
+- [x] Updated error handling to show upgrade modal instead of manual entry
+- [x] Both plans reset on the 1st of each month (Free) or subscription date (Pro)
+
 ### 🧪 Testing Required
 1. **Setup Completion Logic**: Test all question combinations to ensure 100% completion is achievable
 2. **Conditional Questions**: Verify deadhead compensation questions show/hide correctly based on selection
