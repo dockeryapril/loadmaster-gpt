@@ -87,18 +87,20 @@ export function calculateNetTakeHome(
       case 'flat_rate':
         deadheadPay = businessSetup.deadhead_compensation_rate || 0;
         break;
-      case 'varies_by_load':
+      case 'varies_by_load': {
         // Use average of low/high rates
         const avgRate = ((businessSetup.deadhead_rate_low || 0) + (businessSetup.deadhead_rate_high || 0)) / 2;
         deadheadPay = deadheadMiles * avgRate;
         break;
+      }
       case 'tiered_by_distance':
         deadheadPay = calculateTieredDeadheadPay(deadheadMiles, businessSetup);
         break;
-      case 'minimum_plus_variable':
+      case 'minimum_plus_variable': {
         const minimumPay = deadheadMiles * (businessSetup.deadhead_minimum_rate || 0);
         deadheadPay = Math.max(minimumPay, deadheadPay); // Add variable logic if needed
         break;
+      }
       case 'none':
         deadheadPay = 0;
         break;

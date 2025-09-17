@@ -11,13 +11,9 @@ supabase secrets set OPENAI_API_KEY=your_openai_api_key_here
 # Allowed Origins for CORS (required for production)
 supabase secrets set ALLOWED_ORIGINS="https://www.loadmastergpt.com,http://localhost:5173"
 
-# Supabase Configuration (required for rate limiting)
+# Supabase Configuration (required for usage tracking)
 supabase secrets set SUPABASE_URL="https://zvqzucpwtpjjyeldgaeg.supabase.co"
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY="your_supabase_service_role_key_here"
-
-# Rate Limit Settings (updated for Free/Pro tiers)
-supabase secrets set CORE_LIMIT_PER_DAY=4
-supabase secrets set PRO_LIMIT_PER_DAY=100
 ```
 
 ## How to find your keys:
@@ -36,8 +32,7 @@ supabase secrets list
 
 ## Notes:
 
-- Free users get 4 OCR runs per week (resets Sundays)
-- Pro users get 100 OCR runs per week (resets Sundays)
-- The function will work without rate limiting if SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY are missing
+- Free users get 5 AI runs per month (resets on the 1st of each month)
+- Pro users get 100 AI runs per month (resets based on subscription renewal date)
+- The function requires SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY to enforce usage tracking
 - ALLOWED_ORIGINS fallback allows localhost for development
-- If rate limiting database setup is missing, run the SQL in `setup-rate-limiting.sql`

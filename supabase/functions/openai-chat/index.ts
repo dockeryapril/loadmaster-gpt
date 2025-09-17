@@ -4,9 +4,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseServiceRole = Deno.env.get('SUPABASE_SERVICE_ROLE');
-const coreLimitPerDay = parseInt(Deno.env.get('CORE_LIMIT_PER_DAY') || '5');
-const proLimitPerDay = parseInt(Deno.env.get('PRO_LIMIT_PER_DAY') || '100');
+const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const MONTHLY_LIMITS = {
+  free: 5,
+  pro: 100,
+} as const;
 const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
   .split(',')
   .map((origin) => origin.trim().replace(/\/$/, ''))
@@ -23,7 +26,7 @@ serve(async (req) => {
     /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin);
   
   // Support Lovable preview domains - updated regex to match actual format
-  const isLovablePreviewOrigin = /^https:\/\/[a-zA-Z0-9\-]+\.lovable\.(app|dev)$/.test(normalizedOrigin);
+  const isLovablePreviewOrigin = /^https:\/\/[a-zA-Z0-9-]+\.lovable\.(app|dev)$/.test(normalizedOrigin);
   
   console.log('🔍 CORS: Checking origin:', normalizedOrigin);
   console.log('🔍 CORS: Is local origin:', isLocalOrigin);
@@ -37,7 +40,7 @@ serve(async (req) => {
   console.log('🔍 CORS: Is origin allowed:', isOriginAllowed);
     
   const corsHeaders: Record<string, string> = {
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-device-id, x-user-tier',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
@@ -68,10 +71,10 @@ serve(async (req) => {
   }
 
   try {
-    // Check OpenAI API key first
+    // Check required configuration
     if (!openAIApiKey) {
       console.error('OPENAI_API_KEY is not configured');
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         error: 'configuration_error',
         message: 'OpenAI API key is not configured. Please contact support.'
       }), {
@@ -80,59 +83,53 @@ serve(async (req) => {
       });
     }
 
-    // Get rate limiting headers
-    const deviceId = req.headers.get('x-device-id');
-    const rawTier = (req.headers.get('x-user-tier') || 'lite').toLowerCase();
-    
-    // Normalize tier: both 'core' and 'lite' map to free tier
-    const userTier = (rawTier === 'core' || rawTier === 'lite') ? 'lite' : 'pro';
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Supabase configuration is missing for usage tracking');
+      return new Response(JSON.stringify({
+        error: 'configuration_error',
+        message: 'Supabase configuration is incomplete. Please contact support.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    let currentCount = 1;
-    const limit = userTier === 'pro' ? proLimitPerDay : coreLimitPerDay;
-    let rateLimitInfo = { currentCount, limit, tier: userTier };
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({
+        error: 'unauthorized',
+        message: 'Authorization header is required'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    // Try rate limiting if Supabase is configured
-    if (supabaseUrl && supabaseServiceRole && deviceId) {
-      try {
-        console.log('Rate limiting check for device:', deviceId, 'tier:', userTier);
-        
-        const supabase = createClient(supabaseUrl, supabaseServiceRole);
+    const token = authHeader.replace(/bearer\s+/i, '').trim();
+    if (!token) {
+      return new Response(JSON.stringify({
+        error: 'unauthorized',
+        message: 'Invalid authorization header'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-        // Check and increment rate limit
-        const { data: rateLimitData, error: rateLimitError } = await supabase.rpc('increment_rate_limit', {
-          p_device_id: deviceId,
-          p_day: new Date().toISOString().split('T')[0]
-        });
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { persistSession: false },
+    });
 
-        if (rateLimitError) {
-          console.error('Rate limit check error (continuing without limit):', rateLimitError);
-        } else {
-          currentCount = rateLimitData;
-          rateLimitInfo = { currentCount, limit, tier: userTier };
-          
-          console.log('Current usage:', currentCount, 'Limit:', limit, 'Tier:', userTier);
-
-          if (currentCount > limit) {
-            console.log('Rate limit exceeded for device:', deviceId);
-            return new Response(JSON.stringify({ 
-              error: 'rate_limit',
-              message: userTier === 'lite' 
-                ? 'Daily Lite/Core OCR limit reached. Upgrade to Pro for scripts and higher limits.'
-                : 'Daily Pro limit reached. Please try again tomorrow.',
-              currentCount,
-              limit,
-              tier: userTier
-            }), {
-              status: 429,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
-        }
-      } catch (rateLimitError) {
-        console.error('Rate limiting failed (continuing without limit):', rateLimitError);
-      }
-    } else {
-      console.log('Rate limiting skipped - missing configuration or device ID');
+    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !userData?.user) {
+      console.error('Failed to authenticate user:', authError);
+      return new Response(JSON.stringify({
+        error: 'unauthorized',
+        message: 'User authentication failed'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const { prompt, systemMessage, imageBase64 } = await req.json();
@@ -142,6 +139,81 @@ serve(async (req) => {
     }
 
     console.log('Processing OpenAI request with prompt length:', prompt.length);
+
+    const userId = userData.user.id;
+
+    // Reset usage counters if needed before checking limits
+    try {
+      await supabase.rpc('reset_usage_if_needed', { p_user_id: userId });
+    } catch (resetError) {
+      console.error('Failed to reset usage counters:', resetError);
+    }
+
+    const { data: settingsData, error: settingsError } = await supabase
+      .from('user_settings')
+      .select('plan, monthly_usage_count')
+      .eq('user_id', userId)
+      .limit(1);
+
+    if (settingsError) {
+      console.error('Error loading user settings:', settingsError);
+      throw new Error('Failed to load user settings');
+    }
+
+    let plan = 'free';
+    let monthlyUsageCount = 0;
+
+    if (settingsData && settingsData.length > 0) {
+      plan = (settingsData[0].plan || 'free').toLowerCase() === 'pro' ? 'pro' : 'free';
+      monthlyUsageCount = settingsData[0].monthly_usage_count ?? 0;
+    } else {
+      const { data: insertedSettings, error: insertError } = await supabase
+        .from('user_settings')
+        .insert({ user_id: userId })
+        .select('plan, monthly_usage_count')
+        .single();
+
+      if (insertError) {
+        console.error('Error initializing user settings:', insertError);
+        throw new Error('Failed to initialize user settings');
+      }
+
+      plan = (insertedSettings?.plan || 'free').toLowerCase() === 'pro' ? 'pro' : 'free';
+      monthlyUsageCount = insertedSettings?.monthly_usage_count ?? 0;
+    }
+
+    const limit = plan === 'pro' ? MONTHLY_LIMITS.pro : MONTHLY_LIMITS.free;
+
+    if (monthlyUsageCount >= limit) {
+      console.log('Rate limit exceeded for user:', userId, 'plan:', plan);
+      return new Response(JSON.stringify({
+        error: 'rate_limit',
+        message: plan === 'pro'
+          ? 'Monthly Pro limit reached. Please try again after your reset date.'
+          : 'Monthly Free limit reached. Upgrade to Pro for higher limits.',
+        currentCount: monthlyUsageCount,
+        limit,
+        tier: plan
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { data: updatedSettings, error: incrementError } = await supabase
+      .from('user_settings')
+      .update({ monthly_usage_count: monthlyUsageCount + 1 })
+      .eq('user_id', userId)
+      .select('monthly_usage_count')
+      .single();
+
+    if (incrementError) {
+      console.error('Error incrementing usage counter:', incrementError);
+      throw new Error('Failed to increment usage counter');
+    }
+
+    const currentCount = updatedSettings?.monthly_usage_count ?? monthlyUsageCount + 1;
+    const rateLimitInfo = { currentCount, limit, tier: plan };
 
     // Prepare messages for chat completions
     const messages = [
@@ -219,7 +291,7 @@ serve(async (req) => {
 
     console.log('Successfully generated response with length:', generatedText.length);
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       generatedText,
       usage: data.usage,
       rateLimitInfo
