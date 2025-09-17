@@ -53,18 +53,18 @@ export function useUsageLimits(): UsageLimitInfo & {
   // Calculate next month reset date for Pro users
   const getNextMonthReset = (subscriptionStartDate: Date): Date => {
     const now = new Date();
-    const monthsSinceSubscription = (now.getFullYear() - subscriptionStartDate.getFullYear()) * 12 + 
-                                   (now.getMonth() - subscriptionStartDate.getMonth());
-    
-    const nextReset = new Date(subscriptionStartDate);
-    nextReset.setMonth(subscriptionStartDate.getMonth() + monthsSinceSubscription + 1);
-    
-    // If we're past the subscription day this month, use next month
-    if (now.getDate() >= subscriptionStartDate.getDate()) {
-      nextReset.setMonth(subscriptionStartDate.getMonth() + monthsSinceSubscription + 1);
+    const candidate = new Date(subscriptionStartDate);
+    candidate.setFullYear(
+      now.getFullYear(),
+      now.getMonth(),
+      subscriptionStartDate.getDate()
+    );
+
+    if (candidate <= now) {
+      candidate.setMonth(candidate.getMonth() + 1);
     }
-    
-    return nextReset;
+
+    return candidate;
   };
 
   // Fetch current usage from Supabase and reset if needed
