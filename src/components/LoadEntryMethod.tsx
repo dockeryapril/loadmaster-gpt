@@ -720,7 +720,8 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       <div className="text-center">
         <h2 className="text-xl font-semibold mb-2">Add New Load</h2>
         <p className="text-sm text-muted-foreground">
-          Upload image for processing to extract load details automatically, or enter details manually.
+          Upload image for processing to extract load details automatically
+          {canUse ? ', or enter details manually.' : '.'}
         </p>
         
         {/* Usage Display */}
@@ -734,12 +735,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
             {!canUse ? (
               <div className="mt-2">
                 <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Upgrade to PRO for 100 uploads per month • Manual entry is always unlimited
+                  Upgrade to PRO for 100 uploads per month to keep adding loads.
                 </p>
               </div>
             ) : (
               <p className="text-xs text-muted-foreground mt-1">
-                {limit - currentCount} uploads remaining this {limit === 4 ? 'week' : 'month'} • Manual entry is unlimited
+                {limit - currentCount} uploads remaining this {limit === 4 ? 'week' : 'month'}.
               </p>
             )}
           </div>
@@ -769,12 +770,12 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Upload Image/Screenshot</div>
-                     <div className="text-sm text-muted-foreground">
-                        {canUse 
-                          ? "Select photos from your device or take a photo" 
-                          : "Limit reached"
-                        }
-                     </div>
+                    <div className="text-sm text-muted-foreground">
+                      {canUse
+                        ? "Select photos from your device or take a photo"
+                        : "Limit reached"
+                      }
+                    </div>
                   </div>
                 </div>
               </Button>
@@ -783,37 +784,41 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
         </div>
       </div>
 
-      {/* Manual Entry Option */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or</span>
-        </div>
-      </div>
-
-      <Card className="cursor-pointer hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          <Button
-            variant="outline"
-            className="w-full h-auto p-0 border-2 hover:border-primary/50"
-            onClick={onManualEntry}
-          >
-            <div className="flex items-center justify-center gap-4 p-4">
-              <div className="icon-badge bg-muted">
-                <Calculator className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <div className="text-left">
-                <div className="font-medium">Manual Entry</div>
-                <div className="text-sm text-muted-foreground">
-                  Enter load details manually (unlimited)
-                </div>
-              </div>
+      {canUse && (
+        <>
+          {/* Manual Entry Option */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
             </div>
-          </Button>
-        </CardContent>
-      </Card>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <Button
+                variant="outline"
+                className="w-full h-auto p-0 border-2 hover:border-primary/50"
+                onClick={onManualEntry}
+              >
+                <div className="flex items-center justify-center gap-4 p-4">
+                  <div className="icon-badge bg-muted">
+                    <Calculator className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium">Manual Entry</div>
+                    <div className="text-sm text-muted-foreground">
+                      Enter load details manually
+                    </div>
+                  </div>
+                </div>
+              </Button>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {/* Hidden file inputs */}
       <input

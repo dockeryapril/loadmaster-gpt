@@ -53,18 +53,20 @@ export function useOCRProcessor(isPro = false) {
   const { settings } = useSupabaseSettings();
   const { toast } = useToast();
   const { handleRateLimitError } = useRateLimit();
-  const { canUse, limit, incrementUsage } = useUsageLimits();
+  const { canUse, limit, incrementUsage, currentCount, isPro: isProPlan } = useUsageLimits();
 
   const processOCR = async (file: File, onSuccess: (result: FieldDetectionResult) => void, onFallback: () => void) => {
     // Pre-flight check for usage limits
     if (!canUse) {
-      toast({
-        title: "Limit reached",
-        description: `You've used all ${limit} scans this month`,
-        variant: "destructive",
+      const rateLimitError = new RateLimitExceededError({
+        error: 'rate_limit',
+        message: `You've used all ${limit} scans this month`,
+        currentCount,
+        limit,
+        tier: isProPlan ? 'pro' : 'free',
       });
-      onFallback();
-      return;
+      handleRateLimitError(rateLimitError);
+      throw rateLimitError;
     }
     
     console.log('🔄 OCR: Starting OCR process for file:', file.name);
