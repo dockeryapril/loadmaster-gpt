@@ -124,11 +124,23 @@ const Index = () => {
   };
 
   const handleClearAll = async (exportToCsv: boolean) => {
-    if (exportToCsv && loads.length > 0) {
-      exportLoadsToCSV(loads);
+    try {
+      if (exportToCsv && loads.length > 0) {
+        exportLoadsToCSV(loads);
+      }
+      await deleteAllLoads();
+      await refetch();
+    } catch (error) {
+      console.error('Error during clear all operation:', error);
+      // Still attempt to delete loads even if CSV export fails
+      try {
+        await deleteAllLoads();
+        await refetch();
+      } catch (deleteError) {
+        console.error('Error deleting loads:', deleteError);
+        throw deleteError; // Re-throw deletion errors as they're more critical
+      }
     }
-    await deleteAllLoads();
-    await refetch();
   };
 
   const handleManualEntry = () => {

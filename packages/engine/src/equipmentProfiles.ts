@@ -14,11 +14,11 @@ export interface EquipmentProfile {
   surcharges: SurchargePrefs;
 }
 
-// Industry-researched RPM targets and MPG defaults (2024-2025 market data)
+// Industry-researched RPM targets, MPG defaults, and weight limits (2024-2025 market data)
 export const equipmentDefaults = {
-  cargo_van: { mpg: 15, rpmTargets: { green: 2.10, yellow: 1.80, red: 1.50 } },
-  straight_truck: { mpg: 8, rpmTargets: { green: 2.40, yellow: 2.10, red: 1.80 } },
-  hotshot: { mpg: 6.5, rpmTargets: { green: 2.60, yellow: 2.30, red: 2.00 } }
+  cargo_van: { mpg: 15, rpmTargets: { green: 2.10, yellow: 1.80, red: 1.50 }, weightLimit: 10000 },
+  straight_truck: { mpg: 8, rpmTargets: { green: 2.40, yellow: 2.10, red: 1.80 }, weightLimit: 26000 },
+  hotshot: { mpg: 6.5, rpmTargets: { green: 2.60, yellow: 2.30, red: 2.00 }, weightLimit: 40000 }
 };
 
 export const hotshotProfile: EquipmentProfile = {
@@ -71,4 +71,9 @@ export function getEquipmentMPG(equipment: Equipment): number {
 
 export function getEquipmentRPMTargets(equipment: Equipment): RpmTargets {
   return equipmentDefaults[equipment]?.rpmTargets || equipmentDefaults.hotshot.rpmTargets;
+}
+
+// Get equipment-specific weight limit
+export function getEquipmentWeightLimit(equipment: Equipment): number {
+  return equipmentDefaults[equipment]?.weightLimit || equipmentDefaults.hotshot.weightLimit;
 }

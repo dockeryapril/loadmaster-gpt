@@ -18,6 +18,7 @@ import {
   validateWeightLimit 
 } from '@/utils/inputValidation';
 import { getIndustryContext, getEffectiveMPG, getEffectiveRPMTargets } from '@/utils/equipmentDefaults';
+import { getEquipmentWeightLimit } from '../../packages/engine/src/equipmentProfiles';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
@@ -49,16 +50,13 @@ export function Settings({ onClose }: SettingsProps) {
   const effectiveMPG = equipment ? getEffectiveMPG(equipment, settings) : settings.mpg;
   const effectiveRPM = equipment ? getEffectiveRPMTargets(equipment, settings) : null;
 
-  // Auto-update MPG when equipment changes (if using defaults and field is empty/default)
+  // Auto-update MPG when equipment changes (if using defaults)
   useEffect(() => {
     if (equipment && useEquipmentDefaults && industryContext) {
-      const currentMpgValue = parseFloat(mpg) || 0;
-      // Auto-update if MPG is 0 (empty) or 6.5 (system default) to populate equipment-specific defaults
-      if (currentMpgValue === 0 || currentMpgValue === 6.5) {
-        setMpg(industryContext.recommendedMPG.toString());
-      }
+      // Always update MPG to equipment-specific value when equipment changes and defaults are enabled
+      setMpg(industryContext.recommendedMPG.toString());
     }
-  }, [equipment, useEquipmentDefaults, industryContext]);
+  }, [equipment, useEquipmentDefaults, industryContext?.recommendedMPG]);
 
   // Auto-update RPM thresholds when equipment changes (if using defaults and fields are empty/default)  
   useEffect(() => {
@@ -75,6 +73,14 @@ export function Settings({ onClose }: SettingsProps) {
       }
     }
   }, [equipment, useEquipmentDefaults, effectiveRPM]);
+
+  // Auto-update weight limit when equipment changes (if using defaults)
+  useEffect(() => {
+    if (equipment && useEquipmentDefaults) {
+      const equipmentWeightLimit = getEquipmentWeightLimit(equipment);
+      setWeightLimit(equipmentWeightLimit.toString());
+    }
+  }, [equipment, useEquipmentDefaults]);
 
   const handleSave = async () => {
     // Validate all inputs before saving
@@ -328,7 +334,14 @@ export function Settings({ onClose }: SettingsProps) {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Weight Limits</h3>
           <div className="space-y-2">
-            <Label htmlFor="weightLimit">Maximum Weight (lbs)</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="weightLimit">Maximum Weight (lbs)</Label>
+              {equipment && useEquipmentDefaults && (
+                <Badge variant="secondary" className="text-xs">
+                  {equipment === 'cargo_van' ? 'Cargo Van' : equipment === 'straight_truck' ? 'Straight Truck' : 'Hotshot'}: {getEquipmentWeightLimit(equipment).toLocaleString()} lbs
+                </Badge>
+              )}
+            </div>
             <Input
               id="weightLimit"
               type="number"
@@ -337,7 +350,10 @@ export function Settings({ onClose }: SettingsProps) {
               placeholder="0"
             />
             <div className="text-sm text-muted-foreground">
-              Loads above this weight will be flagged as overweight.
+              {useEquipmentDefaults && equipment ? 
+                `Using equipment-specific limit: ${getEquipmentWeightLimit(equipment).toLocaleString()} lbs. Loads above this weight will be flagged as overweight.` :
+                "Loads above this weight will be flagged as overweight."
+              }
             </div>
           </div>
         </div>

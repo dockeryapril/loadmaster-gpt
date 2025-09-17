@@ -213,6 +213,23 @@
 2. **Conditional Questions**: Verify deadhead compensation questions show/hide correctly based on selection
 3. **UI Design**: Confirm SetupBanner uses proper semantic tokens and professional styling
 
+### 🐛 Recently Fixed Bugs  
+- [x] **CSV Export Error**: Fixed error handling during load deletion with CSV export
+  - Added proper try/catch error handling around CSV export in handleClearAll function
+  - CSV export failures no longer prevent load deletion from proceeding
+  - Improved error logging for better debugging of CSV export issues
+
+- [x] **MPG Auto-Update**: Fixed MPG not updating immediately when Equipment Type changes in Settings
+  - Modified useEffect to always update MPG when equipment changes (if defaults enabled)
+  - Removed restrictive conditions that only updated for empty/default values
+  - MPG now updates instantly when equipment selection changes, no save/reload needed
+
+- [x] **Weight Limit Auto-Update**: Added automatic weight limit updates based on Equipment Type
+  - Added weight limits to equipment profiles (Cargo Van: 10,000 lbs, Straight Truck: 26,000 lbs, Hotshot: 40,000 lbs)
+  - Created getEquipmentWeightLimit() function for retrieving equipment-specific limits
+  - Weight limit field now auto-updates when equipment type changes (if defaults enabled)
+  - Added visual feedback showing equipment-specific weight limits with badge display
+
 ### 📝 Notes
 - Setup system now supports complex deadhead compensation scenarios common in trucking
 - Banner design improved to be less pushy and more professional
