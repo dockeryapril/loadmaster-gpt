@@ -124,19 +124,14 @@ export default function WeeklyLimitReached() {
                 {isUpgrading ? "Opening Checkout..." : "Upgrade to PRO"}
               </Button>
               
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">
+              <div className="text-center space-y-2 text-muted-foreground">
+                <p className="text-sm">
+                  Need more scans before then? Upgrade to PRO for up to 100 scans per month, or wait until {formatResetDate(resetDate)} when your monthly limit resets.
+                </p>
+                <p className="text-xs">
                   Your uploads reset {resetPeriod === 'weekly' ? 'every Sunday' : 'monthly on your subscription date'} if you'd rather wait.
                 </p>
               </div>
-
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/')}
-                className="w-full"
-              >
-                Continue with Manual Entry
-              </Button>
             </div>
 
             {/* Pro Features Preview */}
