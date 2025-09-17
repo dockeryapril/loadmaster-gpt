@@ -815,7 +815,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleFileUpload}
         className="hidden"
       />
