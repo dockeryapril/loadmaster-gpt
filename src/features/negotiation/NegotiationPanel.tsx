@@ -118,9 +118,23 @@ export function NegotiationPanel({
     onToneChange?.(value);
   };
 
-  const handleCopy = (stage: keyof typeof scripts) => {
-    navigator.clipboard.writeText(scripts[stage]);
-    toast({ description: 'Script copied to clipboard' });
+  const handleCopy = async (stage: keyof typeof scripts) => {
+    try {
+      // Use the modern clipboard API with proper plain text handling
+      await navigator.clipboard.writeText(scripts[stage]);
+      toast({ description: 'Script copied to clipboard' });
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = scripts[stage];
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast({ description: 'Script copied to clipboard' });
+    }
   };
 
 

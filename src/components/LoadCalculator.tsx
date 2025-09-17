@@ -1024,6 +1024,24 @@ export function LoadCalculator({ onSaveLoad, initialData, ocrData, onClose, isPr
                           placeholder="Additional notes about this load..."
                           rows={2}
                           {...field}
+                          onPaste={(e) => {
+                            // Handle URL-encoded text from clipboard
+                            const clipboardData = e.clipboardData?.getData('text/plain') || '';
+                            if (clipboardData.includes('%20') || clipboardData.includes('%24') || clipboardData.includes('say:')) {
+                              e.preventDefault();
+                              try {
+                                const decodedText = decodeURIComponent(clipboardData);
+                                const currentValue = field.value || '';
+                                const newValue = currentValue + (currentValue ? '\n' : '') + decodedText;
+                                field.onChange(newValue);
+                              } catch {
+                                // If decoding fails, use original text
+                                const currentValue = field.value || '';
+                                const newValue = currentValue + (currentValue ? '\n' : '') + clipboardData;
+                                field.onChange(newValue);
+                              }
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
