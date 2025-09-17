@@ -11,11 +11,11 @@ interface WeeklyLimitBannerProps {
 
 export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
   const navigate = useNavigate();
-  const { currentCount, limit, remaining, resetDate, isPro, resetPeriod } = useUsageLimits();
+  const { currentCount, limit, remaining, resetDate } = useUsageLimits();
 
   if (!show) return null;
 
-  // Show warning when user has 1 upload remaining
+  // Show warning when user has 1 scan remaining
   const isWarning = remaining === 1;
   const isLimitReached = remaining === 0;
 
@@ -35,15 +35,15 @@ export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
         <AlertDescription className="flex items-center justify-between">
           <div className="flex-1">
             <div className="text-red-800 dark:text-red-200 font-medium">
-              {resetPeriod === 'weekly' ? 'Weekly' : 'Monthly'} limit reached ({currentCount}/{limit})
+              Monthly scan limit reached ({currentCount}/{limit})
             </div>
             <div className="text-sm text-red-700 dark:text-red-300 mt-1 flex items-center gap-2">
               <Calendar className="h-3 w-3" />
-              Resets {formatResetDate(resetDate)}
+              Monthly scans reset on {formatResetDate(resetDate)}
             </div>
           </div>
           <div className="flex gap-2 ml-4">
-            <Button 
+            <Button
               size="sm" 
               variant="outline"
               onClick={() => navigate('/weekly-limit-reached')}
@@ -72,7 +72,7 @@ export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
         <AlertDescription className="flex items-center justify-between">
           <div className="flex-1">
             <div className="text-amber-800 dark:text-amber-200 font-medium">
-              Last upload remaining ({currentCount}/{limit})
+              Last scan remaining ({currentCount}/{limit})
             </div>
             <div className="text-sm text-amber-700 dark:text-amber-300 mt-1">
               Upgrade to PRO for 100 scans per month
