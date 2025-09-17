@@ -341,7 +341,7 @@ const MVPLanding = () => {
           
           <div className="mt-6">
             <Button variant="link" onClick={() => navigate("/auth")}>
-              Or try the beta version now →
+              Try the beta version now →
             </Button>
           </div>
         </div>
