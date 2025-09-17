@@ -186,6 +186,13 @@
 - [ ] Add setup data export/import functionality
 - [ ] Create setup completion analytics and insights
 
+- [x] **Simplified Load Entry Options**: Removed separate "Take Photo" option for better mobile UX
+  - Removed non-functional "Take Photo" button that requested camera permissions but didn't work properly
+  - Enhanced "Upload Image/Screenshot" option to handle both file selection and camera capture
+  - Streamlined interface now has only 2 options: "Upload Image/Screenshot" and "Manual Entry"
+  - Cleaned up camera-specific code, state management, and unused imports
+  - Better mobile experience with reliable camera access through standard file input
+
 - [x] **Unified Negotiation Interface**: Combined QuickScripts and Full Negotiation into single powerful interface
   - Enhanced negotiations database table with granular outcome tracking (channel, tone, scripts, rate tier accepted)
   - Created UnifiedNegotiationSheet with 3 tabs: Quick Scripts, Templates, Track Outcome

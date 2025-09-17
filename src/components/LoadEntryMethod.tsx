@@ -4,8 +4,7 @@ import Tesseract from 'tesseract.js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Camera, Upload, Calculator, ArrowRight, Loader2, X } from 'lucide-react';
-import { CameraInterface } from './CameraInterface';
+import { Upload, Calculator, ArrowRight, Loader2, X } from 'lucide-react';
 import { FieldDetectionResult } from '@/utils/SmartFieldDetector';
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings';
 import { useToast } from '@/hooks/use-toast';
@@ -51,9 +50,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOCRFallback, setShowOCRFallback] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
-  const [showCameraInterface, setShowCameraInterface] = useState(false);
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [cameraTriggerElement, setCameraTriggerElement] = useState<HTMLElement | null>(null);
   const [currentDetectionResult, setCurrentDetectionResult] = useState<FieldDetectionResult | null>(null);
   const [correctedFields, setCorrectedFields] = useState<Record<string, string>>({});
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -66,7 +62,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   const [processingStage, setProcessingStage] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const imageElementRef = useRef<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -502,46 +497,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
     fileInputRef.current?.click();
   };
 
-  const handleCameraClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Pre-flight check: Don't allow OCR if user exceeded limits
-    if (!canUse) {
-      toast({
-        title: "Limit reached", 
-        description: `You've used all ${limit} uploads this ${limit === 4 ? 'week' : 'month'}`,
-        variant: "destructive",
-      });
-      navigate('/weekly-limit-reached');
-      return;
-    }
-    
-    // Remember the element that opened the camera so focus can return
-    setCameraTriggerElement(e.currentTarget);
-    try {
-      // Try to use getUserMedia for direct camera access
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment' } 
-        });
-        
-        // Create a camera interface
-        setShowCameraInterface(true);
-        setCameraStream(stream);
-      } else {
-        // Fallback to file input with capture
-        cameraInputRef.current?.click();
-      }
-    } catch (error) {
-      recordError(error, { source: 'LoadEntryMethod', stage: 'camera_access' }).catch(() => {});
-      toast({
-        title: "Camera access failed",
-        description: "Check browser permissions and try again, or upload a photo instead.",
-        variant: "destructive",
-      });
-      // Fallback to file input
-      cameraInputRef.current?.click();
-    }
-  };
-
   const handleFieldCorrection = (field: string, value: string) => {
     setCorrectedFields(prev => ({ ...prev, [field]: value }));
     
@@ -648,21 +603,10 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
   };
 
   const handleCloseCameraInterface = () => {
-    setShowCameraInterface(false);
-    setCameraStream(null);
+    // Remove camera interface functionality since Take Photo option is removed
   };
 
-  // Show camera interface
-  if (showCameraInterface && cameraStream) {
-    return (
-      <CameraInterface
-        stream={cameraStream}
-        onCapture={handleOCR}
-        onClose={handleCloseCameraInterface}
-        triggerElement={cameraTriggerElement}
-      />
-    );
-  }
+  // Camera interface removed - Take Photo option no longer available
 
   useFocusTrap(dialogRef, onClose);
 
@@ -822,33 +766,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                     <div className="font-medium">Upload Image/Screenshot</div>
                      <div className="text-sm text-muted-foreground">
                         {canUse 
-                          ? "Select photos from your device" 
-                          : "Limit reached"
-                        }
-                     </div>
-                  </div>
-                </div>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 border-primary/20 bg-primary/5">
-            <CardContent className="p-6">
-              <Button
-                variant="ghost"
-                className="w-full h-auto p-0 hover:bg-transparent"
-                onClick={handleCameraClick}
-                disabled={!canUse} // Only disable for Free users who exceeded limits
-              >
-                <div className="flex items-center justify-center gap-4">
-                  <div className={`icon-badge ${canUse ? 'bg-primary/20' : 'bg-muted'}`}>
-                    <Camera className={`h-6 w-6 ${canUse ? 'text-primary' : 'text-muted-foreground'}`} />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium">Take Photo</div>
-                     <div className="text-sm text-muted-foreground">
-                        {canUse 
-                          ? "Use your camera to capture load documents"
+                          ? "Select photos from your device or take a photo" 
                           : "Limit reached"
                         }
                      </div>
@@ -895,14 +813,6 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
       {/* Hidden file inputs */}
       <input
         ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileUpload}
-        className="hidden"
-      />
-      
-      <input
-        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
