@@ -273,7 +273,7 @@ const Landing = () => {
                 </div>
               </div>
               
-              <h3 className="text-2xl font-bold text-foreground mb-2">LoadMaster PRO</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-2">LoadMasterPRO</h3>
               <div className="text-4xl font-bold text-foreground mb-1">$10</div>
               <div className="text-muted-foreground mb-4">per month</div>
               <p className="text-muted-foreground mb-6">Built for serious owner-operators</p>
@@ -318,7 +318,7 @@ const Landing = () => {
             Ready to Maximize Your Profits?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join owner-operators using LoadMaster to make smarter decisions and increase their margins.
+            Join other drivers using LoadMaster to make smarter decisions and increase their margins.
           </p>
           <Button size="lg" onClick={handleGetStarted} className="text-lg px-12 py-6">
             Start with LoadMaster for Free
