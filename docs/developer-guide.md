@@ -360,23 +360,49 @@ CREATE INDEX idx_loads_recent ON loads(user_id, created_at)
 
 ### Database Functions
 ```sql
--- Rate limiting function
-CREATE OR REPLACE FUNCTION increment_rate_limit(
-  p_device_id TEXT,
-  p_day DATE DEFAULT CURRENT_DATE
-) RETURNS INTEGER AS $$
+-- Monthly usage reset helper
+CREATE OR REPLACE FUNCTION reset_usage_if_needed(p_user_id uuid)
+RETURNS void AS $$
 DECLARE
-  new_count INTEGER;
+  user_plan text;
+  current_month_start date;
+  pro_reset_start date;
+  settings_record RECORD;
 BEGIN
-  INSERT INTO rate_limits (device_id, day, count, updated_at)
-  VALUES (p_device_id, p_day, 1, now())
-  ON CONFLICT (device_id, day)
-  DO UPDATE SET 
-    count = rate_limits.count + 1,
-    updated_at = now()
-  RETURNING count INTO new_count;
-  
-  RETURN new_count;
+  SELECT plan, week_start_date, monthly_usage_count, subscription_start_date
+  INTO settings_record
+  FROM user_settings
+  WHERE user_id = p_user_id;
+
+  IF NOT FOUND THEN
+    RETURN;
+  END IF;
+
+  user_plan := settings_record.plan;
+
+  IF user_plan = 'free' THEN
+    current_month_start := (date_trunc('month', CURRENT_DATE))::date;
+
+    IF settings_record.week_start_date IS NULL OR settings_record.week_start_date < current_month_start THEN
+      UPDATE user_settings
+      SET monthly_usage_count = 0,
+          week_start_date = current_month_start,
+          updated_at = now()
+      WHERE user_id = p_user_id;
+    END IF;
+
+  ELSIF user_plan = 'pro' AND settings_record.subscription_start_date IS NOT NULL THEN
+    pro_reset_start := (settings_record.subscription_start_date +
+      (EXTRACT(YEAR FROM age(CURRENT_DATE, settings_record.subscription_start_date)) * 12 +
+       EXTRACT(MONTH FROM age(CURRENT_DATE, settings_record.subscription_start_date)))::int * INTERVAL '1 month')::date;
+
+    IF CURRENT_DATE >= pro_reset_start + INTERVAL '1 month' THEN
+      UPDATE user_settings
+      SET monthly_usage_count = 0,
+          updated_at = now()
+      WHERE user_id = p_user_id;
+    END IF;
+  END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```

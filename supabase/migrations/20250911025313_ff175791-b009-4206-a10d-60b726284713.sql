@@ -15,8 +15,8 @@ ALTER TABLE public.user_settings
 ALTER COLUMN week_start_date SET DEFAULT ((date_trunc('week'::text, (CURRENT_DATE)::timestamp with time zone))::date);
 
 -- Add a comment to clarify the usage tracking
-COMMENT ON COLUMN public.user_settings.usage_count IS 'Weekly usage count for Free users, monthly usage count for Pro users';
-COMMENT ON COLUMN public.user_settings.monthly_usage_count IS 'Monthly usage count for Pro users only';
+COMMENT ON COLUMN public.user_settings.usage_count IS 'Legacy weekly usage count retained for backward compatibility.';
+COMMENT ON COLUMN public.user_settings.monthly_usage_count IS 'Monthly usage count for both Free and Pro plans.';
 COMMENT ON COLUMN public.user_settings.subscription_start_date IS 'Pro subscription start date for calculating monthly resets';
 
 -- Create function to reset usage counts based on plan type
@@ -28,14 +28,14 @@ SET search_path = 'public'
 AS $$
 DECLARE
   user_plan text;
-  current_week_start date;
   current_month_start date;
+  pro_reset_start date;
   settings_record RECORD;
 BEGIN
   -- Get user settings
-  SELECT plan, usage_count, week_start_date, monthly_usage_count, subscription_start_date
+  SELECT plan, week_start_date, monthly_usage_count, subscription_start_date
   INTO settings_record
-  FROM user_settings 
+  FROM user_settings
   WHERE user_id = p_user_id;
   
   IF NOT FOUND THEN
@@ -45,26 +45,26 @@ BEGIN
   user_plan := settings_record.plan;
   
   IF user_plan = 'free' THEN
-    -- Reset weekly usage for free users (week starts Sunday)
-    current_week_start := (date_trunc('week', CURRENT_DATE))::date;
-    
-    IF settings_record.week_start_date != current_week_start THEN
-      UPDATE user_settings 
-      SET usage_count = 0,
-          week_start_date = current_week_start,
+    -- Free users reset on the first day of each month
+    current_month_start := (date_trunc('month', CURRENT_DATE))::date;
+
+    IF settings_record.week_start_date IS NULL OR settings_record.week_start_date < current_month_start THEN
+      UPDATE user_settings
+      SET monthly_usage_count = 0,
+          week_start_date = current_month_start,
           updated_at = now()
       WHERE user_id = p_user_id;
     END IF;
-    
+
   ELSIF user_plan = 'pro' AND settings_record.subscription_start_date IS NOT NULL THEN
     -- Reset monthly usage for pro users based on subscription date
-    current_month_start := (settings_record.subscription_start_date + 
-      (EXTRACT(YEAR FROM age(CURRENT_DATE, settings_record.subscription_start_date)) * 12 + 
+    pro_reset_start := (settings_record.subscription_start_date +
+      (EXTRACT(YEAR FROM age(CURRENT_DATE, settings_record.subscription_start_date)) * 12 +
        EXTRACT(MONTH FROM age(CURRENT_DATE, settings_record.subscription_start_date)))::int * INTERVAL '1 month')::date;
-    
+
     -- If we've passed the monthly reset date, reset the counter
-    IF CURRENT_DATE >= current_month_start + INTERVAL '1 month' THEN
-      UPDATE user_settings 
+    IF CURRENT_DATE >= pro_reset_start + INTERVAL '1 month' THEN
+      UPDATE user_settings
       SET monthly_usage_count = 0,
           updated_at = now()
       WHERE user_id = p_user_id;

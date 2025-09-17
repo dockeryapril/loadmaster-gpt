@@ -1,6 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getDeviceId } from "./deviceId";
-import { getTier } from "./tier";
 
 export interface RateLimitError {
   error: 'rate_limit';
@@ -33,10 +31,6 @@ export async function callOpenAIWithRateLimit(
       prompt,
       systemMessage,
       imageBase64
-    },
-    headers: {
-      'x-device-id': getDeviceId(),
-      'x-user-tier': getTier()
     }
   });
 
