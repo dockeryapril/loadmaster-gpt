@@ -59,17 +59,34 @@ export function useUnifiedNegotiation({ load, laneBaselineRpm }: UseUnifiedNegot
     rateTierAccepted?: 'ask' | 'settle' | 'bottom' | 'other',
     customMessage?: string
   ): Promise<void> => {
-    if (!user || !calculation || !load.id) {
+    if (!user || !calculation) {
       toast({ title: 'Error', description: 'Missing required data to save negotiation', variant: 'destructive' });
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       const currentScripts = scripts.ask ? scripts : generateDynamicScripts();
-      const finalRpm = finalRate && load.miles ? finalRate / load.miles : undefined;
-      
+      const resolvedFinalRate = (() => {
+        if (typeof finalRate === 'number') {
+          return finalRate;
+        }
+
+        switch (rateTierAccepted) {
+          case 'ask':
+            return calculation.anchor_rate;
+          case 'settle':
+            return calculation.target_rate;
+          case 'bottom':
+            return calculation.floor_rate;
+          default:
+            return undefined;
+        }
+      })();
+
+      const finalRpm = resolvedFinalRate && load.miles ? resolvedFinalRate / load.miles : undefined;
+
       const negotiationData: Omit<EnhancedNegotiation, 'id' | 'created_at' | 'updated_at'> = {
         user_id: user.id,
         load_id: load.id,
@@ -77,7 +94,7 @@ export function useUnifiedNegotiation({ load, laneBaselineRpm }: UseUnifiedNegot
         target_rate: calculation.target_rate,
         anchor_rate: calculation.anchor_rate,
         floor_rate: calculation.floor_rate,
-        final_rate: finalRate,
+        final_rate: resolvedFinalRate,
         final_rpm: finalRpm,
         strategy_used: selectedStrategy,
         outcome,

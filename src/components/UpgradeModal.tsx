@@ -8,15 +8,14 @@ interface UpgradeModalProps {
   onClose: () => void;
 }
 
-const upgradeMessages = [
-  "You've used your free scans for this month.",
-  "Upgrade to Pro for 100 scans per month, or wait until your scans reset next month.",
-  "Monthly scan limit reached. Upgrade to Pro to continue scanning load boards."
-];
+const upgradeCopy = {
+  headline: "You’ve used your free scans for this month.",
+  body: "Upgrade to Pro for 100 scans per month, or wait until your scans reset next month.",
+};
 
 export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
   const navigate = useNavigate();
-  const message = upgradeMessages[0]; // Use first message as default
+  const { headline, body } = upgradeCopy;
 
   const handleUpgrade = () => {
     onClose();
@@ -31,13 +30,13 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             <div className="p-2 bg-primary/10 rounded-lg">
               <Truck className="h-5 w-5 text-primary" />
             </div>
-            Upgrade to PRO
+            {headline}
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            {message}
+            {body}
           </p>
           
           <div className="grid grid-cols-1 gap-3">
@@ -66,11 +65,11 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             >
               OK
             </Button>
-            <Button 
+            <Button
               onClick={handleUpgrade}
               className="flex-1"
             >
-              Upgrade to PRO
+              Upgrade Now
             </Button>
           </div>
         </div>
@@ -78,3 +77,4 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     </Dialog>
   );
 }
+
