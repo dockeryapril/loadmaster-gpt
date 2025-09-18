@@ -39,7 +39,7 @@ export function WeeklyLimitBanner({ show, onDismiss }: WeeklyLimitBannerProps) {
             </div>
             <div className="text-sm text-red-700 dark:text-red-300 mt-1 flex items-center gap-2">
               <Calendar className="h-3 w-3" />
-              Monthly scans reset on {formatResetDate(resetDate)}
+              Rolling monthly scans reset on {formatResetDate(resetDate)}
             </div>
           </div>
           <div className="flex gap-2 ml-4">

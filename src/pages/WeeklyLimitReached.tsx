@@ -108,7 +108,7 @@ export default function WeeklyLimitReached() {
             <div className="flex items-center justify-center gap-2 p-3 bg-background/50 rounded-lg">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Your monthly scans reset on {formatResetDate(resetDate)}
+                Your rolling monthly scans reset on {formatResetDate(resetDate)}
               </span>
             </div>
 
@@ -124,10 +124,10 @@ export default function WeeklyLimitReached() {
               
               <div className="text-center space-y-2 text-muted-foreground">
                 <p className="text-sm">
-                  Need more scans before then? Upgrade to PRO for up to 100 scans per month, or wait until {formatResetDate(resetDate)} when your monthly scans reset.
+                  Need more scans before then? Upgrade to PRO for up to 100 scans per month, or wait until {formatResetDate(resetDate)} when your rolling monthly limit resets.
                 </p>
                 <p className="text-xs">
-                  Your scans reset on the first of each month if you'd rather wait.
+                  Your reset date is based on the day you first uploaded a load each period.
                 </p>
               </div>
             </div>

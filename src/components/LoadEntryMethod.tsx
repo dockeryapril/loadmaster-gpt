@@ -755,7 +755,7 @@ export function LoadEntryMethod({ onFieldsDetected, onManualEntry, onClose, isPr
                   : 'Upgrade to PRO for 100 scans per month to keep adding loads.'}
               </p>
               <p className="text-xs text-muted-foreground">
-                Monthly scans reset on {formattedResetDate}.
+                Rolling monthly scans reset on {formattedResetDate} (based on your first upload).
               </p>
             </div>
           ) : (

@@ -151,7 +151,7 @@ serve(async (req) => {
 
     const { data: settingsData, error: settingsError } = await supabase
       .from('user_settings')
-      .select('plan, monthly_usage_count')
+      .select('plan, monthly_usage_count, current_period_start')
       .eq('user_id', userId)
       .limit(1);
 
@@ -163,6 +163,8 @@ serve(async (req) => {
     let plan = 'free';
     let monthlyUsageCount = 0;
 
+    let currentPeriodStart = settingsData?.[0]?.current_period_start ?? null;
+
     if (settingsData && settingsData.length > 0) {
       plan = (settingsData[0].plan || 'free').toLowerCase() === 'pro' ? 'pro' : 'free';
       monthlyUsageCount = settingsData[0].monthly_usage_count ?? 0;
@@ -170,7 +172,7 @@ serve(async (req) => {
       const { data: insertedSettings, error: insertError } = await supabase
         .from('user_settings')
         .insert({ user_id: userId })
-        .select('plan, monthly_usage_count')
+        .select('plan, monthly_usage_count, current_period_start')
         .single();
 
       if (insertError) {
@@ -180,6 +182,7 @@ serve(async (req) => {
 
       plan = (insertedSettings?.plan || 'free').toLowerCase() === 'pro' ? 'pro' : 'free';
       monthlyUsageCount = insertedSettings?.monthly_usage_count ?? 0;
+      currentPeriodStart = insertedSettings?.current_period_start ?? null;
     }
 
     const limit = plan === 'pro' ? MONTHLY_LIMITS.pro : MONTHLY_LIMITS.free;
@@ -200,11 +203,21 @@ serve(async (req) => {
       });
     }
 
+    const updatePayload: Record<string, unknown> = {
+      monthly_usage_count: monthlyUsageCount + 1,
+    };
+
+    if (!currentPeriodStart) {
+      const nowIso = new Date().toISOString();
+      updatePayload.current_period_start = nowIso;
+      currentPeriodStart = nowIso;
+    }
+
     const { data: updatedSettings, error: incrementError } = await supabase
       .from('user_settings')
-      .update({ monthly_usage_count: monthlyUsageCount + 1 })
+      .update(updatePayload)
       .eq('user_id', userId)
-      .select('monthly_usage_count')
+      .select('monthly_usage_count, current_period_start')
       .single();
 
     if (incrementError) {
@@ -213,6 +226,7 @@ serve(async (req) => {
     }
 
     const currentCount = updatedSettings?.monthly_usage_count ?? monthlyUsageCount + 1;
+    currentPeriodStart = updatedSettings?.current_period_start ?? currentPeriodStart;
     const rateLimitInfo = { currentCount, limit, tier: plan };
 
     // Prepare messages for chat completions

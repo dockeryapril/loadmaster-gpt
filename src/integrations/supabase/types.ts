@@ -611,7 +611,7 @@ export type Database = {
           equipment_rpm_overrides: Json | null
           fuel_price: number
           id: string
-          current_month_start: string | null
+          current_period_start: string | null
           monthly_usage_count: number
           mpg: number
           plan: string
@@ -639,7 +639,7 @@ export type Database = {
           equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
-          current_month_start?: string | null
+          current_period_start?: string | null
           monthly_usage_count?: number
           mpg?: number
           plan?: string
@@ -667,7 +667,7 @@ export type Database = {
           equipment_rpm_overrides?: Json | null
           fuel_price?: number
           id?: string
-          current_month_start?: string | null
+          current_period_start?: string | null
           monthly_usage_count?: number
           mpg?: number
           plan?: string

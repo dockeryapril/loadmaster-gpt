@@ -360,28 +360,41 @@ CREATE INDEX idx_loads_recent ON loads(user_id, created_at)
 
 ### Database Functions
 ```sql
--- Monthly usage reset helper
+-- Rolling monthly usage reset helper
 CREATE OR REPLACE FUNCTION reset_usage_if_needed(p_user_id uuid)
 RETURNS void AS $$
 DECLARE
-  settings_record RECORD;
-  new_month_start date;
+  current_start timestamptz;
+  updated_start timestamptz;
 BEGIN
-  SELECT current_month_start
-  INTO settings_record
+  SELECT current_period_start
+  INTO current_start
   FROM user_settings
-  WHERE user_id = p_user_id;
+  WHERE user_id = p_user_id
+  FOR UPDATE;
 
   IF NOT FOUND THEN
     RETURN;
   END IF;
 
-  new_month_start := (date_trunc('month', CURRENT_DATE))::date;
+  IF current_start IS NULL THEN
+    UPDATE user_settings
+    SET current_period_start = now(),
+        updated_at = now()
+    WHERE user_id = p_user_id;
+    RETURN;
+  END IF;
 
-  IF settings_record.current_month_start IS NULL OR settings_record.current_month_start < new_month_start THEN
+  updated_start := current_start;
+
+  WHILE updated_start + interval '1 month' <= now() LOOP
+    updated_start := updated_start + interval '1 month';
+  END LOOP;
+
+  IF updated_start <> current_start THEN
     UPDATE user_settings
     SET monthly_usage_count = 0,
-        current_month_start = new_month_start,
+        current_period_start = updated_start,
         updated_at = now()
     WHERE user_id = p_user_id;
   END IF;
