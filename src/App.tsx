@@ -15,7 +15,7 @@ import MVPLanding from "./pages/MVPLanding";
 import EmailAdmin from "./pages/EmailAdmin";
 import FAQ from "./pages/FAQ";
 import Upgrade from "./pages/Upgrade";
-import WeeklyLimitReached from "./pages/WeeklyLimitReached";
+import MonthlyLimitReached from "./pages/MonthlyLimitReached";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,7 +43,7 @@ const AppContent = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/upgrade" element={<Upgrade />} />
-        <Route path="/weekly-limit-reached" element={<WeeklyLimitReached />} />
+        <Route path="/monthly-limit-reached" element={<MonthlyLimitReached />} />
         <Route path="/app" element={
           user ? (
             <ProtectedRoute>
