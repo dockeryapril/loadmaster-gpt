@@ -377,6 +377,16 @@ const Index = () => {
             <div className="grid gap-3">
               <Button
                 variant="outline"
+                onClick={() => setCurrentView('business-setup')}
+                className="flex items-center justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <SettingsIcon className="h-4 w-4" />
+                  Business Setup
+                </span>
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => setCurrentView('negotiation-settings')}
                 className="flex items-center justify-between"
               >
