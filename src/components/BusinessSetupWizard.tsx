@@ -148,8 +148,11 @@ export const BusinessSetupWizard = ({
   };
 
   const handleNext = () => {
-    // If setup is complete, go directly to preview
-    if (getCompletionPercentage() === 100) {
+    // Check current form data completion instead of saved data
+    const currentCompletion = calculateCompletionPercentage(formData);
+    
+    // If current form setup is complete, go directly to preview
+    if (currentCompletion === 100) {
       setShowPreview(true);
       return;
     }
@@ -456,7 +459,7 @@ export const BusinessSetupWizard = ({
               onClick={handleNext}
               className="flex items-center gap-2"
             >
-              {getCompletionPercentage() === 100 ? (
+              {calculateCompletionPercentage(formData) === 100 ? (
                 'Complete Setup'
               ) : (
                 <>
