@@ -3,6 +3,13 @@
 ## Current Sprint - Enhanced OCR + LLM Pipeline
 
 ### ✅ Completed Tasks
+- [x] **Business Setup Navigation Fix**: Fixed missing Next button and improved UX flow for returning users
+  - Added sticky navigation footer that remains visible while scrolling through content
+  - Auto-skip template screen for returning users who already have setup data
+  - Improved button labeling: "Review & Complete" when setup is 100% complete
+  - Changed "Custom Setup" to "Start Setup (No Template)" for clarity
+  - Added proper spacing (pb-20) to prevent content overlap with sticky footer
+  - Enhanced keyboard navigation and accessibility improvements
 - [x] **CRITICAL FIX: Business Setup Validation Error** - Fixed database constraint mismatch causing "Invalid Settings" error
   - Updated deadhead_compensation_type constraint to include all 9 frontend options (was only 4)
   - Updated fsc_handling constraint to match frontend options  

@@ -125,6 +125,13 @@ export const BusinessSetupWizard = ({
   useEffect(() => {
     if (setup) {
       setFormData(setup);
+      
+      // Auto-skip template screen for returning users with existing setup
+      const hasExistingData = Object.keys(setup).length > 0 && 
+        Object.values(setup).some(value => value !== undefined && value !== null && value !== '');
+      if (hasExistingData) {
+        setShowTemplates(false);
+      }
     }
   }, [setup]);
 
@@ -327,7 +334,7 @@ export const BusinessSetupWizard = ({
               onClick={startCustomSetup}
               className="flex-1"
             >
-              Custom Setup
+              Start Setup (No Template)
             </Button>
           </div>
         </CardContent>
@@ -385,7 +392,7 @@ export const BusinessSetupWizard = ({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 pb-20">
         {/* Section description */}
         <div className="text-sm text-muted-foreground">
           {currentSection?.description}
@@ -433,9 +440,11 @@ export const BusinessSetupWizard = ({
             }}
           />
         )}
+      </CardContent>
 
-        {/* Navigation */}
-        <div className="flex justify-between pt-4">
+      {/* Sticky Navigation Footer */}
+      <div className="sticky bottom-0 bg-card border-t p-4 rounded-b-lg z-10">
+        <div className="flex justify-between">
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -460,7 +469,7 @@ export const BusinessSetupWizard = ({
               className="flex items-center gap-2"
             >
               {calculateCompletionPercentage(formData) === 100 ? (
-                'Complete Setup'
+                'Review & Complete'
               ) : (
                 <>
                   Next
@@ -475,7 +484,7 @@ export const BusinessSetupWizard = ({
         <div className="text-xs text-center text-muted-foreground pt-2">
           Your progress is automatically saved as you go
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };
