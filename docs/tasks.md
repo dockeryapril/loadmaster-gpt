@@ -5,10 +5,14 @@
 ### ✅ Completed Tasks
 - [x] **Business Setup Navigation Fix**: Fixed missing Next button and improved UX flow for returning users
   - Added sticky navigation footer that remains visible while scrolling through content
-  - Auto-skip template screen for returning users who already have setup data
+  - Hidden app's bottom navigation on business-setup view to prevent overlap
+  - Made auto-skip template logic more conservative (only skip if >25% complete)
+  - Added "Choose Template" button in wizard header for easy access
+  - Added URL parameter support (?templates=true) to force template screen
   - Improved button labeling: "Review & Complete" when setup is 100% complete
   - Changed "Custom Setup" to "Start Setup (No Template)" for clarity
   - Added proper spacing (pb-20) to prevent content overlap with sticky footer
+  - Added debug logging (accessible via ?debug=1 URL parameter)
   - Enhanced keyboard navigation and accessibility improvements
 - [x] **CRITICAL FIX: Business Setup Validation Error** - Fixed database constraint mismatch causing "Invalid Settings" error
   - Updated deadhead_compensation_type constraint to include all 9 frontend options (was only 4)

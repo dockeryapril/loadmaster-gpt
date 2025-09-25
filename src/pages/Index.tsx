@@ -480,14 +480,19 @@ const Index = () => {
     }
   };
 
+  // Hide bottom navigation on business-setup view to prevent overlap with sticky footer
+  const showBottomNav = currentView !== 'business-setup';
+
   return (
     <div className="min-h-screen bg-background">
       <div id="entry-section" className="max-w-md mx-auto px-4 py-6 pb-36">
         {renderHeader()}
-        <RateLimitBanner show={showRateLimitBanner} onDismiss={dismissBanner} />
+        {showRateLimitBanner && (
+          <RateLimitBanner show={showRateLimitBanner} onDismiss={dismissBanner} />
+        )}
         {renderContent()}
       </div>
-      {renderBottomNav()}
+      {showBottomNav && renderBottomNav()}
       
       <CoreDataMigrationModal 
         open={showMigrationModal} 

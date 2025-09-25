@@ -126,10 +126,27 @@ export const BusinessSetupWizard = ({
     if (setup) {
       setFormData(setup);
       
-      // Auto-skip template screen for returning users with existing setup
-      const hasExistingData = Object.keys(setup).length > 0 && 
-        Object.values(setup).some(value => value !== undefined && value !== null && value !== '');
-      if (hasExistingData) {
+      // Check URL params for forcing template screen
+      const urlParams = new URLSearchParams(window.location.search);
+      const showTemplatesParam = urlParams.get('templates');
+      const debugMode = urlParams.get('debug') === '1';
+      
+      if (showTemplatesParam === 'true') {
+        if (debugMode) console.log('🔧 BusinessSetup: URL param forcing template screen');
+        setShowTemplates(true);
+        return;
+      }
+      
+      // More conservative auto-skip: only skip templates if user has significantly progressed
+      const completionPercentage = calculateCompletionPercentage(setup);
+      const shouldSkipTemplates = completionPercentage > 25; // Skip if more than 25% complete
+      
+      if (debugMode) {
+        console.log('🔧 BusinessSetup: Completion percentage:', completionPercentage);
+        console.log('🔧 BusinessSetup: Should skip templates:', shouldSkipTemplates);
+      }
+      
+      if (shouldSkipTemplates) {
         setShowTemplates(false);
       }
     }
@@ -370,11 +387,21 @@ export const BusinessSetupWizard = ({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Business Setup</CardTitle>
-          {mode === 'modal' && onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTemplates(true)}
+              className="text-xs"
+            >
+              Choose Template
             </Button>
-          )}
+            {mode === 'modal' && onClose && (
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
         
         {/* Progress indicator */}
@@ -470,6 +497,8 @@ export const BusinessSetupWizard = ({
             >
               {calculateCompletionPercentage(formData) === 100 ? (
                 'Review & Complete'
+              ) : visibleQuestions.length === 0 ? (
+                'Skip to Summary'
               ) : (
                 <>
                   Next
