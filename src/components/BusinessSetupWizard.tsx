@@ -137,17 +137,21 @@ export const BusinessSetupWizard = ({
         return;
       }
       
-      // More conservative auto-skip: only skip templates if user has significantly progressed
+      // Only auto-skip the template chooser for users who have essentially completed setup
       const completionPercentage = calculateCompletionPercentage(setup);
-      const shouldSkipTemplates = completionPercentage > 25; // Skip if more than 25% complete
-      
+      const setupFinished = Boolean(setup.setup_completed_at);
+      const shouldSkipTemplates = setupFinished || completionPercentage >= 80;
+
       if (debugMode) {
         console.log('🔧 BusinessSetup: Completion percentage:', completionPercentage);
+        console.log('🔧 BusinessSetup: Setup finished:', setupFinished);
         console.log('🔧 BusinessSetup: Should skip templates:', shouldSkipTemplates);
       }
-      
+
       if (shouldSkipTemplates) {
         setShowTemplates(false);
+      } else {
+        setShowTemplates(true);
       }
     }
   }, [setup]);
