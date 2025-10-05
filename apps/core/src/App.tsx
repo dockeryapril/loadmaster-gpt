@@ -10,7 +10,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlan } from '@/hooks/usePlan';
 import { HistoryItem } from '@/types';
-import { supabase } from '@loadmaster/api';
+import { supabase } from '@/integrations/supabase/client';
 import { logEvent } from '@/utils/metrics';
 
 function App() {

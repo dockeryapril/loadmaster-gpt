@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@loadmaster/api';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserSettings, defaultUserSettings } from '@/types/load';
+import { UserSettings, defaultUserSettings, EquipmentRPMOverrides, EquipmentMPGOverrides } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
 import { logError } from '@/utils/errorLogger';
 
@@ -81,8 +81,8 @@ export function useSupabaseSettings() {
           showSetupReminders: Boolean(data.show_setup_reminders),
           setupCompletionPercentage: Number(data.setup_completion_percentage) || 0,
           useEquipmentDefaults: data.use_equipment_defaults !== false, // default to true
-          equipmentRpmOverrides: data.equipment_rpm_overrides || {},
-          equipmentMpgOverrides: data.equipment_mpg_overrides || {},
+          equipmentRpmOverrides: (data.equipment_rpm_overrides as EquipmentRPMOverrides) || {},
+          equipmentMpgOverrides: (data.equipment_mpg_overrides as EquipmentMPGOverrides) || {},
           revenueSplitPercentage: Number(data.revenue_split_percentage) || 100,
           weeklyFixedCosts: Number(data.weekly_fixed_costs) || 0,
         };

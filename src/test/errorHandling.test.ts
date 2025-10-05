@@ -11,7 +11,7 @@ vi.mock('@/utils/apiWrapper', () => ({
   },
 }));
 
-vi.mock('@loadmaster/api', () => ({
+vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(),
     auth: {

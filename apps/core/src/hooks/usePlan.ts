@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@loadmaster/api';
+import { supabase } from '@/integrations/supabase/client';
 
 export function usePlan() {
   const [plan, setPlan] = useState<"free" | "pro">("free");

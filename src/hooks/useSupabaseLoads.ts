@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@loadmaster/api';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Load } from '@/types/load';
 import { useToast } from '@/hooks/use-toast';
 import { logError } from '@/utils/errorLogger';
+import { Channel, Tone } from '@/features/negotiation/templates';
 
 export function useSupabaseLoads() {
   const [loads, setLoads] = useState<Load[]>([]);
@@ -116,9 +117,9 @@ export function useSupabaseLoads() {
         tags: load.tags || [],
         createdAt: new Date(load.created_at),
         notes: load.notes || undefined,
-        negotiationChannel: load.negotiation_channel || undefined,
-        negotiationTone: load.negotiation_tone || undefined,
-        negotiationScripts: load.negotiation_scripts || undefined,
+        negotiationChannel: (load.negotiation_channel as Channel) || undefined,
+        negotiationTone: (load.negotiation_tone as Tone) || undefined,
+        negotiationScripts: load.negotiation_scripts as { ask: string; settle: string; bottom: string; } || undefined,
       }));
 
       setLoads(transformedLoads);
@@ -235,9 +236,9 @@ export function useSupabaseLoads() {
         tags: data.tags || [],
         createdAt: new Date(data.created_at),
         notes: data.notes || undefined,
-        negotiationChannel: data.negotiation_channel || undefined,
-        negotiationTone: data.negotiation_tone || undefined,
-        negotiationScripts: data.negotiation_scripts || undefined,
+        negotiationChannel: (data.negotiation_channel as Channel) || undefined,
+        negotiationTone: (data.negotiation_tone as Tone) || undefined,
+        negotiationScripts: data.negotiation_scripts as { ask: string; settle: string; bottom: string; } || undefined,
       };
 
       setLoads(prev => [newLoad, ...prev]);
@@ -368,9 +369,9 @@ export function useSupabaseLoads() {
         tags: data.tags || [],
         createdAt: new Date(data.created_at),
         notes: data.notes || undefined,
-        negotiationChannel: data.negotiation_channel || undefined,
-        negotiationTone: data.negotiation_tone || undefined,
-        negotiationScripts: data.negotiation_scripts || undefined,
+        negotiationChannel: (data.negotiation_channel as Channel) || undefined,
+        negotiationTone: (data.negotiation_tone as Tone) || undefined,
+        negotiationScripts: data.negotiation_scripts as { ask: string; settle: string; bottom: string; } || undefined,
       };
 
       setLoads(prev => prev.map(load => load.id === id ? updatedLoad : load));

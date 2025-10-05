@@ -8,7 +8,7 @@ vi.mock('@/utils/apiWrapper', () => ({
   RateLimitExceededError: class extends Error {}
 }));
 
-vi.mock('@loadmaster/api', () => ({
+vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => ({ data: [], error: null })),

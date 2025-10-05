@@ -1,4 +1,4 @@
-import { supabase } from '@loadmaster/api';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MemoryInfo {
   jsHeapSizeLimit: number;

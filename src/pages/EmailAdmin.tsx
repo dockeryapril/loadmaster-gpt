@@ -42,7 +42,10 @@ const EmailAdmin = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setEmails(data || []);
+      setEmails((data || []).map(item => ({
+        ...item,
+        metadata: item.metadata as { timestamp?: string; userAgent?: string; referrer?: string; } || {}
+      })));
     } catch (error) {
       console.error('Error fetching emails:', error);
       toast({

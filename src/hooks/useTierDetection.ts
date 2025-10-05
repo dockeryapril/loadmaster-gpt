@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@loadmaster/api';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getTier, isPro as isProTier, isFree } from '@/utils/tier';
 import { logError } from '@/utils/errorLogger';

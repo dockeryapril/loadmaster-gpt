@@ -9,7 +9,7 @@ const mockSupabase = {
   },
 };
 
-vi.mock('@loadmaster/api', () => ({
+vi.mock('@/integrations/supabase/client', () => ({
   supabase: mockSupabase,
 }));
 

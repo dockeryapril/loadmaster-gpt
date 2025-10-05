@@ -102,13 +102,13 @@ export function useUnifiedNegotiation({ load, laneBaselineRpm }: UseUnifiedNegot
         message_sent: customMessage || currentScripts[rateTierAccepted || 'ask'],
         channel,
         tone,
-        negotiation_scripts: currentScripts,
+        negotiation_scripts: currentScripts as any,
         rate_tier_accepted: rateTierAccepted,
       };
 
       const { error } = await supabase
         .from('negotiations')
-        .insert([negotiationData]);
+        .insert([negotiationData as any]);
 
       if (error) throw error;
 
