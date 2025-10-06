@@ -1,87 +1,27 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { RateLimitProvider } from "@/contexts/RateLimitContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { DebugBanner } from "@/components/DebugBanner";
-import { SessionMonitor } from "@/components/SessionMonitor";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Landing from "./pages/Landing";
-import MVPLanding from "./pages/MVPLanding";
-import EmailAdmin from "./pages/EmailAdmin";
-import FAQ from "./pages/FAQ";
-import Upgrade from "./pages/Upgrade";
-import MonthlyLimitReached from "./pages/MonthlyLimitReached";
-import NotFound from "./pages/NotFound";
+import { DecisionLogger } from './components/DecisionLogger';
+import { HistoryPanel } from './components/HistoryPanel';
+import { LoadInputForm } from './components/LoadInputForm';
+import { OCRDropzone } from './components/OCRDropzone';
+import { ProfitabilityCalculator } from './components/ProfitabilityCalculator';
 
-const queryClient = new QueryClient();
-
-const AppContent = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span className="text-2xl">🚛</span>
-          </div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
+function App() {
   return (
-    <>
-      <DebugBanner />
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/upgrade" element={<Upgrade />} />
-        <Route path="/monthly-limit-reached" element={<MonthlyLimitReached />} />
-        <Route path="/app" element={
-          user ? (
-            <ProtectedRoute>
-              <Index />
-            </ProtectedRoute>
-          ) : (
-            <Auth />
-          )
-        } />
-        <Route path="/admin/emails" element={
-          <ProtectedRoute>
-            <EmailAdmin />
-          </ProtectedRoute>
-        } />
-        <Route path="/product" element={<Landing />} />
-        <Route path="/" element={<MVPLanding />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+    <div className="min-h-screen bg-slate-100">
+      <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8">
+        <header className="text-center">
+          <h1 className="text-3xl font-bold text-slate-900">🚛 Load Worth Calculator</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Enter load details or drop a rate confirmation to see instant profitability and log your decision.
+          </p>
+        </header>
+        <OCRDropzone />
+        <LoadInputForm />
+        <ProfitabilityCalculator />
+        <DecisionLogger />
+        <HistoryPanel />
+      </div>
+    </div>
   );
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <RateLimitProvider>
-            <SessionMonitor />
-            <AppContent />
-          </RateLimitProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+}
 
 export default App;
