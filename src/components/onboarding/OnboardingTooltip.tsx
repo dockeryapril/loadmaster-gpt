@@ -44,34 +44,43 @@ export function OnboardingTooltip({
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
       
-      // Store spotlight rect (only update on resize, not scroll)
+      // Store spotlight rect
       setSpotlightRect(rect);
       
-      const tooltipWidth = 320;
-      const tooltipHeight = 200; // Approximate
-      let top = rect.bottom + 16;
-      let left = rect.left + rect.width / 2;
+      const tooltipWidth = Math.min(320, viewportWidth - 32);
+      const tooltipHeight = 180;
+      
+      let top = 0;
+      let left = 0;
       let finalPlacement = placement;
 
-      // Smart positioning: flip if tooltip would go off-screen
-      if (placement === 'bottom' && top + tooltipHeight > viewportHeight) {
-        top = rect.top - tooltipHeight - 16;
-        finalPlacement = 'top';
-      } else if (placement === 'top' && top - tooltipHeight < 0) {
+      // Calculate position based on placement
+      if (placement === 'bottom') {
         top = rect.bottom + 16;
-        finalPlacement = 'bottom';
-      } else if (placement === 'bottom') {
-        top = rect.bottom + 16;
+        left = rect.left + rect.width / 2;
+        
+        // Flip to top if would go off-screen
+        if (top + tooltipHeight > viewportHeight - 20) {
+          top = rect.top - tooltipHeight - 16;
+          finalPlacement = 'top';
+        }
       } else if (placement === 'top') {
-        top = rect.top - 16;
+        top = rect.top - tooltipHeight - 16;
+        left = rect.left + rect.width / 2;
+        
+        // Flip to bottom if would go off-screen
+        if (top < 20) {
+          top = rect.bottom + 16;
+          finalPlacement = 'bottom';
+        }
       }
 
-      // Ensure tooltip doesn't go off-screen horizontally
-      if (left + tooltipWidth / 2 > viewportWidth - 16) {
-        left = viewportWidth - tooltipWidth / 2 - 16;
-      }
-      if (left - tooltipWidth / 2 < 16) {
-        left = tooltipWidth / 2 + 16;
+      // Ensure tooltip stays within viewport horizontally
+      const halfWidth = tooltipWidth / 2;
+      if (left - halfWidth < 16) {
+        left = halfWidth + 16;
+      } else if (left + halfWidth > viewportWidth - 16) {
+        left = viewportWidth - halfWidth - 16;
       }
 
       setTooltipPosition({ top, left, finalPlacement });
@@ -79,11 +88,17 @@ export function OnboardingTooltip({
 
     calculatePosition();
 
-    // Only update on resize, not scroll (prevents jitter)
-    window.addEventListener('resize', calculatePosition);
+    // Update on scroll and resize for smooth alignment
+    const updatePosition = () => {
+      calculatePosition();
+    };
+
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
 
     return () => {
-      window.removeEventListener('resize', calculatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [isActive, selector, placement]);
 
