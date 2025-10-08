@@ -32,11 +32,24 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
       try {
         const storedValue = storage.getItem(name);
         if (storedValue) {
-          const parsed = JSON.parse(storedValue) as Partial<S>;
-          set(parsed, false);
+          const parsed = JSON.parse(storedValue);
+          
+          // Only hydrate if parsed is a valid object
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            set(parsed as Partial<S>, false);
+          } else {
+            console.warn('[persist] Invalid stored state format, skipping hydration');
+            storage.removeItem(name);
+          }
         }
       } catch (error) {
         console.warn('[persist] Failed to hydrate state', error);
+        // Clean up corrupted data
+        try {
+          storage.removeItem(name);
+        } catch (cleanupError) {
+          console.warn('[persist] Failed to clean up corrupted state', cleanupError);
+        }
       }
     }
 

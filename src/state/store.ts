@@ -39,7 +39,7 @@ function loadDecisions(): LoadDecision[] {
   }
 
   try {
-    const stored = window.localStorage.getItem('loadmaster-decisions');
+    const stored = window.localStorage.getItem('lm:legacy:decisions');
     if (!stored) {
       return [];
     }
@@ -57,7 +57,7 @@ function persistDecisions(decisions: LoadDecision[]) {
   }
 
   try {
-    window.localStorage.setItem('loadmaster-decisions', JSON.stringify(decisions));
+    window.localStorage.setItem('lm:legacy:decisions', JSON.stringify(decisions));
   } catch (error) {
     console.error('Failed to persist decisions', error);
   }
