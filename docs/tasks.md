@@ -227,6 +227,12 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 - ✅ Created `src/components/HistoryFilters.tsx` - Filter/sort controls UI
 - ✅ Created `src/components/HistoryPanel.tsx` - Main history panel component
 - ✅ Refactored `src/App.tsx` to use new HistoryPanel component
+- ✅ **Automated test suite**:
+  - Created `src/hooks/useHistoryFilters.test.ts` - Tests for filter/sort/search logic
+  - Created `src/components/HistorySummaryCard.test.tsx` - Tests for weekly summary calculations
+  - Created `src/components/HistoryPanel.test.tsx` - Integration tests for full panel
+  - Created `src/test/setup.ts` - Vitest/React Testing Library configuration
+  - Added dependencies: `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`
 - ✅ **Features implemented**:
   - Filter by outcome: All / Book / Counter / Pass
   - Sort options: Newest First / Highest Profit / Lowest Profit / Best RPM / Worst RPM
@@ -236,13 +242,15 @@ We're building a mobile-first, local-first calculator that delivers instant prof
   - Empty states for no data and no filter matches
 
 **How to Test Sub-Phase 3.1**:
-1. Log multiple decisions (mix of book/counter/pass outcomes)
-2. Use outcome filter dropdown to filter by specific decision type
-3. Use sort dropdown to reorder entries by profit or RPM
-4. Search for origin or destination city
-5. Verify weekly summary shows correct stats for last 7 days
-6. Click "Load More" to paginate through entries
-7. Verify empty states show when no history or no matches
+- **Automated**: Run `npm test` to execute full test suite (38 test cases covering all features)
+- **Manual**:
+  1. Log multiple decisions (mix of book/counter/pass outcomes)
+  2. Use outcome filter dropdown to filter by specific decision type
+  3. Use sort dropdown to reorder entries by profit or RPM
+  4. Search for origin or destination city
+  5. Verify weekly summary shows correct stats for last 7 days
+  6. Click "Load More" to paginate through entries
+  7. Verify empty states show when no history or no matches
 
 ### Sub-Phase 3.2: Decision Pattern Recognition (UPCOMING)
 
