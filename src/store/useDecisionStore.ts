@@ -1,7 +1,6 @@
 import { create } from '@/lib/zustand';
 import { persist } from '@/lib/zustand/middleware';
 import type { DecisionOutcome, LoadEntrySnapshot, CostAssumptions } from '@/types/mvp';
-import { defaultCostAssumptions } from '@/types/mvp';
 
 interface DecisionState {
   history: LoadEntrySnapshot[];
@@ -20,7 +19,12 @@ export const useDecisionStore = create<DecisionState>()(
   persist(
     (set) => ({
       history: [],
-      costProfile: defaultCostAssumptions,
+      costProfile: {
+        fuelPricePerGallon: 3.89,
+        averageMPG: 6.5,
+        dailyFixedCosts: 250,
+        variableCostPerMile: 0.35,
+      },
       addDecision: (entry) =>
         set((state) => ({
           history: [
