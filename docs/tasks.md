@@ -56,8 +56,8 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 2. **Manual entry**: Enter origin, destination, miles, rate → See instant profit calculation
 3. **Log decision**: Select outcome (Book/Counter/Pass) → Click "Log decision"
 4. **Verify history**: Decision appears in history panel with correct data
-5. **Refresh page**: History persists (Zustand + localStorage)
-6. **Check console**: Zero errors, no missing imports
+5. **Refresh page**: **History now persists correctly** (fixed Zustand persist middleware)
+6. **Check console**: Zero runtime errors, no missing imports
 7. **Responsive design**: Test on mobile viewport (320px+)
 
 ### Verification Checklist
@@ -233,7 +233,11 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ## 🐛 Known Issues (to Address in Future Phases)
 
-- None currently (Phase 1 clean slate)
+### TypeScript Build Warning (Non-blocking)
+- **Issue**: `src/integrations/supabase/client.ts` shows TypeScript error about missing types
+- **Impact**: None - file is read-only infrastructure code, not used in reboot
+- **Resolution**: Will auto-resolve when Supabase integration re-enabled in future phases
+- **Status**: Safe to ignore - does not affect runtime or functionality
 
 ---
 

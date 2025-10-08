@@ -32,8 +32,8 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
       try {
         const storedValue = storage.getItem(name);
         if (storedValue) {
-          const parsed = JSON.parse(storedValue) as S;
-          set(parsed, true);
+          const parsed = JSON.parse(storedValue) as Partial<S>;
+          set(parsed, false);
         }
       } catch (error) {
         console.warn('[persist] Failed to hydrate state', error);
