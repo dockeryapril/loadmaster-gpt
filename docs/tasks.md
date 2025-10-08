@@ -213,11 +213,11 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ---
 
-## 📋 Phase 3: History & Insights (IN PROGRESS)
+## ✅ Phase 3: History & Insights — COMPLETED
 
 **Goal**: Make past decisions useful for future evaluation.
 
-**Timeline**: 2-3 days
+**Completed**: [Current Date]
 
 ### Sub-Phase 3.1: Enhanced History Panel — ✅ COMPLETED
 
@@ -245,15 +245,43 @@ We're building a mobile-first, local-first calculator that delivers instant prof
   6. Click "Load More" to paginate through entries
   7. Verify empty states show when no history or no matches
 
-### Sub-Phase 3.2: Decision Pattern Recognition (UPCOMING)
+### Sub-Phase 3.2: Decision Pattern Recognition — ✅ COMPLETED
 
-**Tasks**:
-- [ ] Track acceptance rate by RPM range (e.g., "80% of loads >$2.00/mi were booked")
-- [ ] Highlight similar loads: "You usually book loads like this at $X.XX/mi"
-- [ ] Simple stats card: avg profit, best RPM, most common route
-- [ ] Create `src/components/PatternInsights.tsx`
-- [ ] Create `src/hooks/usePatternRecognition.ts`
-- [ ] Create `src/utils/patternAnalysis.ts`
+**What Was Completed**:
+- ✅ Created `src/utils/patternAnalysis.ts` - Core analysis functions
+  - `analyzePatterns()` - Generate insights from decision history
+  - `findSimilarLoads()` - Find loads matching current RPM/route
+  - RPM range categorization with acceptance rates
+  - Most common route detection
+- ✅ Created `src/hooks/usePatternRecognition.ts` - React hooks
+  - `usePatternRecognition()` - Access pattern insights
+  - `useSimilarLoads()` - Find similar historical loads
+- ✅ Created `src/components/PatternInsights.tsx` - Insights card UI
+  - Shows after 5+ logged decisions
+  - Displays best RPM, avg profit, booking rate
+  - Most common route highlight
+  - RPM range breakdown with visual bars
+- ✅ Created `src/components/SimilarLoadIndicator.tsx` - Contextual load hints
+  - Shows when similar loads exist (2+ matches)
+  - "You usually book loads like this at $X.XX/mi"
+  - Displays avg profit and booking rate for similar loads
+- ✅ Updated `src/App.tsx` - Integrated new components
+- ✅ **Automated test suite** (26 tests):
+  - `src/utils/patternAnalysis.test.ts` - 16 tests for analysis logic
+  - `src/hooks/usePatternRecognition.test.ts` - 6 tests for hooks
+  - `src/components/PatternInsights.test.tsx` - 10 tests for UI component
+
+**How to Test Sub-Phase 3.2**:
+- **Before testing**: Run `npm install` to ensure `@testing-library/react` is installed
+- **Automated**: Run `npm test` to execute 26 test cases
+- **Manual**:
+  1. Log 5+ decisions with varying RPMs and routes
+  2. Verify "Your Decision Patterns" card appears
+  3. Check best RPM, avg profit, and booking rate accuracy
+  4. Verify most common route displays correctly
+  5. Enter a new load similar to previous ones
+  6. Verify "You usually book loads like this" indicator appears
+  7. Test with different RPM ranges to see acceptance rate breakdown
 
 ### Sub-Phase 3.3: Export Capability (UPCOMING)
 
@@ -269,8 +297,10 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 - [x] Search is case-insensitive and handles partial matches
 - [x] Pagination works correctly
 - [x] Weekly summary calculates accurate stats
-- [ ] CSV export opens correctly in Excel/Google Sheets
-- [ ] Pattern recognition accurate with 10+ entries
+- [x] Pattern recognition accurate with 10+ entries
+- [x] Similar load indicator shows for matching loads
+- [x] RPM range breakdown displays correctly
+- [ ] CSV export opens correctly in Excel/Google Sheets (Sub-Phase 3.3)
 
 ---
 

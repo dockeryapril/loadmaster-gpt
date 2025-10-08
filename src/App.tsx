@@ -6,6 +6,8 @@ import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
 import { GuidanceBadge } from '@/components/GuidanceBadge';
 import { HistoryPanel } from '@/components/HistoryPanel';
+import { PatternInsights } from '@/components/PatternInsights';
+import { SimilarLoadIndicator } from '@/components/SimilarLoadIndicator';
 import type { DecisionOutcome, LoadFormInput } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 
@@ -222,6 +224,14 @@ function App() {
                   </div>
                 </div>
 
+                <SimilarLoadIndicator 
+                  currentLoad={form.origin && form.destination && miles > 0 ? { 
+                    rpm: netRpm, 
+                    origin: form.origin, 
+                    destination: form.destination 
+                  } : null} 
+                />
+
                 <GuidanceBadge netRpm={netRpm} profit={profit} />
 
                 <div className="rounded-xl border border-border bg-background p-4">
@@ -266,7 +276,8 @@ function App() {
           </div>
         </section>
 
-        <aside className="w-full max-w-xl">
+        <aside className="w-full max-w-xl space-y-6">
+          <PatternInsights />
           <HistoryPanel />
         </aside>
       </main>
