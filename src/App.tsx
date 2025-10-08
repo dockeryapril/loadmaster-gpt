@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
-import { calculateProfit } from '@/types/load';
+import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
-import { decisionLabels, useDecisionStore } from '@/store/useDecisionStore';
+import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDecisionStore';
+import { CostProfileEditor } from '@/components/CostProfileEditor';
+import { ProfitBreakdown } from '@/components/ProfitBreakdown';
+import { GuidanceBadge } from '@/components/GuidanceBadge';
 import type { DecisionOutcome, LoadFormInput } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 
@@ -32,18 +35,20 @@ function App() {
   const history = useDecisionStore((state) => state.history);
   const addDecision = useDecisionStore((state) => state.addDecision);
   const clearHistory = useDecisionStore((state) => state.clearHistory);
+  const { costProfile } = useCostProfile();
 
   const miles = numberOrZero(form.miles);
   const rate = numberOrZero(form.rate);
   const fsc = numberOrZero(form.fsc);
   const tolls = numberOrZero(form.tolls);
-  const fuelCost = numberOrZero(form.fuelCost);
 
-  const profit = useMemo(
-    () => calculateProfit(rate, fsc, tolls, fuelCost),
-    [rate, fsc, tolls, fuelCost],
+  // Calculate detailed profit using cost profile
+  const detailedCalculation = useMemo(
+    () => calculateDetailedProfit(rate, fsc, tolls, miles, costProfile),
+    [rate, fsc, tolls, miles, costProfile],
   );
 
+  const profit = detailedCalculation.profit;
   const gross = rate + fsc;
 
   const rpm = useMemo(() => (miles > 0 ? gross / miles : 0), [gross, miles]);
@@ -83,7 +88,7 @@ function App() {
       rate,
       fsc,
       tolls,
-      fuelCost,
+      fuelCost: detailedCalculation.breakdown.fuelCost,
       profit,
       rpm: netRpm,
       notes: form.notes.trim() || undefined,
@@ -173,14 +178,13 @@ function App() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Estimated fuel</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                      placeholder="$0"
-                      inputMode="decimal"
-                      value={form.fuelCost}
-                      onChange={(event) => updateForm('fuelCost', event.target.value)}
-                    />
+                    <label className="text-sm font-medium text-muted-foreground">Auto-calculated fuel</label>
+                    <div className="mt-1 rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                      {formatCurrency(detailedCalculation.breakdown.fuelCost)}
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Based on your cost profile
+                    </p>
                   </div>
                 </div>
                 <div>
@@ -196,9 +200,13 @@ function App() {
               </div>
               <div className="space-y-4">
                 <div className="rounded-xl bg-primary/5 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
+                    <CostProfileEditor />
+                  </div>
                   <h2 className="mt-2 text-3xl font-semibold text-foreground">{formatCurrency(profit)}</h2>
-                  <p className="text-sm text-muted-foreground">Estimated take-home after FSC, tolls, and fuel.</p>
+                  <p className="text-sm text-muted-foreground">Net profit after all costs</p>
+                  
                   <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                     <div className="rounded-lg border border-border bg-background p-3">
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">Gross RPM</p>
@@ -209,7 +217,13 @@ function App() {
                       <p className="mt-1 font-semibold">{formatNumber(netRpm)} /mi</p>
                     </div>
                   </div>
+
+                  <div className="mt-4">
+                    <ProfitBreakdown calculation={detailedCalculation} />
+                  </div>
                 </div>
+
+                <GuidanceBadge netRpm={netRpm} profit={profit} />
 
                 <div className="rounded-xl border border-border bg-background p-4">
                   <p className="text-sm font-semibold">Decision</p>

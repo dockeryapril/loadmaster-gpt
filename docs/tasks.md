@@ -98,7 +98,77 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ---
 
-## 📋 Phase 2: Core Calculator Enhancement (UPCOMING)
+## ✅ Phase 2: Core Calculator Enhancement — COMPLETED
+
+**Completed**: [Current Date]
+
+### What Was Completed
+- ✅ **Cost Profile Editor**
+  - Created drawer/sheet for editing cost assumptions
+  - Added 4 inputs: fuel price ($3.89), MPG (6.5), daily fixed costs ($250), variable cost per mile ($0.35)
+  - Stored in Zustand with localStorage persistence
+  - "Edit Cost Assumptions" button in calculator result area
+  - Pre-filled with industry defaults from `defaultCostAssumptions`
+
+- ✅ **Enhanced Profit Display**
+  - Detailed breakdown section showing:
+    - Gross revenue: `rate + fsc`
+    - Fuel cost: `(miles / mpg) * fuelPrice` (auto-calculated)
+    - Tolls: user input
+    - Variable costs: `miles * variableCostPerMile`
+    - Fixed costs (prorated): `(fixedDaily / 2500) * miles`
+    - **Net profit**: sum of above
+  - Added expandable "How is this calculated?" section with formula explanation
+  - Included timestamp: "Calculated at [time] using fuel price $X.XX"
+  - Updated `LoadCalculationResult` interface to support breakdown
+  - Removed manual fuel input, now auto-calculated from cost profile
+
+- ✅ **Smart Guidance Badge**
+  - Replaced simple profit display with visual indicator:
+    - 🟢 **Book it** - Profit > $500 AND Net RPM > $1.50
+    - 🟡 **Consider countering** - Profit $200-500 OR Net RPM $1.00-1.50
+    - 🔴 **Pass** - Profit < $200 OR Net RPM < $1.00
+  - Shows reasoning: "Net RPM is $1.75/mi (Strong load)"
+  - Color-coded with emerald (book), amber (counter), rose (pass)
+
+### How to Test Phase 2
+1. **Run the app**: `npm run dev` → App loads at localhost
+2. **Edit cost profile**: Click "Edit Cost Assumptions" → Change values → Save
+3. **Verify persistence**: Refresh page → Cost profile values should persist
+4. **Auto fuel calculation**: Enter miles (e.g., 250) → See auto-calculated fuel cost based on MPG
+5. **View breakdown**: Click "Show breakdown" → See detailed cost breakdown
+6. **Formula help**: Click "How is this calculated?" → See formula explanation
+7. **Guidance badge**: Enter different rates/miles → See badge color change (green/yellow/red)
+8. **Log decision**: Verify history shows auto-calculated fuel cost
+9. **Mobile responsive**: Test drawer/sheet on mobile viewport
+
+### Verification Checklist
+- [x] Cost profile persists after refresh
+- [x] Profit breakdown math is accurate
+- [x] Guidance badge shows correct color/label for edge cases
+- [x] Mobile-responsive on all breakpoints
+- [x] Timestamp updates on recalculation
+- [x] Auto-calculated fuel replaces manual input
+- [x] "How is this calculated?" section is readable
+
+### Files Changed
+**Created**:
+- `/src/components/CostProfileEditor.tsx` (cost profile drawer)
+- `/src/components/ProfitBreakdown.tsx` (expandable breakdown section)
+- `/src/components/GuidanceBadge.tsx` (visual decision indicator)
+
+**Modified**:
+- `/src/store/useDecisionStore.ts` (added costProfile state + useCostProfile hook)
+- `/src/types/load.ts` (added calculateDetailedProfit function + interfaces)
+- `/src/App.tsx` (integrated new components, removed manual fuel input)
+- `/src/integrations/supabase/client.ts` (fixed TypeScript build error)
+
+### What's Next
+→ **Phase 3: History & Insights** (see below)
+
+---
+
+## 📋 Phase 3: History & Insights (UPCOMING)
 
 **Goal**: Make profit calculations trustworthy, transparent, and guidance-driven.
 
