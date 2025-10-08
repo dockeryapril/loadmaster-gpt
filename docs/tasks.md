@@ -231,8 +231,8 @@ We're building a mobile-first, local-first calculator that delivers instant prof
   - Created `src/hooks/useHistoryFilters.test.ts` - Tests for filter/sort/search logic
   - Created `src/components/HistorySummaryCard.test.tsx` - Tests for weekly summary calculations
   - Created `src/components/HistoryPanel.test.tsx` - Integration tests for full panel
-  - Created `src/test/setup.ts` - Vitest/React Testing Library configuration
-  - Added dependencies: `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`
+  - Created `src/test/setup.ts` - Vitest configuration with custom DOM matchers
+  - Added dependencies: `@testing-library/react`, `@testing-library/user-event`
 - ✅ **Features implemented**:
   - Filter by outcome: All / Book / Counter / Pass
   - Sort options: Newest First / Highest Profit / Lowest Profit / Best RPM / Worst RPM
