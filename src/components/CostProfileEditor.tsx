@@ -28,10 +28,10 @@ export function CostProfileEditor() {
     if (open) {
       setLocalProfile(costProfile);
       setEditingValues({
-        fuelPricePerGallon: String(costProfile.fuelPricePerGallon),
+        fuelPricePerGallon: costProfile.fuelPricePerGallon.toFixed(2),
         averageMPG: String(costProfile.averageMPG),
         dailyFixedCosts: String(costProfile.dailyFixedCosts),
-        variableCostPerMile: String(costProfile.variableCostPerMile),
+        variableCostPerMile: costProfile.variableCostPerMile.toFixed(2),
       });
     }
   }, [open, costProfile]);
@@ -49,10 +49,10 @@ export function CostProfileEditor() {
   const handleCancel = () => {
     setLocalProfile(costProfile);
     setEditingValues({
-      fuelPricePerGallon: String(costProfile.fuelPricePerGallon),
+      fuelPricePerGallon: costProfile.fuelPricePerGallon.toFixed(2),
       averageMPG: String(costProfile.averageMPG),
       dailyFixedCosts: String(costProfile.dailyFixedCosts),
-      variableCostPerMile: String(costProfile.variableCostPerMile),
+      variableCostPerMile: costProfile.variableCostPerMile.toFixed(2),
     });
     setOpen(false);
   };

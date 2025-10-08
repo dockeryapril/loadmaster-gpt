@@ -109,6 +109,8 @@ We're building a mobile-first, local-first calculator that delivers instant prof
   - Stored in Zustand with localStorage persistence
   - "Edit Cost Assumptions" button in calculator result area
   - Pre-filled with industry defaults from `defaultCostAssumptions`
+  - **Fixed persistence bug**: Moved migration logic into persist middleware to eliminate race condition
+  - **Fixed decimal formatting**: Cost fields now preserve "4.50" format using toFixed(2)
 
 - ✅ **Enhanced Profit Display**
   - Detailed breakdown section showing:
