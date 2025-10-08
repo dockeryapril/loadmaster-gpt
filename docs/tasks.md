@@ -219,6 +219,8 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 **Completed**: [Current Date]
 
+**Summary**: Phase 3 delivers comprehensive decision tracking with filtering, pattern recognition, and CSV export. Users can now analyze their booking patterns, see acceptance rates by RPM range, get hints for similar loads, and export complete history for offline analysis.
+
 ### Sub-Phase 3.1: Enhanced History Panel — ✅ COMPLETED
 
 **What Was Completed**:
@@ -283,14 +285,41 @@ We're building a mobile-first, local-first calculator that delivers instant prof
   6. Verify "You usually book loads like this" indicator appears
   7. Test with different RPM ranges to see acceptance rate breakdown
 
-### Sub-Phase 3.3: Export Capability (UPCOMING)
+### Sub-Phase 3.3: Export Capability — ✅ COMPLETED
 
-**Tasks**:
-- [ ] Add "Export to CSV" button
-- [ ] Include all logged decisions with calculations
-- [ ] Format for spreadsheet analysis (columns: date, route, miles, profit, rpm, outcome)
-- [ ] Create `src/utils/csvExport.ts`
-- [ ] Create `src/components/ExportButton.tsx`
+**What Was Completed**:
+- ✅ Created `src/utils/csvExport.ts` - CSV generation and download utilities
+  - `decisionsToCSV()` - Converts history to CSV format
+  - `downloadCSV()` - Triggers browser download
+  - `exportDecisionsToCSV()` - Main export function
+  - CSV escaping for commas, quotes, newlines
+  - Timestamped filenames (e.g., `loadmaster-history-2024-01-15-103045.csv`)
+- ✅ Created `src/components/ExportButton.tsx` - Export UI component
+  - Download icon from lucide-react
+  - Disabled when no history
+  - Toast notifications for success/error
+  - Shows count of exported decisions
+- ✅ Updated `src/components/HistoryPanel.tsx` - Added export button to header
+- ✅ **Automated test suite** (12 tests):
+  - `src/utils/csvExport.test.ts` - Tests for CSV generation, escaping, download
+
+**CSV Format**:
+- Columns: Date, Origin, Destination, Miles, Rate, FSC, Tolls, Fuel Cost, Total Revenue, Net Profit, RPM, Decision, Notes
+- Date format: `yyyy-MM-dd HH:mm:ss`
+- All monetary values formatted to 2 decimal places
+- Decisions capitalized (Book, Pass, Counter)
+- CSV-safe escaping for special characters
+
+**How to Test Sub-Phase 3.3**:
+- **Automated**: Run `npm test` to execute 12 CSV export tests
+- **Manual**:
+  1. Log multiple decisions (mix of outcomes with notes)
+  2. Click "Export CSV" button in history panel header
+  3. Verify CSV file downloads with timestamp in filename
+  4. Open CSV in Excel/Google Sheets
+  5. Verify all columns present and formatted correctly
+  6. Check special characters (commas, quotes) are escaped
+  7. Try exporting with no history (should show error toast)
 
 ### Testing Requirements (Full Phase 3)
 - [x] Filters work correctly with history
@@ -300,7 +329,9 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 - [x] Pattern recognition accurate with 10+ entries
 - [x] Similar load indicator shows for matching loads
 - [x] RPM range breakdown displays correctly
-- [ ] CSV export opens correctly in Excel/Google Sheets (Sub-Phase 3.3)
+- [x] CSV export opens correctly in Excel/Google Sheets
+- [x] CSV handles special characters (commas, quotes, newlines)
+- [x] CSV filename includes timestamp
 
 ---
 

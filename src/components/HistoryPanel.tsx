@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDecisionStore, decisionLabels } from '@/store/useDecisionStore';
 import { HistorySummaryCard } from './HistorySummaryCard';
 import { HistoryFilters } from './HistoryFilters';
+import { ExportButton } from './ExportButton';
 import { useHistoryFilters } from '@/hooks/useHistoryFilters';
 
 function formatCurrency(value: number) {
@@ -55,13 +56,16 @@ export function HistoryPanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Decision history</h2>
-        <button
-          type="button"
-          onClick={clearHistory}
-          className="text-sm font-medium text-muted-foreground hover:text-destructive"
-        >
-          Clear all
-        </button>
+        <div className="flex items-center gap-2">
+          <ExportButton />
+          <button
+            type="button"
+            onClick={clearHistory}
+            className="text-sm font-medium text-muted-foreground hover:text-destructive"
+          >
+            Clear all
+          </button>
+        </div>
       </div>
 
       <HistorySummaryCard history={history} />
