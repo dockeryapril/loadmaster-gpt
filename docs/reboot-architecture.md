@@ -82,12 +82,23 @@ User Input → Form State → Zustand Store → localStorage
 - No API calls
 - No external services
 
-### Future Backend Integration (Phase 5)
-When re-enabled:
-- Supabase for cloud sync
+### Future Backend Integration (Lovable Cloud)
+When backend features are enabled in later phases:
+- **Lovable Cloud** - Managed Supabase backend with zero-config setup
+- **Authentication** - Email/password, magic links, Google OAuth
+- **Database** - PostgreSQL with automatic schema generation
+- **Storage** - File uploads for future OCR screenshots
+- **Edge Functions** - Serverless functions for AI enhancements
+- **Row-Level Security** - Automatic data isolation per user
 - Background sync queue for offline support
-- RLS policies for data isolation
 - Optional authentication (anonymous usage still supported)
+
+**Why Lovable Cloud?**
+- Faster time-to-market (no external Supabase project setup)
+- Aligned with local-first architecture (sync when ready)
+- Built-in development tools (database viewer, logs, schema editor)
+- Cost-effective for MVP phase
+- Easy migration path if external Supabase needed later
 
 ## Feature Flags System
 
@@ -162,6 +173,36 @@ npm run preview    # Preview production build
 - When logic is reused in 3+ places
 - When a section has independent state
 
+## Backend Architecture (Future Phases)
+
+### Phase 2-3: Authentication & Sync (Lovable Cloud)
+**Tables to create:**
+- `loads` - Synced load entries with user_id FK
+- `user_settings` - Cost profiles, preferences, RPM thresholds
+- `cost_profiles` - Named cost assumption templates
+
+**RLS Policies:**
+- Users can only read/write their own loads
+- Users can only read/write their own settings
+- Enable anonymous usage with device-based IDs
+
+**Auth Flow:**
+1. Start anonymous (local-first)
+2. Optional sign-up prompt after 10+ decisions logged
+3. Background sync queue uploads local history on first auth
+4. Bi-directional sync with conflict resolution (server wins)
+
+### Phase 4+: Advanced Features (Lovable Cloud)
+**Edge Functions:**
+- `/ocr-extract` - Image to structured load data (when OCR re-enabled)
+- `/ai-guidance` - LLM-powered negotiation suggestions (when AI re-enabled)
+- `/broker-lookup` - Third-party API integrations
+
+**Lovable AI Integration:**
+- Document Q&A for rate con analysis
+- Sentiment detection for broker communications
+- Load recommendation engine based on history patterns
+
 ## Next Phases
 
 ### Phase 2: Core Calculator Enhancement (2-3 days)
@@ -178,10 +219,41 @@ npm run preview    # Preview production build
 - 3-step inline tour
 - Smart defaults
 
-### Phase 5: Future-Proofing (1 day)
-- Sync queue placeholder
-- Auth hook stub
-- Re-enable feature flags progressively
+### Phase 5: Lovable Cloud Integration (2-3 days)
+- Enable Lovable Cloud backend
+- Authentication with email/magic links
+- Database schema creation (loads, user_settings, cost_profiles)
+- Sync queue implementation
+- Multi-device access
+
+## Lovable Cloud Implementation Notes
+
+### When to Enable
+- After Phase 1-4 are validated with local-first architecture
+- When 3+ beta testers request multi-device sync
+- After confirming core calculator provides consistent value
+
+### Activation Checklist
+1. Enable Lovable Cloud in project settings
+2. Define database schema using Lovable's UI or SQL
+3. Set up RLS policies for user data isolation
+4. Test auth flow in staging environment
+5. Implement sync queue with exponential backoff
+6. Add sync status UI indicators
+7. Document sync behavior for users
+
+### Cost Considerations
+- Free tier includes: Basic database, auth, and Edge Functions
+- Usage-based pricing for: Database storage, Edge Function calls, Lovable AI requests
+- Monitor usage via Lovable Cloud dashboard
+- Set up alerts for approaching limits
+
+### Rollback Plan
+If Lovable Cloud integration causes issues:
+1. Toggle `features.supabaseSync = false` in feature flags
+2. App reverts to local-first mode
+3. Users retain local data, sync pauses
+4. Fix issues, re-enable sync, queue catches up
 
 ## Migration Path
 

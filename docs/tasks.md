@@ -201,33 +201,68 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ---
 
-## 📋 Phase 5: Future-Proofing (UPCOMING)
+## 📋 Phase 5: Lovable Cloud Integration (UPCOMING)
 
-**Goal**: Prepare for OCR, sync, and authentication without implementing them.
+**Goal**: Enable cloud sync, authentication, and multi-device access using Lovable Cloud.
 
-**Timeline**: 1 day
+**Timeline**: 2-3 days
 
 ### Tasks
-- [ ] **Sync Queue Placeholder**
-  - [ ] Create `src/store/syncQueue.ts` with stub functions
-  - [ ] Add `queueForSync(decision: LoadEntrySnapshot)` placeholder
-  - [ ] Document how sync will work when enabled
-  - [ ] Store decisions locally, queue for upload when auth ships
+- [ ] **Enable Lovable Cloud**
+  - [ ] Activate Lovable Cloud in project settings
+  - [ ] Review auto-generated database schema
+  - [ ] Set up RLS policies for data isolation
 
-- [ ] **Auth Hook Stub**
-  - [ ] Create `src/hooks/useAuth.ts` returning `{ user: null, isAuthenticated: false }`
-  - [ ] Future-proof components to check `isAuthenticated` before showing sync options
-  - [ ] Add "Sign in to sync" placeholder UI (hidden behind feature flag)
+- [ ] **Create Database Schema**
+  - [ ] `loads` table:
+    - `id` (uuid, primary key)
+    - `user_id` (uuid, references auth.users)
+    - `origin`, `destination`, `miles`, `rate`, `fsc`, `tolls`, `fuel_cost`
+    - `profit`, `rpm`, `outcome`, `notes`
+    - `created_at`, `updated_at`
+    - `synced_from_device` (boolean, track migration from local)
+  - [ ] `user_settings` table:
+    - `user_id` (uuid, primary key, references auth.users)
+    - `fuel_price_per_gallon`, `average_mpg`, `daily_fixed_costs`, `variable_cost_per_mile`
+    - `rpm_threshold_good`, `rpm_threshold_poor`
+    - `created_at`, `updated_at`
+  - [ ] `cost_profiles` table (future):
+    - Named templates for different equipment types
 
-- [ ] **Progressive Feature Enablement**
-  - [ ] Document re-enabling process for each archived feature
-  - [ ] Create migration checklist for OCR, business setup, negotiation
-  - [ ] Test feature flag toggling
+- [ ] **Implement Auth Flow**
+  - [ ] Add "Sign in to sync" prompt after 10+ local decisions
+  - [ ] Email/password auth via Lovable Cloud Auth
+  - [ ] Magic link option for passwordless flow
+  - [ ] Google OAuth (optional)
+  - [ ] Anonymous → authenticated migration flow
+
+- [ ] **Build Sync Queue**
+  - [ ] Create `src/hooks/useSyncQueue.ts` with:
+    - `queueForSync(decision)` - Add to upload queue
+    - `syncPendingDecisions()` - Upload queued items
+    - `pullRemoteDecisions()` - Download server changes
+  - [ ] Background sync on app focus/online events
+  - [ ] Conflict resolution (server wins, local backup)
+
+- [ ] **Update Zustand Store**
+  - [ ] Add `syncStatus` field (idle, syncing, error)
+  - [ ] Add `lastSyncAt` timestamp
+  - [ ] Merge remote decisions into local history
+  - [ ] Mark synced items with cloud icon
+
+- [ ] **UI Updates**
+  - [ ] Add sync status indicator in header
+  - [ ] Show "Synced" badge on history items
+  - [ ] Display "Sign in to sync across devices" banner
+  - [ ] Add "Account" settings page (view email, sign out)
 
 ### Testing Requirements
-- [ ] Sync queue functions exist but don't execute
-- [ ] Auth hook returns expected default values
-- [ ] Feature flags can be toggled without breaking app
+- [ ] Local-first still works without auth
+- [ ] Auth signup creates user record
+- [ ] Decisions sync bidirectionally
+- [ ] Offline mode queues for later sync
+- [ ] Multi-device sync doesn't duplicate entries
+- [ ] Sign out clears remote data but keeps local history
 
 ---
 
@@ -235,9 +270,10 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ### TypeScript Build Warning (Non-blocking)
 - **Issue**: `src/integrations/supabase/client.ts` shows TypeScript error about missing types
-- **Impact**: None - file is read-only infrastructure code, not used in reboot
-- **Resolution**: Will auto-resolve when Supabase integration re-enabled in future phases
+- **Impact**: None - file is auto-generated infrastructure code, not actively used in Phase 1
+- **Resolution**: Will auto-resolve when **Lovable Cloud** is enabled in Phase 5
 - **Status**: Safe to ignore - does not affect runtime or functionality
+- **Note**: This file will be regenerated automatically when Lovable Cloud is activated
 
 ---
 

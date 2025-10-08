@@ -70,8 +70,37 @@ LoadMaster GPT is a mobile-friendly web app designed to help non-forced dispatch
 - Color used sparingly but meaningfully (RPM/weight/profit)
 - Quick access to insights without clutter
 
+## 🔌 Backend Architecture (Lovable Cloud)
+
+### Technology Choice
+LoadMaster uses **Lovable Cloud** for backend services, providing:
+- Managed Supabase instance with zero-config setup
+- Built-in authentication (email, magic links, OAuth)
+- PostgreSQL database with automatic schema management
+- Edge Functions for serverless logic
+- Lovable AI integration for document analysis
+
+### Data Architecture
+- **Local-First**: All data starts in browser localStorage via Zustand
+- **Optional Sync**: Users opt into cloud sync when ready
+- **Conflict Resolution**: Server-side data takes precedence
+- **Anonymous Usage**: Full functionality without account required
+
+### Schema Design
+Key tables (enabled in Phase 5):
+- `loads` - User load decisions with profitability calculations
+- `user_settings` - Cost profiles, RPM thresholds, preferences
+- `cost_profiles` - Named templates for different equipment types
+
+### Migration Strategy
+When users first authenticate:
+1. Local history uploaded to `loads` table with `synced_from_device=true`
+2. Settings uploaded to `user_settings` table
+3. Future decisions sync in real-time
+4. Local storage remains as cache + offline buffer
+
 ## 🔐 Security Considerations
-- User authentication via Supabase Auth (email/password)
+- User authentication via Lovable Cloud Auth (email/password, magic links)
 - Row Level Security (RLS) policies for data isolation
 - Rate limiting to prevent abuse
 - Secure edge functions for AI processing
