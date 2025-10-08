@@ -6,6 +6,30 @@ interface OnboardingTourProps {
   children: ReactNode;
 }
 
+const tourSteps = [
+  {
+    step: 1,
+    selector: '[data-onboarding="step-1"]',
+    title: 'Enter load details',
+    description: 'Enter your load details here (or upload a screenshot later)',
+    placement: 'bottom' as const,
+  },
+  {
+    step: 2,
+    selector: '[data-onboarding="step-2"]',
+    title: 'Instant profit calculation',
+    description: 'See instant profit analysis and guidance',
+    placement: 'top' as const,
+  },
+  {
+    step: 3,
+    selector: '[data-onboarding="step-3"]',
+    title: 'Track your decisions',
+    description: 'Log decisions to track patterns and insights over time',
+    placement: 'left' as const,
+  },
+];
+
 export function OnboardingTour({ children }: OnboardingTourProps) {
   const { currentStep, isCompleted, startTour, nextStep, skipTour } = useOnboardingStore();
 
@@ -16,50 +40,44 @@ export function OnboardingTour({ children }: OnboardingTourProps) {
     }
   }, [currentStep, isCompleted, startTour]);
 
+  // Scroll to active step element
+  useEffect(() => {
+    if (currentStep > 0 && currentStep <= 3) {
+      const currentStepConfig = tourSteps.find((s) => s.step === currentStep);
+      if (currentStepConfig) {
+        const element = document.querySelector(currentStepConfig.selector);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }
+      }
+    }
+  }, [currentStep]);
+
   // If tour is not active, render children without wrappers
   if (currentStep === 0 || currentStep >= 4 || isCompleted) {
     return <>{children}</>;
   }
 
+  const activeStep = tourSteps.find((s) => s.step === currentStep);
+
   return (
     <>
-      <OnboardingTooltip
-        step={1}
-        currentStep={currentStep}
-        title="Enter load details"
-        description="Enter your load details here (or upload a screenshot later)"
-        placement="bottom"
-        onNext={nextStep}
-        onSkip={skipTour}
-      >
-        <div data-onboarding="step-1" />
-      </OnboardingTooltip>
-
-      <OnboardingTooltip
-        step={2}
-        currentStep={currentStep}
-        title="Instant profit calculation"
-        description="See instant profit analysis and guidance"
-        placement="top"
-        onNext={nextStep}
-        onSkip={skipTour}
-      >
-        <div data-onboarding="step-2" />
-      </OnboardingTooltip>
-
-      <OnboardingTooltip
-        step={3}
-        currentStep={currentStep}
-        title="Track your decisions"
-        description="Log decisions to track patterns and insights over time"
-        placement="left"
-        onNext={nextStep}
-        onSkip={skipTour}
-      >
-        <div data-onboarding="step-3" />
-      </OnboardingTooltip>
-
       {children}
+      {activeStep && (
+        <OnboardingTooltip
+          step={activeStep.step}
+          currentStep={currentStep}
+          title={activeStep.title}
+          description={activeStep.description}
+          placement={activeStep.placement}
+          selector={activeStep.selector}
+          onNext={nextStep}
+          onSkip={skipTour}
+        />
+      )}
     </>
   );
 }
