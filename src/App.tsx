@@ -8,6 +8,7 @@ import { GuidanceBadge } from '@/components/GuidanceBadge';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { PatternInsights } from '@/components/PatternInsights';
 import { SimilarLoadIndicator } from '@/components/SimilarLoadIndicator';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import type { DecisionOutcome, LoadFormInput } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 
@@ -100,21 +101,22 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:flex-row">
-        <section className="flex-1 space-y-6">
-          <header className="space-y-1">
-            <p className="text-sm font-medium uppercase tracking-wide text-primary">Load Worth Calculator</p>
-            <h1 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
-              Fast profit snapshots before you book the load
-            </h1>
-            <p className="text-sm text-muted-foreground md:text-base">
-              Enter the load details or drop in a rate confirmation. We will pre-fill the form, show instant profit, and let you log
-              your decision for future reference.
-            </p>
-          </header>
+    <OnboardingTour>
+      <div className="min-h-screen bg-muted/30">
+        <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:flex-row">
+          <section className="flex-1 space-y-6">
+            <header className="space-y-1">
+              <p className="text-sm font-medium uppercase tracking-wide text-primary">Load Worth Calculator</p>
+              <h1 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
+                Fast profit snapshots before you book the load
+              </h1>
+              <p className="text-sm text-muted-foreground md:text-base">
+                Enter the load details or drop in a rate confirmation. We will pre-fill the form, show instant profit, and let you log
+                your decision for future reference.
+              </p>
+            </header>
 
-          <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
+            <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur" data-onboarding="step-1">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-4">
                 <div>
@@ -200,7 +202,7 @@ function App() {
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="rounded-xl bg-primary/5 p-4">
+                <div className="rounded-xl bg-primary/5 p-4" data-onboarding="step-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
                     <CostProfileEditor />
@@ -276,12 +278,13 @@ function App() {
           </div>
         </section>
 
-        <aside className="w-full max-w-xl space-y-6">
+        <aside className="w-full max-w-xl space-y-6" data-onboarding="step-3">
           <PatternInsights />
           <HistoryPanel />
         </aside>
       </main>
     </div>
+    </OnboardingTour>
   );
 }
 
