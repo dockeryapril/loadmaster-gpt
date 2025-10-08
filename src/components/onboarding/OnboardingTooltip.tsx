@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight } from 'lucide-react';
+import { OnboardingBackdrop } from './OnboardingBackdrop';
 
 interface OnboardingTooltipProps {
   step: number;
@@ -25,7 +26,8 @@ export function OnboardingTooltip({
   onSkip,
 }: OnboardingTooltipProps) {
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0, finalPlacement: placement });
+  const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
   const isActive = currentStep === step;
   const isLastStep = step === 3;
 
@@ -33,88 +35,88 @@ export function OnboardingTooltip({
     if (!isActive) return;
 
     const element = document.querySelector(selector) as HTMLElement;
-    if (element) {
-      setTargetElement(element);
-      
-      // Calculate tooltip position
+    if (!element) return;
+
+    setTargetElement(element);
+
+    const calculatePosition = () => {
       const rect = element.getBoundingClientRect();
-      let top = 0;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      // Store spotlight rect (only update on resize, not scroll)
+      setSpotlightRect(rect);
+      
+      const tooltipWidth = 320;
+      const tooltipHeight = 200; // Approximate
+      let top = rect.bottom + 16;
       let left = rect.left + rect.width / 2;
+      let finalPlacement = placement;
 
-      if (placement === 'bottom') {
-        top = rect.bottom + 12;
+      // Smart positioning: flip if tooltip would go off-screen
+      if (placement === 'bottom' && top + tooltipHeight > viewportHeight) {
+        top = rect.top - tooltipHeight - 16;
+        finalPlacement = 'top';
+      } else if (placement === 'top' && top - tooltipHeight < 0) {
+        top = rect.bottom + 16;
+        finalPlacement = 'bottom';
+      } else if (placement === 'bottom') {
+        top = rect.bottom + 16;
       } else if (placement === 'top') {
-        top = rect.top - 12;
-      } else if (placement === 'left') {
-        top = rect.top + rect.height / 2;
-        left = rect.left - 12;
-      } else if (placement === 'right') {
-        top = rect.top + rect.height / 2;
-        left = rect.right + 12;
+        top = rect.top - 16;
       }
 
-      setTooltipPosition({ top, left });
-    }
-
-    // Update position on scroll/resize
-    const updatePosition = () => {
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        let top = 0;
-        let left = rect.left + rect.width / 2;
-
-        if (placement === 'bottom') {
-          top = rect.bottom + 12;
-        } else if (placement === 'top') {
-          top = rect.top - 12;
-        } else if (placement === 'left') {
-          top = rect.top + rect.height / 2;
-          left = rect.left - 12;
-        } else if (placement === 'right') {
-          top = rect.top + rect.height / 2;
-          left = rect.right + 12;
-        }
-
-        setTooltipPosition({ top, left });
+      // Ensure tooltip doesn't go off-screen horizontally
+      if (left + tooltipWidth / 2 > viewportWidth - 16) {
+        left = viewportWidth - tooltipWidth / 2 - 16;
       }
+      if (left - tooltipWidth / 2 < 16) {
+        left = tooltipWidth / 2 + 16;
+      }
+
+      setTooltipPosition({ top, left, finalPlacement });
     };
 
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
+    calculatePosition();
+
+    // Only update on resize, not scroll (prevents jitter)
+    window.addEventListener('resize', calculatePosition);
 
     return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('resize', calculatePosition);
     };
   }, [isActive, selector, placement]);
 
-  if (!isActive || !targetElement) {
+  if (!isActive || !targetElement || !spotlightRect) {
     return null;
   }
 
   return createPortal(
     <>
+      {/* Backdrop with cut-out */}
+      <OnboardingBackdrop targetElement={targetElement} />
+
       {/* Spotlight highlight */}
       <div
-        className="fixed pointer-events-none z-[9998] ring-2 ring-primary rounded-lg animate-pulse"
+        className="fixed pointer-events-none z-[9998] ring-2 ring-primary rounded-lg animate-pulse transition-all duration-300 ease-out"
         style={{
-          top: targetElement.getBoundingClientRect().top - 4,
-          left: targetElement.getBoundingClientRect().left - 4,
-          width: targetElement.getBoundingClientRect().width + 8,
-          height: targetElement.getBoundingClientRect().height + 8,
+          top: spotlightRect.top - 4,
+          left: spotlightRect.left - 4,
+          width: spotlightRect.width + 8,
+          height: spotlightRect.height + 8,
         }}
       />
 
       {/* Tooltip */}
       <div
-        className="fixed z-[9999] max-w-[320px] rounded-lg border border-primary/20 bg-popover p-4 shadow-lg"
+        className="fixed z-[9999] max-w-[320px] w-[90vw] md:w-[320px] rounded-lg border border-primary/20 bg-popover p-4 shadow-lg transition-all duration-300 ease-out"
         style={{
           top: tooltipPosition.top,
           left: tooltipPosition.left,
           transform: 
-            placement === 'bottom' ? 'translateX(-50%)' :
-            placement === 'top' ? 'translate(-50%, -100%)' :
-            placement === 'left' ? 'translate(-100%, -50%)' :
+            tooltipPosition.finalPlacement === 'bottom' ? 'translateX(-50%)' :
+            tooltipPosition.finalPlacement === 'top' ? 'translate(-50%, -100%)' :
+            tooltipPosition.finalPlacement === 'left' ? 'translate(-100%, -50%)' :
             'translate(0, -50%)',
         }}
       >

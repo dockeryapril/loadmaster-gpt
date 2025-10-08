@@ -116,9 +116,9 @@ function App() {
               </p>
             </header>
 
-            <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur" data-onboarding="step-1">
+            <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-4">
+              <div className="space-y-4" data-onboarding="step-1">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Origin</label>
                   <input
@@ -201,8 +201,8 @@ function App() {
                   />
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="rounded-xl bg-primary/5 p-4" data-onboarding="step-2">
+              <div className="space-y-4" data-onboarding="step-2">
+                <div className="rounded-xl bg-primary/5 p-4">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
                     <CostProfileEditor />

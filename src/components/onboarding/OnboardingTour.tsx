@@ -19,14 +19,14 @@ const tourSteps = [
     selector: '[data-onboarding="step-2"]',
     title: 'Instant profit calculation',
     description: 'See instant profit analysis and guidance',
-    placement: 'top' as const,
+    placement: 'bottom' as const,
   },
   {
     step: 3,
     selector: '[data-onboarding="step-3"]',
     title: 'Track your decisions',
     description: 'Log decisions to track patterns and insights over time',
-    placement: 'left' as const,
+    placement: 'bottom' as const,
   },
 ];
 
