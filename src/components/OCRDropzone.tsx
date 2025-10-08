@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import type { LoadFormInput } from '@/types/mvp';
-import { parseRateCon } from '@/utils/parseRateCon';
 
 interface OCRDropzoneProps {
   onParse: (data: Partial<LoadFormInput>) => void;
@@ -24,13 +23,9 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
 
   const processText = useCallback(
     (text: string) => {
-      const parsed = parseRateCon(text);
-      if (Object.keys(parsed).length === 0) {
-        setStatus('OCR complete. Review the extracted text and fill in missing fields.');
-      } else {
-        setStatus('OCR complete. Fields pre-filled, double-check before logging.');
-        onParse(parsed);
-      }
+      // Placeholder: OCR parsing deferred to Phase 3+
+      setStatus('Text captured. Manual entry required for now.');
+      // In Phase 3+, this will call parseRateCon or similar
     },
     [onParse],
   );

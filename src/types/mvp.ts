@@ -27,6 +27,21 @@ export interface LoadEntrySnapshot {
   notes?: string;
 }
 
+// Cost assumptions for future Phase 2 calculator enhancement
+export interface CostAssumptions {
+  fuelPricePerGallon: number;
+  averageMPG: number;
+  dailyFixedCosts: number;
+  variableCostPerMile: number;
+}
+
+export const defaultCostAssumptions: CostAssumptions = {
+  fuelPricePerGallon: 3.89,
+  averageMPG: 6.5,
+  dailyFixedCosts: 250,
+  variableCostPerMile: 0.35,
+};
+
 export const emptyLoadForm: LoadFormInput = {
   origin: '',
   destination: '',

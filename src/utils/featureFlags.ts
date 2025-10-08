@@ -1,59 +1,22 @@
 /**
- * Feature flags system for Free vs Pro tiers
+ * Feature flags for LoadMaster reboot
+ * Features are enabled progressively in each phase
  */
-
-import { getTier, isPro, isFree } from './tier';
-
-export type Tier = 'lite' | 'pro';
-
-export interface FeatureFlags {
-  // Core features (available to everyone)
-  ocrExtraction: boolean;
-  editData: boolean;
-  rpmCalculator: boolean;
-  negotiationPanel: boolean;
-  loadHistory: boolean;
+export const features = {
+  // Phase 1: Core calculator only (current)
+  ocrEnabled: false,
+  authEnabled: false,
+  supabaseSync: false,
   
-  // Pro features (upload limits managed by useUsageLimits hook)
-  advancedTemplates: boolean;
-  historyExport: boolean;
-  unlimitedLimits: boolean;
-  prioritySupport: boolean;
-}
+  // Future phases (deferred)
+  stripeIntegration: false,
+  aiEnhancement: false,
+  businessSetup: false,
+  advancedNegotiation: false,
+} as const;
 
-export function flagsFor(tier: Tier): FeatureFlags {
-  const freeFlags: FeatureFlags = {
-    // Free tier features (available to lite/core)
-    ocrExtraction: true,
-    editData: true,
-    rpmCalculator: true,
-    negotiationPanel: true,
-    loadHistory: true,
-    
-    // All UI features available to free tier (only upload limits differ)
-    advancedTemplates: true,
-    historyExport: true,
-    unlimitedLimits: true,
-    prioritySupport: false,
-  };
+export type FeatureFlag = keyof typeof features;
 
-  if (tier === 'pro') {
-    return {
-      ...freeFlags,
-      // Enable Pro features
-      advancedTemplates: true,
-      historyExport: true,
-      unlimitedLimits: true,
-      prioritySupport: true,
-    };
-  }
-
-  return freeFlags;
-}
-
-export function getFeatureFlags(user?: any): FeatureFlags {
-  // Use the centralized tier system, fallback to user metadata if available
-  const userTier = user?.app_metadata?.tier;
-  const tier = userTier === 'pro' ? 'pro' : getTier();
-  return flagsFor(tier);
-}
+export const isFeatureEnabled = (flag: FeatureFlag): boolean => {
+  return features[flag];
+};

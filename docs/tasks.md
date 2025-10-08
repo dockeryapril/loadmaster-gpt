@@ -1,259 +1,265 @@
-# LoadMaster GPT - Development Tasks
+# LoadMaster Reboot - Development Tasks
 
-## Current Sprint - Enhanced OCR + LLM Pipeline
+## 🎯 Product Vision
+LoadMaster reboot focuses on a single question: **"Is this load worth taking right now?"**
 
-### ✅ Completed Tasks
-- [x] **Business Setup Navigation Fix**: Fixed missing Next button and improved UX flow for returning users
-  - Added sticky navigation footer that remains visible while scrolling through content
-  - Hidden app's bottom navigation on business-setup view to prevent overlap
-  - Made auto-skip template logic more conservative (only skip if >25% complete)
-  - Added "Choose Template" button in wizard header for easy access
-  - Added URL parameter support (?templates=true) to force template screen
-  - Improved button labeling: "Review & Complete" when setup is 100% complete
-  - Changed "Custom Setup" to "Start Setup (No Template)" for clarity
-  - Added proper spacing (pb-20) to prevent content overlap with sticky footer
-  - Added debug logging (accessible via ?debug=1 URL parameter)
-  - Enhanced keyboard navigation and accessibility improvements
-- [x] **CRITICAL FIX: Business Setup Validation Error** - Fixed database constraint mismatch causing "Invalid Settings" error
-  - Updated deadhead_compensation_type constraint to include all 9 frontend options (was only 4)
-  - Updated fsc_handling constraint to match frontend options  
-  - Enhanced error handling with specific field validation messages
-  - Added BusinessSetupValidationSummary component for better user feedback
-  - Improved completion percentage calculation with detailed debugging
-  - Added field-level navigation in validation summary
-- [x] **Net Take-Home Calculator Integration** - Fixed broken net take-home calculations by integrating business setup data
-  - Created comprehensive businessSetupCalculations.ts utility with support for all business arrangements
-  - Enhanced LoadCalculator to use business setup data when available with graceful fallback
-  - Added BusinessSetupWarning component to prompt users to complete setup for accuracy
-  - Added BusinessCostBreakdown component showing detailed revenue/cost analysis
-  - Updated LoadCalculationResult interface to include business cost breakdown data
-  - Integrated revenue splits, FSC handling, deadhead compensation, fixed costs, and fees
-  - Added debug logging and validation warnings for incomplete business setups
-- [x] Added variable deadhead compensation options (varies_by_load, negotiated_per_load, tiered_by_distance, customer_dependent, minimum_plus_variable)
-- [x] Updated business setup questions with new deadhead compensation types
-- [x] Fixed setup completion logic for new conditional questions
-- [x] Improved SetupBanner UI design - removed orange styling, made more professional
-- [x] Added proper conditional question handling for all deadhead compensation types
-- [x] Fixed premium options alignment in NegotiationSettings - standardized to 2-column layout
-- [x] Moved Weight Threshold to separate row for consistent visual alignment
-- [x] Improved Heavy Load labeling to clarify it's a cost adjustment (can be negative)
-- [x] **OCR Usage Limit Fixes**: Fixed OCR usage counter exceeding limits (was showing 10/5)
-  - Added `decrementOCRUsage()` function for rollback on failures
-  - Moved `incrementOCRUsage()` to after successful API validation instead of at start
-  - Added pre-flight checks to prevent OCR attempts when limits reached
-  - Added rollback logic for rate limit errors, cancellations, and failures
-  - Improved error handling to prevent usage increment on failed requests
-- [x] **Upgrade Page Navigation**: Fixed upgrade links to scroll to top of page
-  - Updated UpgradeCard "Upgrade to PRO" button to scroll to top after navigation
-  - Updated footer "Unlock AI-powered negotiations" link to scroll to top after navigation
-- [x] **UI Cleanup**: Removed duplicate Equipment Type dropdown from SimpleBusinessSetup
-  - Eliminated redundant Equipment Type selection in Custom Setup section
-  - Equipment selection now handled at top-level to avoid duplication
-- [x] **Navigation Fix**: Fixed UpgradeCard button navigation to upgrade page
-  - Removed setTimeout that was interfering with React Router navigation
-  - Button now properly navigates to /upgrade when clicked
-- [x] **Template Selection Feedback**: Added visual feedback for template selection in SimpleBusinessSetup
-  - Selected templates now highlight with primary variant and ring
-  - Only one template can be selected at a time
-  - Manual input changes clear template selection automatically
-- [x] **Enhanced PRO RPM Display**: Implemented Gross vs Net Take-Home RPM feature for PRO users
-  - Added Gross RPM calculation (rate / miles before business costs)
-  - Added Net Take-Home RPM calculation (after revenue split and fixed costs)
-  - Enhanced LoadCalculator display with two-column RPM breakdown
-  - Shows business impact details (revenue split %, fixed costs per mile, total impact)
-  - Falls back to simple RPM display for non-PRO users or missing business setup data
-  - Integrated with existing business setup (revenue split % and weekly fixed costs)
-  - Updated LoadCalculationResult interface to support enhanced RPM data
-- [x] **Fixed Business Setup Detection**: Resolved Quick Business Setup reappearing after completion
-  - Replaced old simple setup logic (only checked revenueSplitPercentage and weeklyFixedCosts)
-  - Integrated comprehensive setup system using useBusinessSetup hook and isSetupComplete()
-  - Now properly detects when comprehensive business setup (8/9 questions) is complete
-  - Users who've completed business setup go directly to dashboard instead of setup screen
-  - Fixed conflict between simple and comprehensive business setup systems
-- [x] **Fixed Business Setup Save Process**: Updated Simple Business Setup to create comprehensive records
-  - Modified handleBusinessSetup to use saveSetup from useBusinessSetup hook instead of just updateSettings
-  - Added equipment selection requirement to Simple Business Setup component
-  - Maps simple setup values to comprehensive business setup record with reasonable defaults
-  - Creates complete business_setup table record that satisfies isSetupComplete() validation
-  - Users now properly redirected to dashboard after completing Simple Business Setup
-- [x] **Enhanced OCR + LLM Pipeline**: Upgraded OCR feature with improved field detection and validation
-  - Added detection for high-priority accessorials: detention pay, lumper fees, layover pay, hazmat premiums
-  - Enhanced SmartFieldDetector with improved OCR error correction prompts
-  - Added comprehensive validation warnings (flag suspicious data, don't reject)
-  - Enhanced field validation patterns for better trucking document recognition
-  - Updated LoadFields interface to support new accessorial fields
-  - Improved OCR correction interface to display new accessorial fields
-  - Enhanced OpenAI edge function with increased token limit for better responses
-  - Added sophisticated data warnings (rate, weight, distance, accessorial validation)
-  - Maintained cost-effectiveness by keeping GPT-4o-mini model
-- [x] **Enhanced Rate Detection**: Improved rate extraction from trucking documents
-  - Added priority detection for "OFFER AMOUNT", "TOTAL PAY", "GROSS AMOUNT", "LOAD PAY" labels
-  - Enhanced LLM prompts with specific trucking terminology and rate patterns
-  - Improved fallback regex with priority-based pattern matching
-  - Enhanced validation for comma-separated amounts (e.g., "$1,405.24")
-  - Added debug logging for rate detection troubleshooting
-  - Fixed issue where smaller amounts were incorrectly selected over main rate amounts
-- [x] **Enhanced Miles Confidence Detection**: Upgraded miles field confidence assignment
-  - Implemented smart pattern scoring instead of hardcoded "medium" confidence
-  - Added multiple priority patterns for miles detection (high: "817 mi", medium: "distance: 817", low: context-based)
-  - Created confidence calculation based on pattern quality and value reasonableness
-  - Enhanced fallback detection with pattern-specific confidence assignment
-  - Added value-based confidence adjustments for realistic mile ranges (50-2000 miles)
-  - Clear patterns like "817 mi" now correctly receive "high" confidence
-- [x] **Unified Usage Limits System**: Implemented correct Free (4/week) and Pro (100/month) usage tracking
-  - Created unified `useUsageLimits` hook replacing both `useWeeklyUploads` and `useOCRUsage`
-  - Updated database schema with monthly usage tracking and subscription date support
-  - Fixed limits: Free tier gets 4 OCR operations per week (resets Sunday), Pro gets 100 per month
-  - Updated all components (LoadEntryMethod, useOCRProcessor, WeeklyLimitBanner) to use unified system
-  - Added database function for automatic period resets based on user plan
-  - Proper monthly reset logic for Pro users based on subscription start date
-  - All usage now tracked in Supabase for consistency and reliability
-- [x] **Complete Stripe Subscription Integration**: Implemented production-ready recurring payments system
-  - Created subscribers table with proper RLS policies for subscription tracking
-  - Built check-subscription edge function for real-time Stripe verification and sync
-  - Built customer-portal edge function for subscription management (cancel, update payment, etc.)
-  - Enhanced usePlan hook with automatic subscription status checking from Stripe
-  - Updated Upgrade page with customer portal access for existing PRO users
-  - Added subscription end date tracking and renewal date display
-  - Integrated automatic plan updates based on Stripe subscription status
-  - Backward compatibility maintained with existing user_settings table
-- [x] **Fixed Quick Business Setup Navigation Issues**: Resolved save/skip button navigation problems
-  - Set default equipment type ('cargo_van') to prevent disabled save button on initial load
-  - Enhanced template application to automatically select appropriate equipment types
-  - Added loading state to save button during async operations
-  - Fixed auto-redirect logic to not override user navigation choices using sessionStorage
-  - Created separate handleSkipSetup function with proper navigation handling
-  - Both "Save Setup" and "Skip for Now" buttons now properly navigate to dashboard
+We're building a mobile-first, local-first calculator that delivers instant profitability verdicts in under 30 seconds, with optional advanced features layered progressively.
 
-### ✅ Recently Completed Tasks
-- [x] **Documentation Conflicts Resolution**: Fixed existing documentation conflicts
-  - Updated supabase-secrets-setup.md to use Free/Pro terminology and correct weekly limits (4/week Free, 100/week Pro)
-  - Updated masterplan.md with current Supabase-based architecture and authentication system
-  - Corrected rate limiting references from daily to weekly limits
-- [x] **Comprehensive Documentation Suite**: Created 5 complete instruction documents
-  - User Guide: Complete user-facing documentation covering all features (Free/Pro)
-  - Admin Guide: Business owner and fleet manager documentation
-  - Developer Guide: Technical documentation for developers and DevOps
-  - Business Setup Guide: Detailed configuration guidance for trucking operations
-  - Support Guide: Technical support procedures and troubleshooting
-- [x] **Quick Reference Cards**: Created 5 concise cheat sheets for daily use
-  - User Quick Reference: Essential daily tasks, mobile-friendly format
-  - OCR Tips & Troubleshooting: Perfect screenshot techniques and fixes
-  - Business Setup Quick Guide: Fast configuration with templates
-  - Pro Features Cheat Sheet: Maximize Pro plan value and features  
-  - Support Quick Reference: Fast troubleshooting and contact procedures
+---
 
-- [x] **Fixed Quick Business Setup Navigation Issues**: Resolved save/skip button navigation problems
-  - Set default equipment type ('cargo_van') to prevent disabled save button on initial load
-  - Enhanced template application to automatically select appropriate equipment types
-  - Added loading state to save button during async operations
-  - Fixed auto-redirect logic to not override user navigation choices using sessionStorage
-  - Created separate handleSkipSetup function with proper navigation handling
-  - Both "Save Setup" and "Skip for Now" buttons now properly navigate to dashboard
-- [x] **Consolidated Business Setup System**: Unified to single comprehensive setup flow
-  - Removed SimpleBusinessSetup component entirely and replaced with BusinessSetupWizard
-  - Added quick setup templates (75/25 Lease, Independent Contractor, Company Driver) to comprehensive wizard
-  - Enhanced BusinessSetupWizard with template selection step at the beginning
-  - Fixed completion percentage calculation to show 100% when comprehensive setup is complete
-  - Improved user experience with pre-filled template data that users can modify
-  - All business setup now flows through the comprehensive 8-section wizard
-  - Eliminated confusion between quick and comprehensive setup completion tracking
-- [x] **Fixed Business Setup Save Error**: Resolved database constraint mismatch preventing setup completion
-  - Fixed fsc_handling constraint mismatch between database (included_in_rpm/separate_payment/split_with_carrier) and application (driver_receives_fsc/carrier_keeps_fsc/fsc_in_margin)  
-  - Updated database constraint to accept correct application values
-  - Enhanced error handling in useBusinessSetup with specific constraint violation messages
-  - Fixed navigation logic to properly redirect users to dashboard after successful setup completion
-  - Added data migration to update existing records with old constraint values
-- [x] Testing setup completion detection with all question types
-- [x] Validating conditional question logic for complex compensation structures
-- [x] **SECURITY FIX: Fixed Email Harvesting Vulnerability**: Resolved critical security issue where any authenticated user could access all email addresses
-  - Created secure user roles system with admin/user role separation using Supabase security definer functions
-  - Updated email_signups RLS policy to restrict SELECT access to admin users only
-  - Implemented automatic role assignment (new users get 'user' role, first user becomes 'admin')
-  - Prevented RLS recursion with proper security definer function implementation
-  - Email addresses now protected from unauthorized access by spammers/competitors
-  - EmailAdmin page functionality maintained for legitimate admin users
+## ✅ Phase 1: Clean Slate Architecture — COMPLETED
 
-- [x] **Implemented Free/Pro Weekly Upload System**: Complete restructure from Lite/Core/Pro to Free/Pro model
-  - Added weekly upload tracking (Free: 4/week, Pro: 100/week) with Sunday reset
-  - Created useWeeklyUploads hook for Supabase-based weekly counter management
-  - Built WeeklyLimitReached lockout page with Stripe checkout integration
-  - Updated Upgrade page with new Free/Pro pricing and copy
-  - Created WeeklyLimitBanner for usage warnings and limit notifications
-  - Updated LoadEntryMethod to use weekly limits and redirect to lockout page
-  - Created create-pro-subscription edge function for $10/month Pro subscriptions
-  - Added database migration for weekly_upload_count and week_start_date columns
-  - Updated tier display system to show "Free" instead of "Lite" in UI
-  - Removed all Lite/Core references and replaced with Free/Pro terminology
-  - Integrated weekly limit checking with upload buttons (OCR/camera)
-  - Manual entry remains unlimited for all users as requested
-- [x] **Fixed Full Negotiation Button UI**: Resolved broken UI on LoadCalculator Full Negotiation button
-  - Unified Full Negotiation button experience for all users (removed Pro/Free distinction)
-  - Removed duplicate button logic that was causing UI conflicts
-  - Aligned with unified feature flags that make all UI features available to free users
-  - Button now displays consistently without Pro badge or upgrade prompts
-- [ ] Add business setup profiles for different trucking arrangements (owner-operator, lease-operator, company driver)
-- [ ] Implement setup validation against industry benchmarks
-- [ ] Add setup data export/import functionality
-- [ ] Create setup completion analytics and insights
+**Completed**: [Current Date]
 
-- [x] **Simplified Load Entry Options**: Removed separate "Take Photo" option for better mobile UX
-  - Removed non-functional "Take Photo" button that requested camera permissions but didn't work properly
-  - Enhanced "Upload Image/Screenshot" option to handle both file selection and camera capture
-  - Streamlined interface now has only 2 options: "Upload Image/Screenshot" and "Manual Entry"
-  - Cleaned up camera-specific code, state management, and unused imports
-  - Better mobile experience with reliable camera access through standard file input
+### What Was Completed
+- ✅ **Archived legacy codebase** to `/archive/v1-*` directories
+  - Moved complex components (business setup, negotiation, OCR correction)
+  - Moved hooks (Supabase integrations, tier detection, equipment-aware calculations)
+  - Moved pages (auth, upgrade, FAQ, landing)
+  - Moved features (AI enhancement, negotiation engine)
+  - Moved types (businessSetup, negotiation, equipment)
+  - Moved AI/OCR utilities (LLM extraction, vision processing)
+  - Moved utils (API wrappers, tier management, CSV export)
+  - Preserved `/src/components/ui/` shadcn component library
 
-- [x] **Unified Negotiation Interface**: Combined QuickScripts and Full Negotiation into single powerful interface
-  - Enhanced negotiations database table with granular outcome tracking (channel, tone, scripts, rate tier accepted)
-  - Created UnifiedNegotiationSheet with 3 tabs: Quick Scripts, Templates, Track Outcome
-  - Built useUnifiedNegotiation hook combining negotiation engine with dynamic script generation
-  - Added rate-tier tracking (Ask/Settle/Bottom acceptance rates for analytics)
-  - Integrated channel/tone preferences with outcome persistence
-  - Users can now track which specific rate tier was accepted and build negotiation analytics
-  - Replaced old NegotiationSheet with unified interface in LoadCalculator
+- ✅ **Consolidated reboot code** from `/apps/core` and `/src`
+  - Kept clean `App.tsx` as single-page calculator
+  - Merged OCRDropzone as placeholder for future Phase
+  - Removed duplicate implementations
 
-- [x] **Conditional Field Display**: Implemented business setup-based field visibility
-  - FSC field now only appears when fsc_handling is NOT 'carrier_keeps_fsc'
-  - Tolls field now only appears when toll_responsibility is NOT 'carrier_pays'
-  - Fields automatically hide/show based on user's business setup configuration
-  - Prevents unnecessary data entry for fields not relevant to user's arrangement
+- ✅ **Simplified type system**
+  - Kept only `src/types/mvp.ts` with core types
+  - Added `CostAssumptions` interface for Phase 2
+  - Created minimal `src/types/load.ts` with profit calculation
+  - Removed complex type dependencies
 
-### ✅ Usage Limit Updates - COMPLETED 2025-01-17
-- [x] Changed Free tier from 4 scans/week to 5 scans/month
-- [x] Both Free and Pro tiers now use monthly limits (5 and 100 respectively)
-- [x] Updated usage counter display to show "X of Y scans used this month"
-- [x] Updated UpgradeModal messaging for monthly limits
-- [x] Removed manual entry fallbacks when scan limit reached
-- [x] Updated error handling to show upgrade modal instead of manual entry
-- [x] Both plans reset on the 1st of each month (Free) or subscription date (Pro)
-- [x] Updated all copy throughout app and docs for $5/month PRO pricing
-- [x] Updated Stripe integration to use $5/month (500 cents) instead of $10/month
-- [x] Updated all documentation files with new pricing and limits
+- ✅ **Cleaned up dependencies**
+  - Removed `openai` (no LLM in reboot)
+  - Removed `tesseract.js` (OCR deferred to Phase 3+)
+  - Removed `recharts` (charts deferred)
+  - Removed `react-hook-form` (using plain inputs)
+  - Kept essentials: React, Vite, Tailwind, Zustand, shadcn/ui
 
-### 🧪 Testing Required
-1. **Setup Completion Logic**: Test all question combinations to ensure 100% completion is achievable
-2. **Conditional Questions**: Verify deadhead compensation questions show/hide correctly based on selection
-3. **UI Design**: Confirm SetupBanner uses proper semantic tokens and professional styling
+- ✅ **Created feature flag system**
+  - Built `src/utils/featureFlags.ts` for progressive feature enablement
+  - Gated all advanced features behind flags
+  - Default: all flags disabled (local-first calculator only)
 
-### 🐛 Recently Fixed Bugs  
-- [x] **CSV Export Error**: Fixed error handling during load deletion with CSV export
-  - Added proper try/catch error handling around CSV export in handleClearAll function
-  - CSV export failures no longer prevent load deletion from proceeding
-  - Improved error logging for better debugging of CSV export issues
+- ✅ **Documented reboot architecture**
+  - Created comprehensive `docs/reboot-architecture.md`
+  - Documented active files vs archived files
+  - Outlined technology stack and design principles
+  - Mapped future phases and migration path
 
-- [x] **MPG Auto-Update**: Fixed MPG not updating immediately when Equipment Type changes in Settings
-  - Modified useEffect to always update MPG when equipment changes (if defaults enabled)
-  - Removed restrictive conditions that only updated for empty/default values
-  - MPG now updates instantly when equipment selection changes, no save/reload needed
+### How to Test Phase 1
+1. **Run the app**: `npm run dev` → App loads at localhost
+2. **Manual entry**: Enter origin, destination, miles, rate → See instant profit calculation
+3. **Log decision**: Select outcome (Book/Counter/Pass) → Click "Log decision"
+4. **Verify history**: Decision appears in history panel with correct data
+5. **Refresh page**: History persists (Zustand + localStorage)
+6. **Check console**: Zero errors, no missing imports
+7. **Responsive design**: Test on mobile viewport (320px+)
 
-- [x] **Weight Limit Auto-Update**: Added automatic weight limit updates based on Equipment Type
-  - Added weight limits to equipment profiles (Cargo Van: 10,000 lbs, Straight Truck: 26,000 lbs, Hotshot: 40,000 lbs)
-  - Created getEquipmentWeightLimit() function for retrieving equipment-specific limits
-  - Weight limit field now auto-updates when equipment type changes (if defaults enabled)
-  - Added visual feedback showing equipment-specific weight limits with badge display
+### Verification Checklist
+- [x] App runs without errors
+- [x] No references to removed dependencies
+- [x] Clean console (no import errors)
+- [x] Manual load entry works
+- [x] Profit calculation accurate (rate + fsc - tolls - fuelCost)
+- [x] History persists after refresh
+- [x] Mobile-responsive design
+- [x] `/archive` directory exists with legacy code
+- [x] Feature flags in place for future phases
 
-### 📝 Notes
-- Setup system now supports complex deadhead compensation scenarios common in trucking
-- Banner design improved to be less pushy and more professional
-- Completion logic enhanced to handle all conditional dependencies
+### Files Changed
+**Created**:
+- `/archive/v1-components/` (archived legacy components)
+- `/archive/v1-hooks/` (archived legacy hooks)
+- `/archive/v1-pages/` (archived legacy pages)
+- `/archive/v1-features/` (archived legacy features)
+- `/archive/v1-types/` (archived complex types)
+- `/archive/v1-ai/` (archived AI/OCR logic)
+- `/archive/v1-utils/` (archived utilities)
+- `/archive/v1-integrations/` (archived Supabase code)
+- `/src/types/load.ts` (simplified profit calculation)
+- `/src/utils/featureFlags.ts` (feature flag system)
+- `/docs/reboot-architecture.md` (comprehensive documentation)
+
+**Modified**:
+- `/src/types/mvp.ts` (added CostAssumptions for Phase 2)
+- `/package.json` (removed unused dependencies)
+- `/docs/tasks.md` (this file - updated with Phase 1 completion)
+
+**Deleted**:
+- `/apps/core/` (consolidated into `/src`, no longer needed)
+
+### What's Next
+→ **Phase 2: Core Calculator Enhancement** (see below)
+
+---
+
+## 📋 Phase 2: Core Calculator Enhancement (UPCOMING)
+
+**Goal**: Make profit calculations trustworthy, transparent, and guidance-driven.
+
+**Timeline**: 2-3 days
+
+### Tasks
+- [ ] **Cost Profile Editor**
+  - [ ] Create drawer/modal for editing cost assumptions
+  - [ ] Add 4 inputs: fuel price, MPG, daily fixed costs, variable cost per mile
+  - [ ] Store in Zustand with localStorage persistence
+  - [ ] Show "Edit Assumptions" link in calculator result area
+  - [ ] Pre-fill with industry defaults from `defaultCostAssumptions`
+
+- [ ] **Enhanced Profit Display**
+  - [ ] Show detailed breakdown section:
+    - Gross revenue: `rate + fsc`
+    - Fuel cost: `(miles / mpg) * fuelPrice`
+    - Tolls: `tolls`
+    - Variable costs: `miles * variableCostPerMile`
+    - Fixed costs (prorated): `fixedDaily / expectedLoadsPerDay`
+    - **Net profit**: sum of above
+  - [ ] Add expandable "How is this calculated?" section with formula explanation
+  - [ ] Include timestamp: "Calculated at [time] using fuel price $X.XX"
+  - [ ] Update `LoadCalculationResult` interface to support breakdown
+
+- [ ] **Smart Guidance Badge**
+  - [ ] Replace simple profit number with visual indicator:
+    - 🟢 **Book it** - Profit > $500 AND Net RPM > $1.50
+    - 🟡 **Consider countering** - Profit $200-500 OR Net RPM $1.00-1.50
+    - 🔴 **Pass** - Profit < $200 OR Net RPM < $1.00
+  - [ ] Show reasoning: "Net RPM is $1.75/mi (Good) and profit is $650 (Strong)"
+  - [ ] Make thresholds editable in cost profile (future enhancement)
+
+### Testing Requirements
+- [ ] Cost profile persists after refresh
+- [ ] Profit breakdown math is accurate
+- [ ] Guidance badge shows correct color/label for edge cases
+- [ ] Mobile-responsive on all breakpoints
+- [ ] Timestamp updates on recalculation
+
+---
+
+## 📋 Phase 3: History & Insights (UPCOMING)
+
+**Goal**: Make past decisions useful for future evaluation.
+
+**Timeline**: 2-3 days
+
+### Tasks
+- [ ] **Enhanced History Panel**
+  - [ ] Add filters: Show All / Book / Counter / Pass
+  - [ ] Add sort: Newest First / Highest Profit / Best RPM
+  - [ ] Add search by origin/destination
+  - [ ] Show weekly summary card: "This week: 3 booked, 2 passed, avg profit $425"
+  - [ ] Add pagination (show 10 at a time)
+
+- [ ] **Decision Pattern Recognition**
+  - [ ] Track acceptance rate by RPM range (e.g., "80% of loads >$2.00/mi were booked")
+  - [ ] Highlight similar loads: "You usually book loads like this at $X.XX/mi"
+  - [ ] Simple stats card: avg profit, best RPM, most common route
+
+- [ ] **Export Capability**
+  - [ ] Add "Export to CSV" button
+  - [ ] Include all logged decisions with calculations
+  - [ ] Format for spreadsheet analysis (columns: date, route, miles, profit, rpm, outcome)
+
+### Testing Requirements
+- [ ] Filters work correctly with history
+- [ ] Search is case-insensitive and handles partial matches
+- [ ] CSV export opens correctly in Excel/Google Sheets
+- [ ] Pattern recognition accurate with 10+ entries
+
+---
+
+## 📋 Phase 4: Onboarding Flow (UPCOMING)
+
+**Goal**: Get new users to first decision in under 60 seconds.
+
+**Timeline**: 1-2 days
+
+### Tasks
+- [ ] **3-Step Inline Tour**
+  - [ ] Step 1: "Enter load details here" (highlight form)
+  - [ ] Step 2: "See instant profit calculation" (highlight result)
+  - [ ] Step 3: "Log your decision to track patterns" (highlight history)
+  - [ ] Use simple tooltips (not modal maze)
+  - [ ] Dismissable, never shows again after completion
+  - [ ] Store tour completion in localStorage
+
+- [ ] **Smart Defaults**
+  - [ ] Pre-fill cost assumptions with industry averages
+  - [ ] Show "These are typical values—edit anytime" message
+  - [ ] No forced setup wizard
+
+### Testing Requirements
+- [ ] Tour shows only on first visit
+- [ ] Tour doesn't block core functionality
+- [ ] Tour completion persists after refresh
+- [ ] Mobile-friendly tooltip positioning
+
+---
+
+## 📋 Phase 5: Future-Proofing (UPCOMING)
+
+**Goal**: Prepare for OCR, sync, and authentication without implementing them.
+
+**Timeline**: 1 day
+
+### Tasks
+- [ ] **Sync Queue Placeholder**
+  - [ ] Create `src/store/syncQueue.ts` with stub functions
+  - [ ] Add `queueForSync(decision: LoadEntrySnapshot)` placeholder
+  - [ ] Document how sync will work when enabled
+  - [ ] Store decisions locally, queue for upload when auth ships
+
+- [ ] **Auth Hook Stub**
+  - [ ] Create `src/hooks/useAuth.ts` returning `{ user: null, isAuthenticated: false }`
+  - [ ] Future-proof components to check `isAuthenticated` before showing sync options
+  - [ ] Add "Sign in to sync" placeholder UI (hidden behind feature flag)
+
+- [ ] **Progressive Feature Enablement**
+  - [ ] Document re-enabling process for each archived feature
+  - [ ] Create migration checklist for OCR, business setup, negotiation
+  - [ ] Test feature flag toggling
+
+### Testing Requirements
+- [ ] Sync queue functions exist but don't execute
+- [ ] Auth hook returns expected default values
+- [ ] Feature flags can be toggled without breaking app
+
+---
+
+## 🐛 Known Issues (to Address in Future Phases)
+
+- None currently (Phase 1 clean slate)
+
+---
+
+## 📝 Notes & Decisions
+
+### Why Archive Instead of Delete?
+Legacy code represents months of development and domain knowledge. Archiving allows us to:
+1. Reference complex logic when re-implementing features
+2. Preserve business setup profiles, equipment definitions, negotiation templates
+3. Maintain audit trail of architectural decisions
+4. Selectively restore features without rebuilding from scratch
+
+### Why Local-First?
+1. **Reliability**: Works offline, no backend dependencies
+2. **Speed**: Sub-200ms calculations, no API latency
+3. **Privacy**: Data stays on device until user opts into sync
+4. **Cost**: Zero infrastructure costs for core functionality
+5. **Simplicity**: Easier to test, debug, and maintain
+
+### When to Re-enable Backend?
+Only after core loop is validated:
+- Users consistently log 10+ decisions
+- Feedback confirms calculator is trustworthy
+- Clear demand for cloud sync and multi-device access
+
+---
+
+**Last Updated**: Phase 1 completion
+**Next Review**: Before Phase 2 kickoff
