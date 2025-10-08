@@ -213,33 +213,61 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ---
 
-## 📋 Phase 3: History & Insights (UPCOMING)
+## 📋 Phase 3: History & Insights (IN PROGRESS)
 
 **Goal**: Make past decisions useful for future evaluation.
 
 **Timeline**: 2-3 days
 
-### Tasks
-- [ ] **Enhanced History Panel**
-  - [ ] Add filters: Show All / Book / Counter / Pass
-  - [ ] Add sort: Newest First / Highest Profit / Best RPM
-  - [ ] Add search by origin/destination
-  - [ ] Show weekly summary card: "This week: 3 booked, 2 passed, avg profit $425"
-  - [ ] Add pagination (show 10 at a time)
+### Sub-Phase 3.1: Enhanced History Panel — ✅ COMPLETED
 
-- [ ] **Decision Pattern Recognition**
-  - [ ] Track acceptance rate by RPM range (e.g., "80% of loads >$2.00/mi were booked")
-  - [ ] Highlight similar loads: "You usually book loads like this at $X.XX/mi"
-  - [ ] Simple stats card: avg profit, best RPM, most common route
+**What Was Completed**:
+- ✅ Created `src/hooks/useHistoryFilters.ts` - Custom hook for filter/sort/search logic
+- ✅ Created `src/components/HistorySummaryCard.tsx` - Weekly stats summary (last 7 days)
+- ✅ Created `src/components/HistoryFilters.tsx` - Filter/sort controls UI
+- ✅ Created `src/components/HistoryPanel.tsx` - Main history panel component
+- ✅ Refactored `src/App.tsx` to use new HistoryPanel component
+- ✅ **Features implemented**:
+  - Filter by outcome: All / Book / Counter / Pass
+  - Sort options: Newest First / Highest Profit / Lowest Profit / Best RPM / Worst RPM
+  - Search: Case-insensitive across origin/destination
+  - Weekly summary card: Booked/Countered/Passed counts, avg profit, best RPM
+  - Pagination: Show 10 entries at a time with "Load More" button
+  - Empty states for no data and no filter matches
 
-- [ ] **Export Capability**
-  - [ ] Add "Export to CSV" button
-  - [ ] Include all logged decisions with calculations
-  - [ ] Format for spreadsheet analysis (columns: date, route, miles, profit, rpm, outcome)
+**How to Test Sub-Phase 3.1**:
+1. Log multiple decisions (mix of book/counter/pass outcomes)
+2. Use outcome filter dropdown to filter by specific decision type
+3. Use sort dropdown to reorder entries by profit or RPM
+4. Search for origin or destination city
+5. Verify weekly summary shows correct stats for last 7 days
+6. Click "Load More" to paginate through entries
+7. Verify empty states show when no history or no matches
 
-### Testing Requirements
-- [ ] Filters work correctly with history
-- [ ] Search is case-insensitive and handles partial matches
+### Sub-Phase 3.2: Decision Pattern Recognition (UPCOMING)
+
+**Tasks**:
+- [ ] Track acceptance rate by RPM range (e.g., "80% of loads >$2.00/mi were booked")
+- [ ] Highlight similar loads: "You usually book loads like this at $X.XX/mi"
+- [ ] Simple stats card: avg profit, best RPM, most common route
+- [ ] Create `src/components/PatternInsights.tsx`
+- [ ] Create `src/hooks/usePatternRecognition.ts`
+- [ ] Create `src/utils/patternAnalysis.ts`
+
+### Sub-Phase 3.3: Export Capability (UPCOMING)
+
+**Tasks**:
+- [ ] Add "Export to CSV" button
+- [ ] Include all logged decisions with calculations
+- [ ] Format for spreadsheet analysis (columns: date, route, miles, profit, rpm, outcome)
+- [ ] Create `src/utils/csvExport.ts`
+- [ ] Create `src/components/ExportButton.tsx`
+
+### Testing Requirements (Full Phase 3)
+- [x] Filters work correctly with history
+- [x] Search is case-insensitive and handles partial matches
+- [x] Pagination works correctly
+- [x] Weekly summary calculates accurate stats
 - [ ] CSV export opens correctly in Excel/Google Sheets
 - [ ] Pattern recognition accurate with 10+ entries
 

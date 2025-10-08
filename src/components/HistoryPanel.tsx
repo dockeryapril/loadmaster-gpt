@@ -1,0 +1,146 @@
+import { useState } from 'react';
+import { useDecisionStore, decisionLabels } from '@/store/useDecisionStore';
+import { HistorySummaryCard } from './HistorySummaryCard';
+import { HistoryFilters } from './HistoryFilters';
+import { useHistoryFilters } from '@/hooks/useHistoryFilters';
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+const ENTRIES_PER_PAGE = 10;
+
+export function HistoryPanel() {
+  const history = useDecisionStore((state) => state.history);
+  const clearHistory = useDecisionStore((state) => state.clearHistory);
+  const [displayCount, setDisplayCount] = useState(ENTRIES_PER_PAGE);
+
+  const {
+    filtered,
+    outcomeFilter,
+    setOutcomeFilter,
+    sortBy,
+    setSortBy,
+    searchQuery,
+    setSearchQuery,
+  } = useHistoryFilters(history);
+
+  const displayed = filtered.slice(0, displayCount);
+  const hasMore = filtered.length > displayCount;
+
+  if (history.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Decision history</h2>
+        </div>
+        <p className="rounded-xl border border-dashed border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          No decisions logged yet. Book or pass a load to start tracking.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Decision history</h2>
+        <button
+          type="button"
+          onClick={clearHistory}
+          className="text-sm font-medium text-muted-foreground hover:text-destructive"
+        >
+          Clear all
+        </button>
+      </div>
+
+      <HistorySummaryCard history={history} />
+
+      <HistoryFilters
+        outcomeFilter={outcomeFilter}
+        setOutcomeFilter={setOutcomeFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+
+      <div className="space-y-3">
+        {filtered.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border bg-background/70 p-4 text-center text-sm text-muted-foreground">
+            No results match your filters. Try adjusting your search or filters.
+          </p>
+        ) : (
+          <>
+            {displayed.map((entry) => (
+              <div key={entry.id} className="rounded-xl border border-border bg-background p-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                  <div className="font-semibold text-foreground">
+                    {entry.origin} → {entry.destination}
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
+                      entry.outcome === 'book'
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : entry.outcome === 'counter'
+                          ? 'bg-amber-500/10 text-amber-600'
+                          : 'bg-rose-500/10 text-rose-600'
+                    }`}
+                  >
+                    {decisionLabels[entry.outcome]}
+                  </span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                  <div>
+                    <p>Miles</p>
+                    <p className="font-medium text-foreground">{formatNumber(entry.miles)}</p>
+                  </div>
+                  <div>
+                    <p>Net profit</p>
+                    <p className="font-medium text-foreground">{formatCurrency(entry.profit)}</p>
+                  </div>
+                  <div>
+                    <p>Net RPM</p>
+                    <p className="font-medium text-foreground">{formatNumber(entry.rpm)} /mi</p>
+                  </div>
+                  <div>
+                    <p>Logged</p>
+                    <p className="font-medium text-foreground">
+                      {new Date(entry.createdAt).toLocaleString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+                {entry.notes && <p className="mt-3 text-xs text-muted-foreground">{entry.notes}</p>}
+              </div>
+            ))}
+
+            {hasMore && (
+              <button
+                type="button"
+                onClick={() => setDisplayCount((prev) => prev + ENTRIES_PER_PAGE)}
+                className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"
+              >
+                Load more ({filtered.length - displayCount} remaining)
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

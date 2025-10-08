@@ -5,6 +5,7 @@ import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDec
 import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
 import { GuidanceBadge } from '@/components/GuidanceBadge';
+import { HistoryPanel } from '@/components/HistoryPanel';
 import type { DecisionOutcome, LoadFormInput } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 
@@ -32,9 +33,7 @@ const outcomeOptions: DecisionOutcome[] = ['book', 'counter', 'pass'];
 function App() {
   const [form, setForm] = useState<LoadFormInput>(() => ({ ...emptyLoadForm }));
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
-  const history = useDecisionStore((state) => state.history);
   const addDecision = useDecisionStore((state) => state.addDecision);
-  const clearHistory = useDecisionStore((state) => state.clearHistory);
   const { costProfile } = useCostProfile();
 
   const miles = numberOrZero(form.miles);
@@ -267,71 +266,8 @@ function App() {
           </div>
         </section>
 
-        <aside className="w-full max-w-xl space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Decision history</h2>
-            <button
-              type="button"
-              onClick={clearHistory}
-              className="text-sm font-medium text-muted-foreground hover:text-destructive"
-            >
-              Clear
-            </button>
-          </div>
-          <div className="space-y-3">
-            {history.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border bg-background/70 p-4 text-sm text-muted-foreground">
-                No decisions logged yet. Book or pass a load to start tracking.
-              </p>
-            ) : (
-              history.map((entry) => (
-                <div key={entry.id} className="rounded-xl border border-border bg-background p-4 shadow-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                    <div className="font-semibold text-foreground">
-                      {entry.origin} → {entry.destination}
-                    </div>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
-                        entry.outcome === 'book'
-                          ? 'bg-emerald-500/10 text-emerald-600'
-                          : entry.outcome === 'counter'
-                            ? 'bg-amber-500/10 text-amber-600'
-                            : 'bg-rose-500/10 text-rose-600'
-                      }`}
-                    >
-                      {decisionLabels[entry.outcome]}
-                    </span>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
-                    <div>
-                      <p>Miles</p>
-                      <p className="font-medium text-foreground">{formatNumber(entry.miles)}</p>
-                    </div>
-                    <div>
-                      <p>Net profit</p>
-                      <p className="font-medium text-foreground">{formatCurrency(entry.profit)}</p>
-                    </div>
-                    <div>
-                      <p>Net RPM</p>
-                      <p className="font-medium text-foreground">{formatNumber(entry.rpm)} /mi</p>
-                    </div>
-                    <div>
-                      <p>Logged</p>
-                      <p className="font-medium text-foreground">
-                        {new Date(entry.createdAt).toLocaleString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  {entry.notes && <p className="mt-3 text-xs text-muted-foreground">{entry.notes}</p>}
-                </div>
-              ))
-            )}
-          </div>
+        <aside className="w-full max-w-xl">
+          <HistoryPanel />
         </aside>
       </main>
     </div>
