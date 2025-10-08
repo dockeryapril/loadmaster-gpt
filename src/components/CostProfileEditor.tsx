@@ -15,22 +15,45 @@ import { useCostProfile } from '@/store/useDecisionStore';
 export function CostProfileEditor() {
   const { costProfile, updateCostProfile } = useCostProfile();
   const [localProfile, setLocalProfile] = useState(costProfile);
+  const [editingValues, setEditingValues] = useState({
+    fuelPricePerGallon: String(costProfile.fuelPricePerGallon),
+    averageMPG: String(costProfile.averageMPG),
+    dailyFixedCosts: String(costProfile.dailyFixedCosts),
+    variableCostPerMile: String(costProfile.variableCostPerMile),
+  });
   const [open, setOpen] = useState(false);
 
   // Sync local state with store when sheet opens
   useEffect(() => {
     if (open) {
       setLocalProfile(costProfile);
+      setEditingValues({
+        fuelPricePerGallon: String(costProfile.fuelPricePerGallon),
+        averageMPG: String(costProfile.averageMPG),
+        dailyFixedCosts: String(costProfile.dailyFixedCosts),
+        variableCostPerMile: String(costProfile.variableCostPerMile),
+      });
     }
   }, [open, costProfile]);
 
   const handleSave = () => {
-    updateCostProfile(localProfile);
+    updateCostProfile({
+      fuelPricePerGallon: parseFloat(editingValues.fuelPricePerGallon) || 3.89,
+      averageMPG: parseFloat(editingValues.averageMPG) || 6.5,
+      dailyFixedCosts: parseFloat(editingValues.dailyFixedCosts) || 250,
+      variableCostPerMile: parseFloat(editingValues.variableCostPerMile) || 0.35,
+    });
     setOpen(false);
   };
 
   const handleCancel = () => {
     setLocalProfile(costProfile);
+    setEditingValues({
+      fuelPricePerGallon: String(costProfile.fuelPricePerGallon),
+      averageMPG: String(costProfile.averageMPG),
+      dailyFixedCosts: String(costProfile.dailyFixedCosts),
+      variableCostPerMile: String(costProfile.variableCostPerMile),
+    });
     setOpen(false);
   };
 
@@ -50,7 +73,7 @@ export function CostProfileEditor() {
           </SheetDescription>
         </SheetHeader>
         
-        <ScrollArea className="h-[calc(90vh-120px)] sm:h-auto">
+        <ScrollArea className="h-[calc(90vh-120px)] sm:h-[calc(80vh-180px)]">
           <div className="mt-6 space-y-6 pr-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
@@ -65,8 +88,8 @@ export function CostProfileEditor() {
                   type="number"
                   step="0.01"
                   min="0"
-                  value={localProfile.fuelPricePerGallon}
-                  onChange={(e) => setLocalProfile({ ...localProfile, fuelPricePerGallon: parseFloat(e.target.value) || 0 })}
+                  value={editingValues.fuelPricePerGallon}
+                  onChange={(e) => setEditingValues({ ...editingValues, fuelPricePerGallon: e.target.value })}
                   className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -83,8 +106,8 @@ export function CostProfileEditor() {
                 type="number"
                 step="0.1"
                 min="0"
-                value={localProfile.averageMPG}
-                onChange={(e) => setLocalProfile({ ...localProfile, averageMPG: parseFloat(e.target.value) || 0 })}
+                value={editingValues.averageMPG}
+                onChange={(e) => setEditingValues({ ...editingValues, averageMPG: e.target.value })}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
               />
             </div>
@@ -102,8 +125,8 @@ export function CostProfileEditor() {
                   type="number"
                   step="1"
                   min="0"
-                  value={localProfile.dailyFixedCosts}
-                  onChange={(e) => setLocalProfile({ ...localProfile, dailyFixedCosts: parseFloat(e.target.value) || 0 })}
+                  value={editingValues.dailyFixedCosts}
+                  onChange={(e) => setEditingValues({ ...editingValues, dailyFixedCosts: e.target.value })}
                   className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -122,8 +145,8 @@ export function CostProfileEditor() {
                   type="number"
                   step="0.01"
                   min="0"
-                  value={localProfile.variableCostPerMile}
-                  onChange={(e) => setLocalProfile({ ...localProfile, variableCostPerMile: parseFloat(e.target.value) || 0 })}
+                  value={editingValues.variableCostPerMile}
+                  onChange={(e) => setEditingValues({ ...editingValues, variableCostPerMile: e.target.value })}
                   className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
