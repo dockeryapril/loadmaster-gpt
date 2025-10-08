@@ -1,53 +1,151 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import type { LoadFormInput } from '@/types/mvp';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface OCRDropzoneProps {
   onParse: (data: Partial<LoadFormInput>) => void;
   disabled?: boolean;
 }
 
-const runOcr = async (file: File) => {
-  const tesseract = await import('tesseract.js');
-  const result = await tesseract.recognize(file, 'eng');
-  return result.data.text;
+interface ExtractedData {
+  origin?: string;
+  destination?: string;
+  miles?: string;
+  rate?: string;
+  fsc?: string;
+  tolls?: string;
+  weight?: string;
+  loadReference?: string;
+  confidence?: number;
+  error?: string;
+  message?: string;
+}
+
+const fileToBase64 = async (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 };
 
 export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [manualText, setManualText] = useState('');
+  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const { toast } = useToast();
 
-  const processText = useCallback(
-    (text: string) => {
-      // Placeholder: OCR parsing deferred to Phase 3+
-      setStatus('Text captured. Manual entry required for now.');
-      // In Phase 3+, this will call parseRateCon or similar
+  const processImage = useCallback(
+    async (file: File) => {
+      setIsLoading(true);
+      setExtractedData(null);
+
+      try {
+        const imageBase64 = await fileToBase64(file);
+
+        const { data, error } = await supabase.functions.invoke('extract-load-data', {
+          body: { imageBase64 }
+        });
+
+        if (error) {
+          console.error('Edge function error:', error);
+          
+          // Handle specific error types
+          if (error.message?.includes('rate_limit') || error.message?.includes('429')) {
+            toast({
+              variant: 'destructive',
+              title: 'Too many requests',
+              description: 'Please wait a moment before trying again, or enter data manually.',
+            });
+            return;
+          }
+          
+          if (error.message?.includes('payment_required') || error.message?.includes('402')) {
+            toast({
+              variant: 'destructive',
+              title: 'AI credits depleted',
+              description: 'Manual entry is always available!',
+            });
+            return;
+          }
+          
+          throw new Error(error.message || 'OCR extraction failed');
+        }
+
+        if (data?.error) {
+          console.error('Extraction error:', data.message);
+          toast({
+            variant: 'destructive',
+            title: 'Could not extract data',
+            description: data.message || 'Try a clearer image or enter data manually.',
+          });
+          return;
+        }
+
+        console.log('Extracted data:', data);
+        setExtractedData(data);
+
+        // Show warning for low confidence
+        if (data.confidence && data.confidence < 0.7) {
+          toast({
+            title: '⚠️ Low confidence',
+            description: 'Please review the extracted fields carefully before applying.',
+          });
+        } else {
+          toast({
+            title: '✨ Data extracted',
+            description: 'Review and apply the extracted fields to your form.',
+          });
+        }
+
+      } catch (err) {
+        console.error('OCR processing error:', err);
+        toast({
+          variant: 'destructive',
+          title: 'Upload failed',
+          description: err instanceof Error ? err.message : 'Try a clearer image or enter data manually.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
     },
-    [onParse],
+    [toast],
   );
 
   const handleFile = useCallback(
     async (file: File | null) => {
       if (!file) return;
-      setIsLoading(true);
-      setError(null);
-      setStatus('Running OCR...');
-      try {
-        const text = await runOcr(file);
-        setManualText(text.trim());
-        processText(text);
-      } catch (err) {
-        console.error(err);
-        setError('Unable to read the file. Try a clearer image or paste the text manually.');
-      } finally {
-        setIsLoading(false);
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid file',
+          description: 'Please upload an image file (JPG, PNG, WEBP).',
+        });
+        return;
       }
+      
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          variant: 'destructive',
+          title: 'File too large',
+          description: 'Please upload an image smaller than 10MB.',
+        });
+        return;
+      }
+      
+      await processImage(file);
     },
-    [processText],
+    [processImage, toast],
   );
 
   const onDrop = useCallback(
@@ -84,14 +182,32 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
     [handleFile],
   );
 
-  const handleManualParse = useCallback(() => {
-    if (!manualText.trim()) {
-      setError('Paste some text before parsing.');
-      return;
-    }
-    setError(null);
-    processText(manualText);
-  }, [manualText, processText]);
+  const handleApply = useCallback(() => {
+    if (!extractedData) return;
+    
+    onParse({
+      origin: extractedData.origin || '',
+      destination: extractedData.destination || '',
+      miles: extractedData.miles || '',
+      rate: extractedData.rate || '',
+      fsc: extractedData.fsc || '',
+      tolls: extractedData.tolls || '',
+      notes: extractedData.loadReference 
+        ? `Load ref: ${extractedData.loadReference}` 
+        : '',
+    });
+    
+    setExtractedData(null);
+    
+    toast({
+      title: '✓ Fields applied',
+      description: 'Form has been auto-filled with extracted data.',
+    });
+  }, [extractedData, onParse, toast]);
+
+  const handleCancel = useCallback(() => {
+    setExtractedData(null);
+  }, []);
 
   const borderClasses = disabled
     ? 'border-muted'
@@ -101,56 +217,115 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
 
   return (
     <div className="space-y-3">
-      <div
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        className={`rounded-xl border-2 px-6 py-8 text-center transition-colors ${borderClasses}`}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={onFileChange}
-          disabled={disabled || isLoading}
-        />
-        <p className="text-sm font-semibold">Drop a rate confirmation image</p>
-        <p className="mt-2 text-sm text-muted-foreground">or</p>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="mt-2 rounded-full border border-primary px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
-          disabled={disabled || isLoading}
+      {!extractedData ? (
+        <div
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          className={`rounded-xl border-2 px-6 py-8 text-center transition-colors ${borderClasses}`}
         >
-          Browse files
-        </button>
-        <p className="mt-3 text-xs text-muted-foreground">Supported: JPG, PNG. Keep text clear for best results.</p>
-        {isLoading && <p className="mt-3 text-sm text-primary">Scanning...</p>}
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium">Rate confirmation text</label>
-        <textarea
-          value={manualText}
-          onChange={(event) => setManualText(event.target.value)}
-          rows={6}
-          className="w-full rounded-lg border border-muted bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-          placeholder="Paste the OCR output or copy + paste rate confirmation text here"
-        />
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={onFileChange}
+            disabled={disabled || isLoading}
+          />
+          <p className="text-sm font-semibold">Drop a rate confirmation image</p>
+          <p className="mt-2 text-sm text-muted-foreground">or</p>
           <button
             type="button"
-            onClick={handleManualParse}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-2 rounded-full border border-primary px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
             disabled={disabled || isLoading}
           >
-            Parse text
+            {isLoading ? 'Scanning...' : 'Browse files'}
           </button>
-          {status && <span className="text-xs text-muted-foreground">{status}</span>}
-          {error && <span className="text-xs text-destructive">{error}</span>}
+          <p className="mt-3 text-xs text-muted-foreground">
+            Supported: JPG, PNG, WEBP. Max 10MB.
+          </p>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-xl border border-border bg-background p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-semibold">Extracted fields</p>
+            {extractedData.confidence !== undefined && (
+              <span 
+                className={`text-xs ${
+                  extractedData.confidence >= 0.7 
+                    ? 'text-green-600' 
+                    : 'text-amber-600'
+                }`}
+              >
+                {Math.round(extractedData.confidence * 100)}% confidence
+              </span>
+            )}
+          </div>
+          
+          <div className="space-y-2 text-sm">
+            {extractedData.origin && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Origin:</span>
+                <span className="font-medium">{extractedData.origin}</span>
+              </div>
+            )}
+            {extractedData.destination && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Destination:</span>
+                <span className="font-medium">{extractedData.destination}</span>
+              </div>
+            )}
+            {extractedData.miles && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Miles:</span>
+                <span className="font-medium">{extractedData.miles}</span>
+              </div>
+            )}
+            {extractedData.rate && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Rate:</span>
+                <span className="font-medium">${extractedData.rate}</span>
+              </div>
+            )}
+            {extractedData.fsc && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">FSC:</span>
+                <span className="font-medium">${extractedData.fsc}</span>
+              </div>
+            )}
+            {extractedData.tolls && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Tolls:</span>
+                <span className="font-medium">${extractedData.tolls}</span>
+              </div>
+            )}
+            {extractedData.loadReference && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Load ref:</span>
+                <span className="font-medium">{extractedData.loadReference}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={handleApply}
+              className="flex-1 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Apply to form
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

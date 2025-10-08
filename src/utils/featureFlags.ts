@@ -3,8 +3,8 @@
  * Features are enabled progressively in each phase
  */
 export const features = {
-  // Phase 1: Core calculator only (current)
-  ocrEnabled: false,
+  // Phase 5: OCR enabled (current)
+  ocrEnabled: true,
   authEnabled: false,
   supabaseSync: false,
   

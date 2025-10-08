@@ -68,6 +68,8 @@ function App() {
     }));
   };
 
+  const [showAutoFillBadge, setShowAutoFillBadge] = useState(false);
+
   const applyOcr = (data: Partial<LoadFormInput>) => {
     setForm((prev) => {
       const next = { ...prev };
@@ -77,6 +79,8 @@ function App() {
       });
       return next;
     });
+    setShowAutoFillBadge(true);
+    setTimeout(() => setShowAutoFillBadge(false), 5000);
   };
 
   const handleLogDecision = () => {
@@ -114,6 +118,11 @@ function App() {
                 Enter the load details or drop in a rate confirmation. We will pre-fill the form, show instant profit, and let you log
                 your decision for future reference.
               </p>
+              {showAutoFillBadge && (
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  ✨ Auto-filled from image
+                </div>
+              )}
             </header>
 
             <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
