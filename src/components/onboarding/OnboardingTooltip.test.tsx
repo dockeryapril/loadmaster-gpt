@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { OnboardingTooltip } from './OnboardingTooltip';
 
 describe('OnboardingTooltip', () => {
@@ -24,6 +24,7 @@ describe('OnboardingTooltip', () => {
   });
 
   afterEach(() => {
+    cleanup();
     // Clean up
     document.body.innerHTML = '';
   });
