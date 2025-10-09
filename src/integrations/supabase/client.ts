@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 // Temporarily disabled until Lovable Cloud is enabled in Phase 5
 // import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = "https://zvqzucpwtpjjyeldgaeg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2cXp1Y3B3dHBqanllbGRnYWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2MDUwNDQsImV4cCI6MjA3MDE4MTA0NH0.4CsmF6Mq0N011LqWPmZVPSN8Pk8xfcIQoPbt19Xv_78";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

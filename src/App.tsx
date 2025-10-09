@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
 import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDecisionStore';
@@ -9,8 +10,13 @@ import { HistoryPanel } from '@/components/HistoryPanel';
 import { PatternInsights } from '@/components/PatternInsights';
 import { SimilarLoadIndicator } from '@/components/SimilarLoadIndicator';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { SyncStatus } from '@/components/SyncStatus';
+import { useCloudSync } from '@/hooks/useCloudSync';
+import Auth from '@/pages/Auth';
 import type { DecisionOutcome, LoadFormInput } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
+import { Toaster } from '@/components/ui/toaster';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ''));
@@ -33,11 +39,16 @@ function formatNumber(value: number) {
 
 const outcomeOptions: DecisionOutcome[] = ['book', 'counter', 'pass'];
 
-function App() {
+function MainApp() {
   const [form, setForm] = useState<LoadFormInput>(() => ({ ...emptyLoadForm }));
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
   const addDecision = useDecisionStore((state) => state.addDecision);
+  const history = useDecisionStore((state) => state.history);
+  const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
   const { costProfile } = useCostProfile();
+  const { user } = useAuth();
+  const { isSyncing, syncToCloud } = useCloudSync();
+  const [isSynced, setIsSynced] = useState(false);
 
   const miles = numberOrZero(form.miles);
   const rate = numberOrZero(form.rate);
@@ -69,6 +80,20 @@ function App() {
   };
 
   const [showAutoFillBadge, setShowAutoFillBadge] = useState(false);
+
+  // Load decisions from cloud when user signs in
+  useEffect(() => {
+    if (user) {
+      loadFromCloud();
+    }
+  }, [user, loadFromCloud]);
+
+  // Sync to cloud when decisions change (if authenticated)
+  useEffect(() => {
+    if (user && history.length > 0) {
+      syncToCloud(history).then(() => setIsSynced(true));
+    }
+  }, [history, user, syncToCloud]);
 
   const applyOcr = (data: Partial<LoadFormInput>) => {
     setForm((prev) => {
@@ -107,13 +132,28 @@ function App() {
   return (
     <OnboardingTour>
       <div className="min-h-screen bg-muted/30">
+        {/* Sync Status Header */}
+        <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+            <div>
+              <h1 className="text-lg font-semibold">LoadMaster</h1>
+              <p className="text-xs text-muted-foreground">Quick Profitability Calculator</p>
+            </div>
+            <SyncStatus 
+              isSynced={isSynced} 
+              isSyncing={isSyncing} 
+              isAuthenticated={!!user}
+            />
+          </div>
+        </header>
+
         <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:flex-row">
           <section className="flex-1 space-y-6">
             <header className="space-y-1">
               <p className="text-sm font-medium uppercase tracking-wide text-primary">Load Worth Calculator</p>
-              <h1 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
+              <h2 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
                 Fast profit snapshots before you book the load
-              </h1>
+              </h2>
               <p className="text-sm text-muted-foreground md:text-base">
                 Enter the load details or drop in a rate confirmation. We will pre-fill the form, show instant profit, and let you log
                 your decision for future reference.
@@ -216,7 +256,7 @@ function App() {
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
                     <CostProfileEditor />
                   </div>
-                  <h2 className="mt-2 text-3xl font-semibold text-foreground">{formatCurrency(profit)}</h2>
+                  <h3 className="mt-2 text-3xl font-semibold text-foreground">{formatCurrency(profit)}</h3>
                   <p className="text-sm text-muted-foreground">Net profit after all costs</p>
                   
                   <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -274,7 +314,7 @@ function App() {
                 </div>
 
                 <div className="rounded-xl border border-border bg-background p-4">
-                  <h3 className="text-sm font-semibold">Rate confirmation assist</h3>
+                  <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
                   <p className="mt-1 text-xs text-muted-foreground">
                     OCR is optional. Drop a clear screenshot or paste text to auto-fill the fields.
                   </p>
@@ -297,4 +337,17 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/" element={<MainApp />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Toaster />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}

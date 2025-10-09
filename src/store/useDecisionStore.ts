@@ -1,5 +1,6 @@
 import { create } from '@/lib/zustand';
 import { persist } from '@/lib/zustand/middleware';
+import { supabase } from '@/integrations/supabase/client';
 import type { DecisionOutcome, LoadEntrySnapshot, CostAssumptions } from '@/types/mvp';
 
 interface DecisionState {
@@ -8,6 +9,7 @@ interface DecisionState {
   addDecision: (entry: Omit<LoadEntrySnapshot, 'id' | 'createdAt'>) => void;
   clearHistory: () => void;
   updateCostProfile: (profile: CostAssumptions) => void;
+  loadFromCloud: () => Promise<void>;
 }
 
 const generateId = () =>
@@ -38,6 +40,40 @@ export const useDecisionStore = create<DecisionState>()(
         })),
       clearHistory: () => set({ history: [] }),
       updateCostProfile: (profile) => set({ costProfile: profile }),
+      loadFromCloud: async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { data, error } = await supabase
+            .from('loads')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          const cloudHistory: LoadEntrySnapshot[] = (data || []).map(load => ({
+            id: load.id,
+            createdAt: load.created_at,
+            outcome: 'book' as DecisionOutcome, // Default for existing data
+            origin: load.origin,
+            destination: load.destination,
+            miles: Number(load.miles),
+            rate: Number(load.rate),
+            fsc: Number(load.fsc),
+            tolls: Number(load.tolls),
+            fuelCost: Number(load.fuel_cost),
+            profit: Number(load.profit),
+            rpm: Number(load.rpm),
+            notes: load.notes || undefined,
+          }));
+
+          set({ history: cloudHistory });
+        } catch (error) {
+          console.error('Failed to load from cloud:', error);
+        }
+      },
     }),
     {
       name: 'lm:v2:state',
