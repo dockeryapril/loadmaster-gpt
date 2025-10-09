@@ -35,7 +35,7 @@ export const useDecisionStore = create<DecisionState>()(
           ].slice(0, 100),
         })),
       clearHistory: () => set({ history: [] }),
-      updateCostProfile: (profile) => set({ costProfile: { ...profile } }),
+      updateCostProfile: (profile) => set({ costProfile: { ...defaultCostAssumptions, ...profile } }),
       loadFromCloud: async () => {
         try {
           const { data: { user } } = await supabase.auth.getUser();
@@ -85,14 +85,25 @@ export const useDecisionStore = create<DecisionState>()(
 const validateCostProfile = () => {
   const state = useDecisionStore.getState();
   const { costProfile, updateCostProfile } = state;
-  
+
+  const requiredFields: (keyof CostAssumptions)[] = [
+    'fuelPricePerGallon',
+    'averageMPG',
+    'dailyFixedCosts',
+    'variableCostPerMile',
+    'goodRpm',
+    'fairRpm',
+    'goodProfit',
+    'fairProfit',
+  ];
+
   // Check if any required field is missing or undefined
-  const hasAllFields = costProfile &&
-    typeof costProfile.fuelPricePerGallon === 'number' &&
-    typeof costProfile.averageMPG === 'number' &&
-    typeof costProfile.dailyFixedCosts === 'number' &&
-    typeof costProfile.variableCostPerMile === 'number';
-  
+  const hasAllFields = Boolean(costProfile) &&
+    requiredFields.every((field) => {
+      const value = costProfile?.[field];
+      return typeof value === 'number' && Number.isFinite(value);
+    });
+
   if (!hasAllFields) {
     console.log('[store] Restoring missing cost profile fields from defaults');
     updateCostProfile({
