@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight } from 'lucide-react';
@@ -26,83 +26,249 @@ export function OnboardingTooltip({
   onSkip,
 }: OnboardingTooltipProps) {
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0, finalPlacement: placement });
-  const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({
+    top: 0,
+    left: 0,
+    finalPlacement: placement,
+  });
+  const [spotlightRect, setSpotlightRect] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
   const isActive = currentStep === step;
   const isLastStep = step === 3;
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      setTargetElement(null);
+      setSpotlightRect(null);
+      return;
+    }
 
-    const element = document.querySelector(selector) as HTMLElement;
-    if (!element) return;
+    const element = document.querySelector(selector) as HTMLElement | null;
+    if (!element) {
+      setTargetElement(null);
+      setSpotlightRect(null);
+      return;
+    }
 
     setTargetElement(element);
 
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    let top = rect.bottom + 16;
+    let left = centerX;
+
+    if (placement === 'top') {
+      top = rect.top - 8;
+    } else if (placement === 'left') {
+      top = centerY;
+      left = rect.left - 16;
+    } else if (placement === 'right') {
+      top = centerY;
+      left = rect.right + 16;
+    }
+
+    setSpotlightRect({
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+    });
+
+    setTooltipPosition({
+      top,
+      left,
+      finalPlacement: placement,
+    });
+  }, [isActive, selector, placement]);
+
+  useLayoutEffect(() => {
+    if (!isActive || !targetElement || !tooltipRef.current) {
+      return;
+    }
+
+    const tooltipElement = tooltipRef.current;
+
     const calculatePosition = () => {
-      const rect = element.getBoundingClientRect();
+      if (!tooltipElement) return;
+
+      const rect = targetElement.getBoundingClientRect();
+      const tooltipRect = tooltipElement.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
-      
-      // Store spotlight rect
-      setSpotlightRect(rect);
-      
-      const tooltipWidth = Math.min(320, viewportWidth - 32);
-      const tooltipHeight = 180;
-      
-      let top = 0;
-      let left = 0;
-      let finalPlacement = placement;
 
-      // Calculate position based on placement
-      if (placement === 'bottom') {
-        top = rect.bottom + 16;
-        left = rect.left + rect.width / 2;
-        
-        // Flip to top if would go off-screen
-        if (top + tooltipHeight > viewportHeight - 20) {
-          top = rect.top - tooltipHeight - 16;
-          finalPlacement = 'top';
-        }
-      } else if (placement === 'top') {
-        // Position the tooltip so its bottom edge sits 8px above the target
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      let top = rect.bottom + 16;
+      let left = centerX;
+      let finalPlacement: typeof placement = 'bottom';
+
+      if (placement === 'top') {
         top = rect.top - 8;
-        left = rect.left + rect.width / 2;
-        
-        // Predict if going off-screen; if so, flip to bottom
-        const predictedTopEdge = rect.top - tooltipHeight - 8;
-        if (predictedTopEdge < 20) {
+        left = centerX;
+        finalPlacement = 'top';
+
+        if (top - tooltipRect.height < 16) {
           top = rect.bottom + 16;
           finalPlacement = 'bottom';
         }
+      } else if (placement === 'left') {
+        top = centerY;
+        left = rect.left - 16;
+        finalPlacement = 'left';
+
+        if (left - tooltipRect.width < 16) {
+          left = rect.right + 16;
+          finalPlacement = 'right';
+        }
+      } else if (placement === 'right') {
+        top = centerY;
+        left = rect.right + 16;
+        finalPlacement = 'right';
+
+        if (left + tooltipRect.width > viewportWidth - 16) {
+          left = rect.left - 16;
+          finalPlacement = 'left';
+        }
+      } else {
+        top = rect.bottom + 16;
+        left = centerX;
+        finalPlacement = 'bottom';
+
+        if (top + tooltipRect.height > viewportHeight - 16) {
+          top = rect.top - 8;
+          finalPlacement = 'top';
+        }
       }
 
-      // Ensure tooltip stays within viewport horizontally
-      const halfWidth = tooltipWidth / 2;
-      if (left - halfWidth < 16) {
-        left = halfWidth + 16;
-      } else if (left + halfWidth > viewportWidth - 16) {
-        left = viewportWidth - halfWidth - 16;
+      if (finalPlacement === 'top') {
+        const predictedTop = top - tooltipRect.height;
+        if (predictedTop < 16) {
+          top = tooltipRect.height + 16;
+        }
+      } else if (finalPlacement === 'bottom') {
+        if (top + tooltipRect.height > viewportHeight - 16) {
+          top = Math.max(16, viewportHeight - tooltipRect.height - 16);
+        }
+      } else if (finalPlacement === 'left') {
+        const halfHeight = tooltipRect.height / 2;
+        if (top - halfHeight < 16) {
+          top = halfHeight + 16;
+        } else if (top + halfHeight > viewportHeight - 16) {
+          top = viewportHeight - halfHeight - 16;
+        }
+
+        if (left - tooltipRect.width < 16) {
+          left = tooltipRect.width + 16;
+        }
+      } else if (finalPlacement === 'right') {
+        const halfHeight = tooltipRect.height / 2;
+        if (top - halfHeight < 16) {
+          top = halfHeight + 16;
+        } else if (top + halfHeight > viewportHeight - 16) {
+          top = viewportHeight - halfHeight - 16;
+        }
+
+        if (left + tooltipRect.width > viewportWidth - 16) {
+          left = viewportWidth - tooltipRect.width - 16;
+        }
       }
 
-      setTooltipPosition({ top, left, finalPlacement });
+      if (finalPlacement === 'top' || finalPlacement === 'bottom') {
+        const halfWidth = tooltipRect.width / 2;
+        if (left - halfWidth < 16) {
+          left = halfWidth + 16;
+        } else if (left + halfWidth > viewportWidth - 16) {
+          left = viewportWidth - halfWidth - 16;
+        }
+      }
+
+      setSpotlightRect((prev) => {
+        const nextRect = {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        };
+
+        if (
+          prev &&
+          Math.abs(prev.top - nextRect.top) < 0.5 &&
+          Math.abs(prev.left - nextRect.left) < 0.5 &&
+          Math.abs(prev.width - nextRect.width) < 0.5 &&
+          Math.abs(prev.height - nextRect.height) < 0.5
+        ) {
+          return prev;
+        }
+
+        return nextRect;
+      });
+
+      setTooltipPosition((prev) => {
+        if (
+          Math.abs(prev.top - top) < 0.5 &&
+          Math.abs(prev.left - left) < 0.5 &&
+          prev.finalPlacement === finalPlacement
+        ) {
+          return prev;
+        }
+
+        return { top, left, finalPlacement };
+      });
     };
 
-    calculatePosition();
+    let frameId: number | null = null;
 
-    // Update on scroll and resize for smooth alignment
-    const updatePosition = () => {
-      calculatePosition();
+    const schedulePositionUpdate = () => {
+      if (frameId !== null && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      if (typeof window.requestAnimationFrame === 'function') {
+        frameId = window.requestAnimationFrame(() => {
+          calculatePosition();
+          frameId = null;
+        });
+      } else {
+        calculatePosition();
+      }
     };
 
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
+    schedulePositionUpdate();
+
+    const handleScroll = () => schedulePositionUpdate();
+    const handleResize = () => schedulePositionUpdate();
+
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+
+    const observers: ResizeObserver[] = [];
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => schedulePositionUpdate());
+      observer.observe(targetElement);
+      observer.observe(tooltipElement);
+      observers.push(observer);
+    }
 
     return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
+      if (frameId !== null && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+
+      observers.forEach((observer) => observer.disconnect());
     };
-  }, [isActive, selector, placement]);
+  }, [isActive, targetElement, placement]);
 
   if (!isActive || !targetElement || !spotlightRect) {
     return null;
@@ -130,12 +296,13 @@ export function OnboardingTooltip({
         style={{
           top: tooltipPosition.top,
           left: tooltipPosition.left,
-          transform: 
+          transform:
             tooltipPosition.finalPlacement === 'bottom' ? 'translateX(-50%)' :
             tooltipPosition.finalPlacement === 'top' ? 'translate(-50%, -100%)' :
             tooltipPosition.finalPlacement === 'left' ? 'translate(-100%, -50%)' :
             'translate(0, -50%)',
         }}
+        ref={tooltipRef}
       >
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-2">
