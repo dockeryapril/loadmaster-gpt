@@ -342,10 +342,22 @@ export function suggestTemplates(fields: LoadFields, calc: CalcResult, max = 3):
   }
 
   if (out.length === 0) {
-    out.push({
-      label: 'Anchor negotiation',
-      message: `I can move this for $${anchor}, but I'd settle at $${target} if we can agree today.`,
-    });
+    // Provide three tiered templates for progressive negotiation
+    const { floor } = calc.negotiation;
+    out.push(
+      {
+        label: 'Strong Opening',
+        message: `My rate for this load is $${anchor}. Let me know if that works for you.`,
+      },
+      {
+        label: 'Counter Offer',
+        message: `I appreciate the offer, but I need at least $${target} to make this work.`,
+      },
+      {
+        label: 'Final Position',
+        message: `The absolute lowest I can go is $${floor}. That's my bottom line.`,
+      }
+    );
   }
 
   return out.slice(0, max);
