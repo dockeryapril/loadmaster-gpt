@@ -20,6 +20,10 @@ export function CostProfileEditor() {
     averageMPG: String(costProfile.averageMPG),
     dailyFixedCosts: String(costProfile.dailyFixedCosts),
     variableCostPerMile: String(costProfile.variableCostPerMile),
+    goodRpm: String(costProfile.goodRpm),
+    fairRpm: String(costProfile.fairRpm),
+    goodProfit: String(costProfile.goodProfit),
+    fairProfit: String(costProfile.fairProfit),
   });
   const [open, setOpen] = useState(false);
 
@@ -32,6 +36,10 @@ export function CostProfileEditor() {
         averageMPG: String(costProfile.averageMPG),
         dailyFixedCosts: String(costProfile.dailyFixedCosts),
         variableCostPerMile: costProfile.variableCostPerMile.toFixed(2),
+        goodRpm: costProfile.goodRpm.toFixed(2),
+        fairRpm: costProfile.fairRpm.toFixed(2),
+        goodProfit: String(costProfile.goodProfit),
+        fairProfit: String(costProfile.fairProfit),
       });
     }
   }, [open, costProfile]);
@@ -47,6 +55,10 @@ export function CostProfileEditor() {
       averageMPG: parseOrDefault(editingValues.averageMPG, 6.5),
       dailyFixedCosts: parseOrDefault(editingValues.dailyFixedCosts, 250),
       variableCostPerMile: parseOrDefault(editingValues.variableCostPerMile, 0.35),
+      goodRpm: parseOrDefault(editingValues.goodRpm, 1.50),
+      fairRpm: parseOrDefault(editingValues.fairRpm, 1.00),
+      goodProfit: parseOrDefault(editingValues.goodProfit, 500),
+      fairProfit: parseOrDefault(editingValues.fairProfit, 200),
     });
     setOpen(false);
   };
@@ -58,6 +70,10 @@ export function CostProfileEditor() {
       averageMPG: String(costProfile.averageMPG),
       dailyFixedCosts: String(costProfile.dailyFixedCosts),
       variableCostPerMile: costProfile.variableCostPerMile.toFixed(2),
+      goodRpm: costProfile.goodRpm.toFixed(2),
+      fairRpm: costProfile.fairRpm.toFixed(2),
+      goodProfit: String(costProfile.goodProfit),
+      fairProfit: String(costProfile.fairProfit),
     });
     setOpen(false);
   };
@@ -154,6 +170,95 @@ export function CostProfileEditor() {
                   onChange={(e) => setEditingValues({ ...editingValues, variableCostPerMile: e.target.value })}
                   className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
                 />
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-border pt-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Decision Guidance Thresholds</h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                These thresholds determine when to book, counter, or pass on a load based on Net RPM and profit
+              </p>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Good Net RPM (Book it threshold)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Book loads with Net RPM above this amount
+                  </p>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editingValues.goodRpm}
+                      onChange={(e) => setEditingValues({ ...editingValues, goodRpm: e.target.value })}
+                      className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Fair Net RPM (Counter threshold)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Consider loads with Net RPM above this amount
+                  </p>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editingValues.fairRpm}
+                      onChange={(e) => setEditingValues({ ...editingValues, fairRpm: e.target.value })}
+                      className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Good Profit (Book it threshold)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Book loads with profit above this amount
+                  </p>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={editingValues.goodProfit}
+                      onChange={(e) => setEditingValues({ ...editingValues, goodProfit: e.target.value })}
+                      className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Fair Profit (Counter threshold)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Consider loads with profit above this amount
+                  </p>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={editingValues.fairProfit}
+                      onChange={(e) => setEditingValues({ ...editingValues, fairProfit: e.target.value })}
+                      className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

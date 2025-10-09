@@ -14,19 +14,18 @@ interface GuidanceResult {
   };
 }
 
-// Thresholds for guidance decisions
-const THRESHOLDS = {
-  GOOD_RPM: 1.50,
-  FAIR_RPM: 1.00,
-  GOOD_PROFIT: 500,
-  FAIR_PROFIT: 200,
-};
+interface GuidanceThresholds {
+  goodRpm: number;
+  fairRpm: number;
+  goodProfit: number;
+  fairProfit: number;
+}
 
-export function getLoadGuidance(netRpm: number, profit: number): GuidanceResult {
-  const isGoodRpm = netRpm >= THRESHOLDS.GOOD_RPM;
-  const isFairRpm = netRpm >= THRESHOLDS.FAIR_RPM;
-  const isGoodProfit = profit >= THRESHOLDS.GOOD_PROFIT;
-  const isFairProfit = profit >= THRESHOLDS.FAIR_PROFIT;
+export function getLoadGuidance(netRpm: number, profit: number, thresholds: GuidanceThresholds): GuidanceResult {
+  const isGoodRpm = netRpm >= thresholds.goodRpm;
+  const isFairRpm = netRpm >= thresholds.fairRpm;
+  const isGoodProfit = profit >= thresholds.goodProfit;
+  const isFairProfit = profit >= thresholds.fairProfit;
 
   // Book it: Good RPM AND Good Profit
   if (isGoodRpm && isGoodProfit) {
@@ -75,10 +74,11 @@ export function getLoadGuidance(netRpm: number, profit: number): GuidanceResult 
 interface GuidanceBadgeProps {
   netRpm: number;
   profit: number;
+  thresholds: GuidanceThresholds;
 }
 
-export function GuidanceBadge({ netRpm, profit }: GuidanceBadgeProps) {
-  const guidance = getLoadGuidance(netRpm, profit);
+export function GuidanceBadge({ netRpm, profit, thresholds }: GuidanceBadgeProps) {
+  const guidance = getLoadGuidance(netRpm, profit, thresholds);
   const Icon = guidance.icon;
 
   return (

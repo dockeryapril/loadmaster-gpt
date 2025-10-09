@@ -35,6 +35,10 @@ export interface CostAssumptions {
   averageMPG: number;
   dailyFixedCosts: number;
   variableCostPerMile: number;
+  goodRpm: number;
+  fairRpm: number;
+  goodProfit: number;
+  fairProfit: number;
 }
 
 export const defaultCostAssumptions: CostAssumptions = {
@@ -42,6 +46,10 @@ export const defaultCostAssumptions: CostAssumptions = {
   averageMPG: 6.5,
   dailyFixedCosts: 250,
   variableCostPerMile: 0.35,
+  goodRpm: 1.50,
+  fairRpm: 1.00,
+  goodProfit: 500,
+  fairProfit: 200,
 };
 
 export const emptyLoadForm: LoadFormInput = {

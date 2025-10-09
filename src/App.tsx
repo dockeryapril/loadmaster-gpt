@@ -393,7 +393,7 @@ function MainApp() {
                   } : null} 
                 />
 
-                <GuidanceBadge netRpm={netRpm} profit={profit} />
+                <GuidanceBadge netRpm={netRpm} profit={profit} thresholds={costProfile} />
 
                 <div className="rounded-xl border border-border bg-background p-4">
                   <p className="text-sm font-semibold">Decision</p>
