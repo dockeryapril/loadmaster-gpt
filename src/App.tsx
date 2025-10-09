@@ -316,7 +316,7 @@ function MainApp() {
                 <div className="rounded-xl border border-border bg-background p-4">
                   <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    OCR is optional. Drop a clear screenshot or paste text to auto-fill the fields.
+                    OCR is optional. Drop a clear screenshot to auto-fill the fields.
                   </p>
                   <div className="mt-4">
                     <OCRDropzone onParse={applyOcr} />
