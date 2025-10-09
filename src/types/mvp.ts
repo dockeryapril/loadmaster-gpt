@@ -1,6 +1,9 @@
 export type DecisionOutcome = 'book' | 'pass' | 'counter';
 
+export type Equipment = 'hotshot' | 'cargo_van' | 'straight_truck';
+
 export interface LoadFormInput {
+  equipment: Equipment;
   origin: string;
   destination: string;
   miles: string;
@@ -53,6 +56,7 @@ export const defaultCostAssumptions: CostAssumptions = {
 };
 
 export const emptyLoadForm: LoadFormInput = {
+  equipment: 'hotshot',
   origin: '',
   destination: '',
   miles: '',

@@ -1,4 +1,6 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
+import { MessageSquare } from 'lucide-react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
@@ -13,8 +15,11 @@ import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { SyncStatus } from '@/components/SyncStatus';
 import { useCloudSync } from '@/hooks/useCloudSync';
+import { useNegotiationEngine } from '@/hooks/useNegotiationEngine';
+import { NegotiationMessageSheet } from '@/components/NegotiationMessageSheet';
+import { features } from '@/utils/featureFlags';
 import Auth from '@/pages/Auth';
-import type { DecisionOutcome, LoadFormInput } from '@/types/mvp';
+import type { DecisionOutcome, LoadFormInput, Equipment } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -77,6 +82,7 @@ function MainApp() {
   const { user } = useAuth();
   const { isSyncing, syncToCloud } = useCloudSync();
   const [isSynced, setIsSynced] = useState(false);
+  const [negotiationSheetOpen, setNegotiationSheetOpen] = useState(false);
 
   const miles = numberOrZero(form.miles);
   const rate = numberOrZero(form.rate);
@@ -109,6 +115,11 @@ function MainApp() {
   const displayedFuelCost = includeFuel
     ? detailedCalculation.breakdown.fuelCost
     : detailedCalculation.adjustments.originalFuelCost;
+
+  // Negotiation engine (only when feature enabled)
+  const negotiation = features.advancedNegotiation
+    ? useNegotiationEngine(form, profit)
+    : { calculation: null, templates: [], isReady: false };
 
   const canLog =
     Boolean(form.origin && form.destination) &&
@@ -182,7 +193,15 @@ function MainApp() {
       Object.entries(data).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
         const stringValue = typeof value === 'string' ? value : String(value);
-        next[key as keyof typeof next] = stringValue;
+        // Validate and assign equipment type
+        if (key === 'equipment') {
+          const validEquipment: Equipment[] = ['hotshot', 'cargo_van', 'straight_truck'];
+          if (validEquipment.includes(stringValue as Equipment)) {
+            next.equipment = stringValue as Equipment;
+          }
+        } else {
+          next[key as keyof typeof next] = stringValue as any;
+        }
         if (key === 'splitPercent') {
           setPersistedSplitPercent(stringValue);
         }
@@ -313,6 +332,23 @@ function MainApp() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-4" data-onboarding="step-1">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Equipment Type
+                  </label>
+                  <select
+                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    value={form.equipment}
+                    onChange={(event) => updateForm('equipment', event.target.value)}
+                  >
+                    <option value="hotshot">Hotshot</option>
+                    <option value="cargo_van">Cargo Van</option>
+                    <option value="straight_truck">Straight Truck</option>
+                  </select>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Used for negotiation rate calculations
+                  </p>
+                </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     Origin <span className="text-rose-500">*</span>
@@ -545,6 +581,17 @@ function MainApp() {
 
                 <GuidanceBadge netRpm={netRpm} profit={profit} thresholds={costProfile} />
 
+                {features.advancedNegotiation && canLog && (
+                  <button
+                    type="button"
+                    onClick={() => setNegotiationSheetOpen(true)}
+                    className="w-full rounded-lg border-2 border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary transition hover:bg-primary/10 hover:border-primary/30"
+                  >
+                    <MessageSquare className="inline-block mr-2 h-4 w-4" />
+                    Generate Negotiation Message
+                  </button>
+                )}
+
                 <div className="rounded-xl border border-border bg-background p-4">
                   <p className="text-sm font-semibold">Decision</p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -593,6 +640,16 @@ function MainApp() {
           <HistoryPanel />
         </aside>
       </main>
+
+      {/* Negotiation Message Sheet */}
+      {features.advancedNegotiation && negotiation.calculation && (
+        <NegotiationMessageSheet
+          open={negotiationSheetOpen}
+          onOpenChange={setNegotiationSheetOpen}
+          calculation={negotiation.calculation}
+          templates={negotiation.templates}
+        />
+      )}
     </div>
     </OnboardingTour>
   );

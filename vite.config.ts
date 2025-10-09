@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@loadmaster/engine": path.resolve(__dirname, "./packages/engine/src"),
     },
   },
   build: {

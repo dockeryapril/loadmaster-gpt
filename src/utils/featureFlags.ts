@@ -8,11 +8,13 @@ export const features = {
   authEnabled: false,
   supabaseSync: false,
   
+  // Phase 6: Template negotiation enabled
+  advancedNegotiation: true,
+  
   // Future phases (deferred)
   stripeIntegration: false,
   aiEnhancement: false,
   businessSetup: false,
-  advancedNegotiation: false,
 } as const;
 
 export type FeatureFlag = keyof typeof features;
