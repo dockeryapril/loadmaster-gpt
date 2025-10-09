@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
+import { FunctionsFetchError } from '@supabase/supabase-js';
 import type { LoadFormInput } from '@/types/mvp';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -23,18 +24,6 @@ interface ExtractedData {
   message?: string;
 }
 
-const fileToBase64 = async (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
-
 export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -48,15 +37,25 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
       setExtractedData(null);
 
       try {
-        const imageBase64 = await fileToBase64(file);
+        const formData = new FormData();
+        formData.append('file', file, file.name);
 
         const { data, error } = await supabase.functions.invoke('extract-load-data', {
-          body: { imageBase64 }
+          body: formData,
         });
 
         if (error) {
           console.error('Edge function error:', error);
-          
+
+          if (error instanceof FunctionsFetchError || error.message?.includes('Failed to send a request')) {
+            toast({
+              variant: 'destructive',
+              title: 'Connection issue',
+              description: 'We could not reach the OCR service. Check your connection or try a smaller image.',
+            });
+            return;
+          }
+
           // Handle specific error types
           if (error.message?.includes('rate_limit') || error.message?.includes('429')) {
             toast({

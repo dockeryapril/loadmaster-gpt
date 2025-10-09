@@ -1,10 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,12 +15,64 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64 } = await req.json();
-    
+    const contentType = req.headers.get('content-type') || '';
+    let imageBase64: string | undefined;
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData();
+      const file = formData.get('file');
+      const base64FromForm = formData.get('imageBase64');
+
+      if (typeof base64FromForm === 'string' && base64FromForm.length > 0) {
+        imageBase64 = base64FromForm;
+      } else if (typeof file === 'string' && file.length > 0) {
+        imageBase64 = file;
+      } else if (file instanceof File) {
+        if (file.size > MAX_FILE_SIZE) {
+          return new Response(JSON.stringify({
+            error: 'file_too_large',
+            message: 'Images larger than 10MB are not supported. Try a smaller file.',
+          }), {
+            status: 413,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const arrayBuffer = await file.arrayBuffer();
+        const base64String = base64Encode(new Uint8Array(arrayBuffer));
+        const mimeType = file.type || 'image/jpeg';
+        imageBase64 = `data:${mimeType};base64,${base64String}`;
+      }
+    } else if (contentType.includes('application/octet-stream')) {
+      const arrayBuffer = await req.arrayBuffer();
+      if (arrayBuffer.byteLength > 0) {
+        if (arrayBuffer.byteLength > MAX_FILE_SIZE) {
+          return new Response(JSON.stringify({
+            error: 'file_too_large',
+            message: 'Images larger than 10MB are not supported. Try a smaller file.',
+          }), {
+            status: 413,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const base64String = base64Encode(new Uint8Array(arrayBuffer));
+        const mimeType = req.headers.get('x-file-type') || 'image/jpeg';
+        imageBase64 = `data:${mimeType};base64,${base64String}`;
+      }
+    } else {
+      try {
+        const body = await req.json();
+        imageBase64 = body?.imageBase64;
+      } catch (_error) {
+        console.warn('Unsupported request body for OCR extraction');
+      }
+    }
+
     if (!imageBase64) {
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         error: 'missing_image',
-        message: 'Image data is required' 
+        message: 'Image data is required'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
