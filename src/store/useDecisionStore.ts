@@ -7,6 +7,7 @@ import { defaultCostAssumptions } from '@/types/mvp';
 interface DecisionState {
   history: LoadEntrySnapshot[];
   costProfile: CostAssumptions;
+  historyClearedAt: string | null;
   addDecision: (entry: Omit<LoadEntrySnapshot, 'id' | 'createdAt'>) => void;
   clearHistory: () => void;
   updateCostProfile: (profile: CostAssumptions) => void;
@@ -22,6 +23,7 @@ export const useDecisionStore = create<DecisionState>()(
   persist(
     (set) => ({
       history: [],
+      historyClearedAt: null,
       costProfile: defaultCostAssumptions,
       addDecision: (entry) =>
         set((state) => ({
@@ -33,11 +35,17 @@ export const useDecisionStore = create<DecisionState>()(
             },
             ...state.history,
           ].slice(0, 100),
+          historyClearedAt: state.historyClearedAt,
         })),
-      clearHistory: () => set({ history: [] }),
+      clearHistory: () =>
+        set({
+          history: [],
+          historyClearedAt: new Date().toISOString(),
+        }),
       updateCostProfile: (profile) => set({ costProfile: { ...defaultCostAssumptions, ...profile } }),
       loadFromCloud: async () => {
         try {
+          const { historyClearedAt } = useDecisionStore.getState();
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) return;
 
@@ -49,7 +57,8 @@ export const useDecisionStore = create<DecisionState>()(
 
           if (error) throw error;
 
-          const cloudHistory: LoadEntrySnapshot[] = (data || []).map(load => ({
+          const cloudHistory: LoadEntrySnapshot[] = (data || [])
+            .map(load => ({
             id: load.id,
             createdAt: load.created_at,
             outcome: 'book' as DecisionOutcome, // Default for existing data
@@ -63,9 +72,16 @@ export const useDecisionStore = create<DecisionState>()(
             profit: Number(load.profit),
             rpm: Number(load.rpm),
             notes: load.notes || undefined,
-          }));
+          }))
+            .filter((entry) => {
+              if (!historyClearedAt) return true;
+              return new Date(entry.createdAt).getTime() > new Date(historyClearedAt).getTime();
+            });
 
-          set({ history: cloudHistory });
+          set({
+            history: cloudHistory,
+            historyClearedAt,
+          });
         } catch (error) {
           console.error('Failed to load from cloud:', error);
         }
@@ -73,9 +89,10 @@ export const useDecisionStore = create<DecisionState>()(
     }),
     {
       name: 'lm:v2:state',
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         history: state.history,
         costProfile: state.costProfile,
+        historyClearedAt: state.historyClearedAt,
       }),
     },
   ),
