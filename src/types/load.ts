@@ -32,10 +32,13 @@ export interface ProfitBreakdown {
 export interface CalculationAdjustments {
   includeFsc: boolean;
   includeTolls: boolean;
+  includeFuel: boolean;
   originalFsc: number;
   originalTolls: number;
+  originalFuelCost: number;
   appliedFsc: number;
   appliedTolls: number;
+  appliedFuelCost: number;
 }
 
 export interface DetailedProfitCalculation {
@@ -49,6 +52,7 @@ export interface DetailedProfitCalculation {
 export interface CalculationOptions {
   includeFsc?: boolean;
   includeTolls?: boolean;
+  includeFuel?: boolean;
 }
 
 export function calculateDetailedProfit(
@@ -62,6 +66,7 @@ export function calculateDetailedProfit(
 ): DetailedProfitCalculation {
   const includeFsc = options.includeFsc ?? true;
   const includeTolls = options.includeTolls ?? true;
+  const includeFuel = options.includeFuel ?? true;
 
   const appliedFsc = includeFsc ? fsc : 0;
   const appliedTolls = includeTolls ? tolls : 0;
@@ -72,6 +77,12 @@ export function calculateDetailedProfit(
 
   // Costs
   const variableCosts = miles * costProfile.variableCostPerMile;
+
+  const originalFuelCost =
+    miles > 0 && costProfile.averageMPG > 0
+      ? (miles / costProfile.averageMPG) * costProfile.fuelPricePerGallon
+      : 0;
+  const fuelCost = includeFuel ? originalFuelCost : 0;
 
   // Prorate fixed costs based on industry average of 2500 miles/week
   const fixedCosts = miles > 0
@@ -101,10 +112,13 @@ export function calculateDetailedProfit(
     adjustments: {
       includeFsc,
       includeTolls,
+      includeFuel,
       originalFsc: fsc,
       originalTolls: tolls,
+      originalFuelCost,
       appliedFsc,
       appliedTolls,
+      appliedFuelCost: fuelCost,
     },
   };
 }
