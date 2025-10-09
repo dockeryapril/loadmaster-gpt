@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,38 +11,44 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCostProfile } from '@/store/useDecisionStore';
+import { defaultCostAssumptions } from '@/types/mvp';
 
 export function CostProfileEditor() {
   const { costProfile, updateCostProfile } = useCostProfile();
-  const [localProfile, setLocalProfile] = useState(costProfile);
+  const mergedCostProfile = useMemo(
+    () => ({
+      ...defaultCostAssumptions,
+      ...costProfile,
+    }),
+    [costProfile],
+  );
   const [editingValues, setEditingValues] = useState({
-    fuelPricePerGallon: String(costProfile.fuelPricePerGallon),
-    averageMPG: String(costProfile.averageMPG),
-    dailyFixedCosts: String(costProfile.dailyFixedCosts),
-    variableCostPerMile: String(costProfile.variableCostPerMile),
-    goodRpm: String(costProfile.goodRpm),
-    fairRpm: String(costProfile.fairRpm),
-    goodProfit: String(costProfile.goodProfit),
-    fairProfit: String(costProfile.fairProfit),
+    fuelPricePerGallon: mergedCostProfile.fuelPricePerGallon.toFixed(2),
+    averageMPG: String(mergedCostProfile.averageMPG),
+    dailyFixedCosts: String(mergedCostProfile.dailyFixedCosts),
+    variableCostPerMile: mergedCostProfile.variableCostPerMile.toFixed(2),
+    goodRpm: mergedCostProfile.goodRpm.toFixed(2),
+    fairRpm: mergedCostProfile.fairRpm.toFixed(2),
+    goodProfit: String(mergedCostProfile.goodProfit),
+    fairProfit: String(mergedCostProfile.fairProfit),
   });
   const [open, setOpen] = useState(false);
 
   // Sync local state with store when sheet opens
   useEffect(() => {
     if (open) {
-      setLocalProfile(costProfile);
       setEditingValues({
-        fuelPricePerGallon: costProfile.fuelPricePerGallon.toFixed(2),
-        averageMPG: String(costProfile.averageMPG),
-        dailyFixedCosts: String(costProfile.dailyFixedCosts),
-        variableCostPerMile: costProfile.variableCostPerMile.toFixed(2),
-        goodRpm: costProfile.goodRpm.toFixed(2),
-        fairRpm: costProfile.fairRpm.toFixed(2),
-        goodProfit: String(costProfile.goodProfit),
-        fairProfit: String(costProfile.fairProfit),
+        fuelPricePerGallon: mergedCostProfile.fuelPricePerGallon.toFixed(2),
+        averageMPG: String(mergedCostProfile.averageMPG),
+        dailyFixedCosts: String(mergedCostProfile.dailyFixedCosts),
+        variableCostPerMile: mergedCostProfile.variableCostPerMile.toFixed(2),
+        goodRpm: mergedCostProfile.goodRpm.toFixed(2),
+        fairRpm: mergedCostProfile.fairRpm.toFixed(2),
+        goodProfit: String(mergedCostProfile.goodProfit),
+        fairProfit: String(mergedCostProfile.fairProfit),
       });
     }
-  }, [open, costProfile]);
+  }, [open, mergedCostProfile]);
 
   const parseOrDefault = (value: string, fallback: number) => {
     const parsed = parseFloat(value);
@@ -64,16 +70,15 @@ export function CostProfileEditor() {
   };
 
   const handleCancel = () => {
-    setLocalProfile(costProfile);
     setEditingValues({
-      fuelPricePerGallon: costProfile.fuelPricePerGallon.toFixed(2),
-      averageMPG: String(costProfile.averageMPG),
-      dailyFixedCosts: String(costProfile.dailyFixedCosts),
-      variableCostPerMile: costProfile.variableCostPerMile.toFixed(2),
-      goodRpm: costProfile.goodRpm.toFixed(2),
-      fairRpm: costProfile.fairRpm.toFixed(2),
-      goodProfit: String(costProfile.goodProfit),
-      fairProfit: String(costProfile.fairProfit),
+      fuelPricePerGallon: mergedCostProfile.fuelPricePerGallon.toFixed(2),
+      averageMPG: String(mergedCostProfile.averageMPG),
+      dailyFixedCosts: String(mergedCostProfile.dailyFixedCosts),
+      variableCostPerMile: mergedCostProfile.variableCostPerMile.toFixed(2),
+      goodRpm: mergedCostProfile.goodRpm.toFixed(2),
+      fairRpm: mergedCostProfile.fairRpm.toFixed(2),
+      goodProfit: String(mergedCostProfile.goodProfit),
+      fairProfit: String(mergedCostProfile.fairProfit),
     });
     setOpen(false);
   };
