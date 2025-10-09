@@ -97,7 +97,7 @@ const validateCostProfile = () => {
     console.log('[store] Restoring missing cost profile fields from defaults');
     updateCostProfile({
       ...defaultCostAssumptions,
-      ...costProfile,
+      ...(costProfile || {}),
     });
   }
 };

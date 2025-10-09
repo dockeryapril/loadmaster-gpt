@@ -70,11 +70,14 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
           
           // Only hydrate if parsed is a valid object
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-            // Filter out undefined values to prevent overwriting defaults
+            // Filter out undefined or null values and sanitize known shapes
             const filteredState = Object.entries(parsed).reduce((acc, [key, value]) => {
-              if (value !== undefined) {
-                acc[key] = value;
+              if (value === undefined || value === null) return acc;
+              if (key === 'costProfile') {
+                // Ensure costProfile is a plain object
+                if (typeof value !== 'object' || Array.isArray(value)) return acc;
               }
+              (acc as any)[key] = value;
               return acc;
             }, {} as any);
             
