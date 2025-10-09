@@ -489,9 +489,7 @@ function MainApp() {
                     <p className="mt-1 text-xs text-muted-foreground">
                       {includeFuel
                         ? 'Fuel is auto-calculated using your MPG and fuel price settings and subtracted from your costs.'
-                        : `Fuel is auto-calculated using your MPG and fuel price settings, but your carrier covers ${formatCurrency(
-                            detailedCalculation.adjustments.originalFuelCost,
-                          )} (not subtracted).`}
+                        : 'Fuel is auto-calculated using your MPG and fuel price settings, but your carrier covers it, so $0.00 is taken out.'}
                     </p>
                   </div>
                 </div>
