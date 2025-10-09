@@ -36,12 +36,17 @@ export function CostProfileEditor() {
     }
   }, [open, costProfile]);
 
+  const parseOrDefault = (value: string, fallback: number) => {
+    const parsed = parseFloat(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
+  };
+
   const handleSave = () => {
     updateCostProfile({
-      fuelPricePerGallon: parseFloat(editingValues.fuelPricePerGallon) || 3.89,
-      averageMPG: parseFloat(editingValues.averageMPG) || 6.5,
-      dailyFixedCosts: parseFloat(editingValues.dailyFixedCosts) || 250,
-      variableCostPerMile: parseFloat(editingValues.variableCostPerMile) || 0.35,
+      fuelPricePerGallon: parseOrDefault(editingValues.fuelPricePerGallon, 3.89),
+      averageMPG: parseOrDefault(editingValues.averageMPG, 6.5),
+      dailyFixedCosts: parseOrDefault(editingValues.dailyFixedCosts, 250),
+      variableCostPerMile: parseOrDefault(editingValues.variableCostPerMile, 0.35),
     });
     setOpen(false);
   };
