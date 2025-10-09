@@ -65,7 +65,7 @@ export function OnboardingTooltip({
           finalPlacement = 'top';
         }
       } else if (placement === 'top') {
-        top = rect.top - tooltipHeight - 16;
+        top = rect.top - tooltipHeight - 8;
         left = rect.left + rect.width / 2;
         
         // Flip to bottom if would go off-screen
