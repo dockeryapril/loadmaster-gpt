@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { PatternInsights } from './PatternInsights';
 import { useDecisionStore } from '@/store/useDecisionStore';
 import { LoadEntrySnapshot } from '@/types/mvp';
@@ -70,10 +70,10 @@ describe('PatternInsights', () => {
 
     useDecisionStore.setState({ history });
     
-    render(<PatternInsights />);
+    const { getByText } = render(<PatternInsights />);
 
-    expect(screen.getByText('Your Decision Patterns')).toBeDefined();
-    expect(screen.getByText(/5 logged decisions/)).toBeDefined();
+    expect(getByText('Your Decision Patterns')).toBeDefined();
+    expect(getByText(/5 logged decisions/)).toBeDefined();
   });
 
   it('should display best RPM', () => {
@@ -110,9 +110,9 @@ describe('PatternInsights', () => {
 
     useDecisionStore.setState({ history });
     
-    render(<PatternInsights />);
+    const { getByText } = render(<PatternInsights />);
 
-    expect(screen.getByText('$2.50')).toBeDefined();
+    expect(getByText('$2.50')).toBeDefined();
   });
 
   it('should display average profit', () => {
@@ -133,9 +133,9 @@ describe('PatternInsights', () => {
 
     useDecisionStore.setState({ history });
     
-    render(<PatternInsights />);
+    const { getByText } = render(<PatternInsights />);
 
-    expect(screen.getByText('$400')).toBeDefined();
+    expect(getByText('$400')).toBeDefined();
   });
 
   it('should display booking rate', () => {
@@ -172,9 +172,9 @@ describe('PatternInsights', () => {
 
     useDecisionStore.setState({ history });
     
-    render(<PatternInsights />);
+    const { getByText } = render(<PatternInsights />);
 
-    expect(screen.getByText('60%')).toBeDefined();
+    expect(getByText('60%')).toBeDefined();
   });
 
   it('should display most common route', () => {
@@ -211,9 +211,9 @@ describe('PatternInsights', () => {
 
     useDecisionStore.setState({ history });
     
-    render(<PatternInsights />);
+    const { getByText } = render(<PatternInsights />);
 
-    expect(screen.getByText('Chicago → Detroit')).toBeDefined();
+    expect(getByText('Chicago → Detroit')).toBeDefined();
   });
 
   it('should display RPM range breakdown with acceptance rates', () => {
@@ -292,10 +292,10 @@ describe('PatternInsights', () => {
 
     useDecisionStore.setState({ history });
     
-    render(<PatternInsights />);
+    const { getByText } = render(<PatternInsights />);
 
-    expect(screen.getByText('Acceptance by RPM Range')).toBeDefined();
-    expect(screen.getByText('$0.00-$1.00/mi')).toBeDefined();
-    expect(screen.getByText('$1.50-$2.00/mi')).toBeDefined();
+    expect(getByText('Acceptance by RPM Range')).toBeDefined();
+    expect(getByText('$0.00-$1.00/mi')).toBeDefined();
+    expect(getByText('$1.50-$2.00/mi')).toBeDefined();
   });
 });
