@@ -140,8 +140,7 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
             <li><strong>Fixed costs</strong> = (Daily fixed costs ÷ 2500) × Miles</li>
             <li className="pt-1">
               <strong>{breakdown.splitPercent < 100 ? 'Your profit' : 'Net profit'}</strong> =
-              {breakdown.splitPercent < 100 ? ' Your share' : ' Gross revenue'}
-              {adjustments.includeFuel ? ' − Fuel' : ''}
+              {breakdown.splitPercent < 100 ? ' Your share' : ' Gross revenue'} − Fuel
               {adjustments.includeTolls ? ' − Tolls' : ''} − Variable − Fixed
             </li>
           </ul>

@@ -32,13 +32,10 @@ export interface ProfitBreakdown {
 export interface CalculationAdjustments {
   includeFsc: boolean;
   includeTolls: boolean;
-  includeFuel: boolean;
   originalFsc: number;
   originalTolls: number;
-  originalFuelCost: number;
   appliedFsc: number;
   appliedTolls: number;
-  appliedFuelCost: number;
 }
 
 export interface DetailedProfitCalculation {
@@ -52,7 +49,6 @@ export interface DetailedProfitCalculation {
 export interface CalculationOptions {
   includeFsc?: boolean;
   includeTolls?: boolean;
-  includeFuel?: boolean;
 }
 
 export function calculateDetailedProfit(
@@ -66,16 +62,9 @@ export function calculateDetailedProfit(
 ): DetailedProfitCalculation {
   const includeFsc = options.includeFsc ?? true;
   const includeTolls = options.includeTolls ?? true;
-  const includeFuel = options.includeFuel ?? true;
 
   const appliedFsc = includeFsc ? fsc : 0;
   const appliedTolls = includeTolls ? tolls : 0;
-
-  const originalFuelCost =
-    miles > 0 && costProfile.averageMPG > 0
-      ? (miles / costProfile.averageMPG) * costProfile.fuelPricePerGallon
-      : 0;
-  const appliedFuelCost = includeFuel ? originalFuelCost : 0;
 
   // Revenue
   const grossRevenue = rate + appliedFsc;
@@ -89,7 +78,7 @@ export function calculateDetailedProfit(
     ? (costProfile.dailyFixedCosts / 2500) * miles
     : 0;
 
-  const totalCosts = appliedFuelCost + appliedTolls + variableCosts + fixedCosts;
+  const totalCosts = fuelCost + appliedTolls + variableCosts + fixedCosts;
   const netProfit = yourShare - totalCosts;
 
   return {
@@ -100,7 +89,7 @@ export function calculateDetailedProfit(
       splitPercent,
       linehaulRate: rate,
       fsc: appliedFsc,
-      fuelCost: appliedFuelCost,
+      fuelCost,
       tollCost: appliedTolls,
       variableCosts,
       fixedCosts,
@@ -112,13 +101,10 @@ export function calculateDetailedProfit(
     adjustments: {
       includeFsc,
       includeTolls,
-      includeFuel,
       originalFsc: fsc,
       originalTolls: tolls,
-      originalFuelCost,
       appliedFsc,
       appliedTolls,
-      appliedFuelCost,
     },
   };
 }
