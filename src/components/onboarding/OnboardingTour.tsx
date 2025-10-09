@@ -26,7 +26,7 @@ const tourSteps = [
     selector: '[data-onboarding="step-3"]',
     title: 'Track your decisions',
     description: 'Log decisions to track patterns and insights over time',
-    placement: 'bottom' as const,
+    placement: 'top' as const,
   },
 ];
 
