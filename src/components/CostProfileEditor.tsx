@@ -13,6 +13,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCostProfile } from '@/store/useDecisionStore';
 import { defaultCostAssumptions } from '@/types/mvp';
 import type { CostAssumptions } from '@/types/mvp';
+import { toast } from '@/components/ui/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 
 type EditingCostProfile = {
   fuelPricePerGallon: string;
@@ -88,6 +90,40 @@ export function CostProfileEditor() {
   const handleCancel = () => {
     setEditingValues(formatProfileForEditing(mergedCostProfile));
     setOpen(false);
+  };
+
+  const handleResetThresholds = () => {
+    const previousThresholds = {
+      goodRpm: editingValues.goodRpm,
+      fairRpm: editingValues.fairRpm,
+      goodProfit: editingValues.goodProfit,
+      fairProfit: editingValues.fairProfit,
+    };
+
+    setEditingValues((prev) => ({
+      ...prev,
+      goodRpm: defaultCostAssumptions.goodRpm.toFixed(2),
+      fairRpm: defaultCostAssumptions.fairRpm.toFixed(2),
+      goodProfit: String(defaultCostAssumptions.goodProfit),
+      fairProfit: String(defaultCostAssumptions.fairProfit),
+    }));
+
+    toast({
+      description: 'Defaults restored.',
+      action: (
+        <ToastAction
+          altText="Undo"
+          onClick={() =>
+            setEditingValues((prev) => ({
+              ...prev,
+              ...previousThresholds,
+            }))
+          }
+        >
+          Undo
+        </ToastAction>
+      ),
+    });
   };
 
   return (
@@ -270,6 +306,17 @@ export function CostProfileEditor() {
                       className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="px-0 text-sm font-normal text-muted-foreground hover:text-primary"
+                    onClick={handleResetThresholds}
+                  >
+                    Reset to Defaults
+                  </Button>
                 </div>
               </div>
             </div>
