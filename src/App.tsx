@@ -51,6 +51,13 @@ const getInitialUseSplit = () => {
   return stored ? JSON.parse(stored) : false;
 };
 
+const getInitialToggleState = (key: string, defaultValue: boolean) => {
+  if (typeof window === 'undefined') return defaultValue;
+  const stored = window.localStorage.getItem(key);
+  if (stored === null) return defaultValue;
+  return stored === 'true';
+};
+
 function MainApp() {
   const [persistedSplitPercent, setPersistedSplitPercent] = useState<string>(() => getInitialSplitPercent());
   const [form, setForm] = useState<LoadFormInput>(() => ({
@@ -60,6 +67,8 @@ function MainApp() {
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [useSplit, setUseSplit] = useState(() => getInitialUseSplit());
+  const [includeFsc, setIncludeFsc] = useState(() => getInitialToggleState('lm:includeFsc', true));
+  const [includeTolls, setIncludeTolls] = useState(() => getInitialToggleState('lm:includeTolls', true));
   const addDecision = useDecisionStore((state) => state.addDecision);
   const history = useDecisionStore((state) => state.history);
   const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
@@ -70,18 +79,27 @@ function MainApp() {
 
   const miles = numberOrZero(form.miles);
   const rate = numberOrZero(form.rate);
-  const fsc = numberOrZero(form.fsc);
-  const tolls = numberOrZero(form.tolls);
+  const rawFsc = numberOrZero(form.fsc);
+  const rawTolls = numberOrZero(form.tolls);
   const splitPercent = numberOrZero(form.splitPercent) || 100;
 
   // Calculate detailed profit using cost profile
   const detailedCalculation = useMemo(
-    () => calculateDetailedProfit(rate, fsc, tolls, miles, costProfile, useSplit ? splitPercent : 100),
-    [rate, fsc, tolls, miles, costProfile, useSplit, splitPercent],
+    () =>
+      calculateDetailedProfit(
+        rate,
+        rawFsc,
+        rawTolls,
+        miles,
+        costProfile,
+        useSplit ? splitPercent : 100,
+        { includeFsc, includeTolls },
+      ),
+    [rate, rawFsc, rawTolls, miles, costProfile, useSplit, splitPercent, includeFsc, includeTolls],
   );
 
   const profit = detailedCalculation.profit;
-  const gross = rate + fsc;
+  const gross = detailedCalculation.breakdown.grossRevenue;
   const yourShare = detailedCalculation.breakdown.yourShare;
 
   const rpm = useMemo(() => (miles > 0 ? gross / miles : 0), [gross, miles]);
@@ -124,6 +142,16 @@ function MainApp() {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem('lm:splitPercent', persistedSplitPercent);
   }, [persistedSplitPercent]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('lm:includeFsc', includeFsc ? 'true' : 'false');
+  }, [includeFsc]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('lm:includeTolls', includeTolls ? 'true' : 'false');
+  }, [includeTolls]);
 
   // Load decisions from cloud when user signs in
   useEffect(() => {
@@ -174,8 +202,8 @@ function MainApp() {
       destination: form.destination.trim(),
       miles,
       rate,
-      fsc,
-      tolls,
+      fsc: detailedCalculation.adjustments.appliedFsc,
+      tolls: detailedCalculation.adjustments.appliedTolls,
       fuelCost: detailedCalculation.breakdown.fuelCost,
       profit,
       rpm: netRpm,
@@ -350,24 +378,78 @@ function MainApp() {
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">FSC</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-muted-foreground" htmlFor="fsc-input">
+                        FSC
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeFsc((prev) => !prev)}
+                        aria-pressed={includeFsc}
+                        aria-label={includeFsc ? 'Exclude FSC from your revenue' : 'Include FSC in your revenue'}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          includeFsc ? 'bg-primary' : 'bg-muted-foreground/30'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                            includeFsc ? 'translate-x-5' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
                     <input
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      id="fsc-input"
+                      className={`mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                        includeFsc ? '' : 'border-dashed text-muted-foreground'
+                      }`}
                       placeholder="$0"
                       inputMode="decimal"
                       value={form.fsc}
                       onChange={(event) => updateForm('fsc', event.target.value)}
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {includeFsc
+                        ? 'Included in your revenue calculations.'
+                        : 'Excluded from your share (carrier keeps FSC).'}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Tolls</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-muted-foreground" htmlFor="tolls-input">
+                        Tolls
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeTolls((prev) => !prev)}
+                        aria-pressed={includeTolls}
+                        aria-label={includeTolls ? 'Exclude tolls from your costs' : 'Include tolls in your costs'}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          includeTolls ? 'bg-primary' : 'bg-muted-foreground/30'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                            includeTolls ? 'translate-x-5' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
                     <input
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      id="tolls-input"
+                      className={`mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                        includeTolls ? '' : 'border-dashed text-muted-foreground'
+                      }`}
                       placeholder="$0"
                       inputMode="decimal"
                       value={form.tolls}
                       onChange={(event) => updateForm('tolls', event.target.value)}
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {includeTolls
+                        ? 'Subtracted as part of your costs.'
+                        : 'Covered by carrier (not subtracted).'}
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Auto-calculated fuel</label>

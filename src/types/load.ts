@@ -29,11 +29,26 @@ export interface ProfitBreakdown {
   netProfit: number;
 }
 
+export interface CalculationAdjustments {
+  includeFsc: boolean;
+  includeTolls: boolean;
+  originalFsc: number;
+  originalTolls: number;
+  appliedFsc: number;
+  appliedTolls: number;
+}
+
 export interface DetailedProfitCalculation {
   profit: number;
   breakdown: ProfitBreakdown;
   fuelPriceUsed: number;
   timestamp: string;
+  adjustments: CalculationAdjustments;
+}
+
+export interface CalculationOptions {
+  includeFsc?: boolean;
+  includeTolls?: boolean;
 }
 
 export function calculateDetailedProfit(
@@ -42,10 +57,17 @@ export function calculateDetailedProfit(
   tolls: number,
   miles: number,
   costProfile: CostAssumptions,
-  splitPercent: number = 100
+  splitPercent: number = 100,
+  options: CalculationOptions = {}
 ): DetailedProfitCalculation {
+  const includeFsc = options.includeFsc ?? true;
+  const includeTolls = options.includeTolls ?? true;
+
+  const appliedFsc = includeFsc ? fsc : 0;
+  const appliedTolls = includeTolls ? tolls : 0;
+
   // Revenue
-  const grossRevenue = rate + fsc;
+  const grossRevenue = rate + appliedFsc;
   const yourShare = grossRevenue * (splitPercent / 100);
 
   // Costs
@@ -60,7 +82,7 @@ export function calculateDetailedProfit(
     ? (costProfile.dailyFixedCosts / 2500) * miles
     : 0;
 
-  const totalCosts = fuelCost + tolls + variableCosts + fixedCosts;
+  const totalCosts = fuelCost + appliedTolls + variableCosts + fixedCosts;
   const netProfit = yourShare - totalCosts;
 
   return {
@@ -70,9 +92,9 @@ export function calculateDetailedProfit(
       yourShare,
       splitPercent,
       linehaulRate: rate,
-      fsc,
+      fsc: appliedFsc,
       fuelCost,
-      tollCost: tolls,
+      tollCost: appliedTolls,
       variableCosts,
       fixedCosts,
       totalCosts,
@@ -80,5 +102,13 @@ export function calculateDetailedProfit(
     },
     fuelPriceUsed: costProfile.fuelPricePerGallon,
     timestamp: new Date().toISOString(),
+    adjustments: {
+      includeFsc,
+      includeTolls,
+      originalFsc: fsc,
+      originalTolls: tolls,
+      appliedFsc,
+      appliedTolls,
+    },
   };
 }
