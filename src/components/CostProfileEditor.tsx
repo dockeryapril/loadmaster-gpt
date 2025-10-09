@@ -12,6 +12,29 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCostProfile } from '@/store/useDecisionStore';
 import { defaultCostAssumptions } from '@/types/mvp';
+import type { CostAssumptions } from '@/types/mvp';
+
+type EditingCostProfile = {
+  fuelPricePerGallon: string;
+  averageMPG: string;
+  dailyFixedCosts: string;
+  variableCostPerMile: string;
+  goodRpm: string;
+  fairRpm: string;
+  goodProfit: string;
+  fairProfit: string;
+};
+
+const formatProfileForEditing = (profile: CostAssumptions): EditingCostProfile => ({
+  fuelPricePerGallon: profile.fuelPricePerGallon.toFixed(2),
+  averageMPG: String(profile.averageMPG),
+  dailyFixedCosts: String(profile.dailyFixedCosts),
+  variableCostPerMile: profile.variableCostPerMile.toFixed(2),
+  goodRpm: profile.goodRpm.toFixed(2),
+  fairRpm: profile.fairRpm.toFixed(2),
+  goodProfit: String(profile.goodProfit),
+  fairProfit: String(profile.fairProfit),
+});
 
 export function CostProfileEditor() {
   const { costProfile, updateCostProfile } = useCostProfile();
@@ -22,33 +45,17 @@ export function CostProfileEditor() {
     }),
     [costProfile],
   );
-  const [editingValues, setEditingValues] = useState({
-    fuelPricePerGallon: mergedCostProfile.fuelPricePerGallon.toFixed(2),
-    averageMPG: String(mergedCostProfile.averageMPG),
-    dailyFixedCosts: String(mergedCostProfile.dailyFixedCosts),
-    variableCostPerMile: mergedCostProfile.variableCostPerMile.toFixed(2),
-    goodRpm: mergedCostProfile.goodRpm.toFixed(2),
-    fairRpm: mergedCostProfile.fairRpm.toFixed(2),
-    goodProfit: String(mergedCostProfile.goodProfit),
-    fairProfit: String(mergedCostProfile.fairProfit),
-  });
+  const [editingValues, setEditingValues] = useState<EditingCostProfile>(() =>
+    formatProfileForEditing(mergedCostProfile),
+  );
   const [open, setOpen] = useState(false);
 
-  // Sync local state with store when sheet opens
+  // Keep local state in sync with persisted values while the sheet is closed
   useEffect(() => {
-    if (open) {
-      setEditingValues({
-        fuelPricePerGallon: mergedCostProfile.fuelPricePerGallon.toFixed(2),
-        averageMPG: String(mergedCostProfile.averageMPG),
-        dailyFixedCosts: String(mergedCostProfile.dailyFixedCosts),
-        variableCostPerMile: mergedCostProfile.variableCostPerMile.toFixed(2),
-        goodRpm: mergedCostProfile.goodRpm.toFixed(2),
-        fairRpm: mergedCostProfile.fairRpm.toFixed(2),
-        goodProfit: String(mergedCostProfile.goodProfit),
-        fairProfit: String(mergedCostProfile.fairProfit),
-      });
+    if (!open) {
+      setEditingValues(formatProfileForEditing(mergedCostProfile));
     }
-  }, [open, mergedCostProfile]);
+  }, [mergedCostProfile, open]);
 
   const parseOrDefault = (value: string, fallback: number) => {
     const parsed = parseFloat(value);
@@ -57,29 +64,29 @@ export function CostProfileEditor() {
 
   const handleSave = () => {
     updateCostProfile({
-      fuelPricePerGallon: parseOrDefault(editingValues.fuelPricePerGallon, 3.89),
-      averageMPG: parseOrDefault(editingValues.averageMPG, 6.5),
-      dailyFixedCosts: parseOrDefault(editingValues.dailyFixedCosts, 250),
-      variableCostPerMile: parseOrDefault(editingValues.variableCostPerMile, 0.35),
-      goodRpm: parseOrDefault(editingValues.goodRpm, 1.50),
-      fairRpm: parseOrDefault(editingValues.fairRpm, 1.00),
-      goodProfit: parseOrDefault(editingValues.goodProfit, 500),
-      fairProfit: parseOrDefault(editingValues.fairProfit, 200),
+      fuelPricePerGallon: parseOrDefault(
+        editingValues.fuelPricePerGallon,
+        mergedCostProfile.fuelPricePerGallon,
+      ),
+      averageMPG: parseOrDefault(editingValues.averageMPG, mergedCostProfile.averageMPG),
+      dailyFixedCosts: parseOrDefault(
+        editingValues.dailyFixedCosts,
+        mergedCostProfile.dailyFixedCosts,
+      ),
+      variableCostPerMile: parseOrDefault(
+        editingValues.variableCostPerMile,
+        mergedCostProfile.variableCostPerMile,
+      ),
+      goodRpm: parseOrDefault(editingValues.goodRpm, mergedCostProfile.goodRpm),
+      fairRpm: parseOrDefault(editingValues.fairRpm, mergedCostProfile.fairRpm),
+      goodProfit: parseOrDefault(editingValues.goodProfit, mergedCostProfile.goodProfit),
+      fairProfit: parseOrDefault(editingValues.fairProfit, mergedCostProfile.fairProfit),
     });
     setOpen(false);
   };
 
   const handleCancel = () => {
-    setEditingValues({
-      fuelPricePerGallon: mergedCostProfile.fuelPricePerGallon.toFixed(2),
-      averageMPG: String(mergedCostProfile.averageMPG),
-      dailyFixedCosts: String(mergedCostProfile.dailyFixedCosts),
-      variableCostPerMile: mergedCostProfile.variableCostPerMile.toFixed(2),
-      goodRpm: mergedCostProfile.goodRpm.toFixed(2),
-      fairRpm: mergedCostProfile.fairRpm.toFixed(2),
-      goodProfit: String(mergedCostProfile.goodProfit),
-      fairProfit: String(mergedCostProfile.fairProfit),
-    });
+    setEditingValues(formatProfileForEditing(mergedCostProfile));
     setOpen(false);
   };
 

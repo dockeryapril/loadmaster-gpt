@@ -46,10 +46,10 @@ export const defaultCostAssumptions: CostAssumptions = {
   averageMPG: 6.5,
   dailyFixedCosts: 250,
   variableCostPerMile: 0.35,
-  goodRpm: 1.50,
-  fairRpm: 1.00,
-  goodProfit: 500,
-  fairProfit: 200,
+  goodRpm: 0.8,
+  fairRpm: 0.7,
+  goodProfit: 900,
+  fairProfit: 450,
 };
 
 export const emptyLoadForm: LoadFormInput = {
