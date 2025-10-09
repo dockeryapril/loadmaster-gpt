@@ -29,11 +29,30 @@ export interface ProfitBreakdown {
   netProfit: number;
 }
 
+export interface CalculationAdjustments {
+  includeFsc: boolean;
+  includeTolls: boolean;
+  includeFuel: boolean;
+  originalFsc: number;
+  originalTolls: number;
+  originalFuelCost: number;
+  appliedFsc: number;
+  appliedTolls: number;
+  appliedFuelCost: number;
+}
+
 export interface DetailedProfitCalculation {
   profit: number;
   breakdown: ProfitBreakdown;
   fuelPriceUsed: number;
   timestamp: string;
+  adjustments: CalculationAdjustments;
+}
+
+export interface CalculationOptions {
+  includeFsc?: boolean;
+  includeTolls?: boolean;
+  includeFuel?: boolean;
 }
 
 export function calculateDetailedProfit(
@@ -42,25 +61,35 @@ export function calculateDetailedProfit(
   tolls: number,
   miles: number,
   costProfile: CostAssumptions,
-  splitPercent: number = 100
+  splitPercent: number = 100,
+  options: CalculationOptions = {}
 ): DetailedProfitCalculation {
+  const includeFsc = options.includeFsc ?? true;
+  const includeTolls = options.includeTolls ?? true;
+  const includeFuel = options.includeFuel ?? true;
+
+  const appliedFsc = includeFsc ? fsc : 0;
+  const appliedTolls = includeTolls ? tolls : 0;
+
+  const originalFuelCost =
+    miles > 0 && costProfile.averageMPG > 0
+      ? (miles / costProfile.averageMPG) * costProfile.fuelPricePerGallon
+      : 0;
+  const appliedFuelCost = includeFuel ? originalFuelCost : 0;
+
   // Revenue
-  const grossRevenue = rate + fsc;
+  const grossRevenue = rate + appliedFsc;
   const yourShare = grossRevenue * (splitPercent / 100);
 
   // Costs
-  const fuelCost = miles > 0 && costProfile.averageMPG > 0
-    ? (miles / costProfile.averageMPG) * costProfile.fuelPricePerGallon
-    : 0;
-  
   const variableCosts = miles * costProfile.variableCostPerMile;
-  
+
   // Prorate fixed costs based on industry average of 2500 miles/week
   const fixedCosts = miles > 0
     ? (costProfile.dailyFixedCosts / 2500) * miles
     : 0;
 
-  const totalCosts = fuelCost + tolls + variableCosts + fixedCosts;
+  const totalCosts = appliedFuelCost + appliedTolls + variableCosts + fixedCosts;
   const netProfit = yourShare - totalCosts;
 
   return {
@@ -70,9 +99,9 @@ export function calculateDetailedProfit(
       yourShare,
       splitPercent,
       linehaulRate: rate,
-      fsc,
-      fuelCost,
-      tollCost: tolls,
+      fsc: appliedFsc,
+      fuelCost: appliedFuelCost,
+      tollCost: appliedTolls,
       variableCosts,
       fixedCosts,
       totalCosts,
@@ -80,5 +109,16 @@ export function calculateDetailedProfit(
     },
     fuelPriceUsed: costProfile.fuelPricePerGallon,
     timestamp: new Date().toISOString(),
+    adjustments: {
+      includeFsc,
+      includeTolls,
+      includeFuel,
+      originalFsc: fsc,
+      originalTolls: tolls,
+      originalFuelCost,
+      appliedFsc,
+      appliedTolls,
+      appliedFuelCost,
+    },
   };
 }

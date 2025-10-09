@@ -23,7 +23,7 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showFormula, setShowFormula] = useState(false);
 
-  const { breakdown, fuelPriceUsed, timestamp } = calculation;
+  const { breakdown, fuelPriceUsed, timestamp, adjustments } = calculation;
 
   return (
     <div className="space-y-3">
@@ -46,6 +46,11 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
                 <span>FSC:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.fsc)}</span>
               </div>
+              {!adjustments.includeFsc && adjustments.originalFsc > 0 && (
+                <p className="text-right text-xs text-muted-foreground">
+                  Carrier keeps {formatCurrency(adjustments.originalFsc)} FSC (excluded from your share)
+                </p>
+              )}
               <div className="mt-2 flex justify-between border-t border-border pt-2 font-semibold text-foreground">
                 <span>Total gross revenue:</span>
                 <span>{formatCurrency(breakdown.grossRevenue)}</span>
@@ -66,10 +71,20 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
                 <span>Fuel:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.fuelCost)}</span>
               </div>
+              {!adjustments.includeFuel && adjustments.originalFuelCost > 0 && (
+                <p className="text-right text-xs text-muted-foreground">
+                  Carrier covers {formatCurrency(adjustments.originalFuelCost)} in fuel (not subtracted)
+                </p>
+              )}
               <div className="flex justify-between">
                 <span>Tolls:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.tollCost)}</span>
               </div>
+              {!adjustments.includeTolls && adjustments.originalTolls > 0 && (
+                <p className="text-right text-xs text-muted-foreground">
+                  Carrier covers {formatCurrency(adjustments.originalTolls)} in tolls (not subtracted)
+                </p>
+              )}
               <div className="flex justify-between">
                 <span>Variable costs:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.variableCosts)}</span>
@@ -110,16 +125,24 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
         <CollapsibleContent className="mt-3 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
           <p className="font-semibold text-foreground">Calculation Formula:</p>
           <ul className="mt-2 space-y-1 pl-4">
-            <li><strong>Gross revenue</strong> = Linehaul rate + FSC</li>
+            <li>
+              <strong>Gross revenue</strong> = Linehaul rate
+              {adjustments.includeFsc ? ' + FSC' : ' (FSC excluded)'}
+            </li>
             {breakdown.splitPercent < 100 && (
               <li><strong>Your share</strong> = Gross revenue × ({breakdown.splitPercent}% ÷ 100)</li>
             )}
             <li><strong>Fuel cost</strong> = (Miles ÷ MPG) × Fuel price per gallon</li>
+            {!adjustments.includeFuel && (
+              <li className="text-muted-foreground">Fuel excluded from driver costs</li>
+            )}
             <li><strong>Variable costs</strong> = Miles × Variable cost per mile</li>
             <li><strong>Fixed costs</strong> = (Daily fixed costs ÷ 2500) × Miles</li>
             <li className="pt-1">
-              <strong>{breakdown.splitPercent < 100 ? 'Your profit' : 'Net profit'}</strong> = 
-              {breakdown.splitPercent < 100 ? ' Your share' : ' Gross revenue'} − Fuel − Tolls − Variable − Fixed
+              <strong>{breakdown.splitPercent < 100 ? 'Your profit' : 'Net profit'}</strong> =
+              {breakdown.splitPercent < 100 ? ' Your share' : ' Gross revenue'}
+              {adjustments.includeFuel ? ' − Fuel' : ''}
+              {adjustments.includeTolls ? ' − Tolls' : ''} − Variable − Fixed
             </li>
           </ul>
           <p className="mt-2 italic">
