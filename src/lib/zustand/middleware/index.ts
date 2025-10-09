@@ -28,6 +28,8 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
       setState: setPersist,
     });
 
+    let finalState = hydratedState;
+
     if (storage) {
       try {
         let storedValue = storage.getItem(name);
@@ -67,7 +69,7 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
         // Normal hydration logic
         if (storedValue) {
           const parsed = JSON.parse(storedValue);
-          
+
           // Only hydrate if parsed is a valid object
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
             // Filter out undefined or null values and sanitize known shapes
@@ -80,8 +82,11 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
               (acc as any)[key] = value;
               return acc;
             }, {} as any);
-            
-            set(filteredState as Partial<S>, false);
+
+            finalState = {
+              ...hydratedState,
+              ...(filteredState as Partial<S>),
+            };
           } else {
             console.warn('[persist] Invalid stored state format, skipping hydration');
             storage.removeItem(name);
@@ -98,6 +103,6 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
       }
     }
 
-    return hydratedState;
+    return finalState;
   };
 };
