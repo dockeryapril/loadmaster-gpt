@@ -404,6 +404,20 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 2. Start the tour on mobile; go to Step 3.
 3. Confirm the tooltip appears directly above the highlighted area with a small, consistent gap and remains fully visible without extra scrolling. If there’s not enough space, it should flip below.
 
+
+### Post-completion updates (Cost Profile Persistence)
+- Fixed cost profile not persisting after page refresh
+- Updated `src/lib/zustand/middleware/index.ts` to filter out undefined values during hydration (prevents defaults from being overwritten)
+- Added validation in `src/store/useDecisionStore.ts` to restore missing cost profile fields from defaults
+- Changes ensure edited cost assumptions always persist correctly
+
+### How to test this fix
+1. Open Cost Profile Editor and change values (e.g., fuel price to 4.50)
+2. Save changes and verify the new values show in the form
+3. Refresh the page
+4. Open Cost Profile Editor again and verify values persisted
+5. Test edge case: Open DevTools → Application → LocalStorage → `lm:v2:state`, manually delete `costProfile` key from JSON, refresh - should show defaults without errors
+
 ### What's Next
 → **Phase 5: Lovable Cloud Integration** (see below)
 

@@ -70,7 +70,15 @@ export const persist = <S>(config: StateCreator<S>, options: PersistOptions<S>):
           
           // Only hydrate if parsed is a valid object
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-            set(parsed as Partial<S>, false);
+            // Filter out undefined values to prevent overwriting defaults
+            const filteredState = Object.entries(parsed).reduce((acc, [key, value]) => {
+              if (value !== undefined) {
+                acc[key] = value;
+              }
+              return acc;
+            }, {} as any);
+            
+            set(filteredState as Partial<S>, false);
           } else {
             console.warn('[persist] Invalid stored state format, skipping hydration');
             storage.removeItem(name);

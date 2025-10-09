@@ -2,6 +2,7 @@ import { create } from '@/lib/zustand';
 import { persist } from '@/lib/zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
 import type { DecisionOutcome, LoadEntrySnapshot, CostAssumptions } from '@/types/mvp';
+import { defaultCostAssumptions } from '@/types/mvp';
 
 interface DecisionState {
   history: LoadEntrySnapshot[];
@@ -21,12 +22,7 @@ export const useDecisionStore = create<DecisionState>()(
   persist(
     (set) => ({
       history: [],
-      costProfile: {
-        fuelPricePerGallon: 3.89,
-        averageMPG: 6.5,
-        dailyFixedCosts: 250,
-        variableCostPerMile: 0.35,
-      },
+      costProfile: defaultCostAssumptions,
       addDecision: (entry) =>
         set((state) => ({
           history: [
@@ -84,6 +80,30 @@ export const useDecisionStore = create<DecisionState>()(
     },
   ),
 );
+
+// Validate cost profile after store creation to ensure all fields exist
+const validateCostProfile = () => {
+  const state = useDecisionStore.getState();
+  const { costProfile, updateCostProfile } = state;
+  
+  // Check if any required field is missing or undefined
+  const hasAllFields = costProfile &&
+    typeof costProfile.fuelPricePerGallon === 'number' &&
+    typeof costProfile.averageMPG === 'number' &&
+    typeof costProfile.dailyFixedCosts === 'number' &&
+    typeof costProfile.variableCostPerMile === 'number';
+  
+  if (!hasAllFields) {
+    console.log('[store] Restoring missing cost profile fields from defaults');
+    updateCostProfile({
+      ...defaultCostAssumptions,
+      ...costProfile,
+    });
+  }
+};
+
+// Run validation on store initialization
+validateCostProfile();
 
 // Custom hook to access cost profile
 export const useCostProfile = () => {
