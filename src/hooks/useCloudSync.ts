@@ -42,11 +42,7 @@ export function useCloudSync() {
       setLastSyncedAt(new Date());
     } catch (error) {
       console.error('Sync failed:', error);
-      toast({
-        title: "Sync failed",
-        description: "Could not sync to cloud. Changes saved locally.",
-        variant: "destructive",
-      });
+      // Silently fail - sync is optional and data is saved locally
     } finally {
       setIsSyncing(false);
     }
