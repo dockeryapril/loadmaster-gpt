@@ -39,11 +39,27 @@ function formatNumber(value: number) {
 
 const outcomeOptions: DecisionOutcome[] = ['book', 'counter', 'pass'];
 
+const getInitialSplitPercent = () => {
+  if (typeof window === 'undefined') return emptyLoadForm.splitPercent;
+  const stored = window.localStorage.getItem('lm:splitPercent');
+  return stored ?? emptyLoadForm.splitPercent;
+};
+
+const getInitialUseSplit = () => {
+  if (typeof window === 'undefined') return false;
+  const stored = window.localStorage.getItem('lm:useSplit');
+  return stored ? JSON.parse(stored) : false;
+};
+
 function MainApp() {
-  const [form, setForm] = useState<LoadFormInput>(() => ({ ...emptyLoadForm }));
+  const [persistedSplitPercent, setPersistedSplitPercent] = useState<string>(() => getInitialSplitPercent());
+  const [form, setForm] = useState<LoadFormInput>(() => ({
+    ...emptyLoadForm,
+    splitPercent: getInitialSplitPercent(),
+  }));
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [useSplit, setUseSplit] = useState(false);
+  const [useSplit, setUseSplit] = useState(() => getInitialUseSplit());
   const addDecision = useDecisionStore((state) => state.addDecision);
   const history = useDecisionStore((state) => state.history);
   const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
@@ -83,6 +99,10 @@ function MainApp() {
   };
 
   const updateForm = (field: keyof typeof form, value: string) => {
+    if (field === 'splitPercent') {
+      setPersistedSplitPercent(value);
+    }
+
     setForm((prev) => ({
       ...prev,
       [field]: value,
@@ -94,6 +114,16 @@ function MainApp() {
   };
 
   const [showAutoFillBadge, setShowAutoFillBadge] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('lm:useSplit', JSON.stringify(useSplit));
+  }, [useSplit]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('lm:splitPercent', persistedSplitPercent);
+  }, [persistedSplitPercent]);
 
   // Load decisions from cloud when user signs in
   useEffect(() => {
@@ -114,7 +144,11 @@ function MainApp() {
       const next = { ...prev };
       Object.entries(data).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
-        next[key as keyof typeof next] = typeof value === 'string' ? value : String(value);
+        const stringValue = typeof value === 'string' ? value : String(value);
+        next[key as keyof typeof next] = stringValue;
+        if (key === 'splitPercent') {
+          setPersistedSplitPercent(stringValue);
+        }
       });
       return next;
     });
@@ -149,10 +183,12 @@ function MainApp() {
       splitPercent: useSplit ? splitPercent : undefined,
     });
 
-    setForm({ ...emptyLoadForm });
+    setForm({
+      ...emptyLoadForm,
+      splitPercent: persistedSplitPercent,
+    });
     setOutcome('book');
     setTouched({});
-    setUseSplit(false);
   };
 
   return (
