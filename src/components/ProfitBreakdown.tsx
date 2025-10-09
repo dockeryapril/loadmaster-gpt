@@ -47,9 +47,15 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.fsc)}</span>
               </div>
               <div className="mt-2 flex justify-between border-t border-border pt-2 font-semibold text-foreground">
-                <span>Gross revenue:</span>
+                <span>Total gross revenue:</span>
                 <span>{formatCurrency(breakdown.grossRevenue)}</span>
               </div>
+              {breakdown.splitPercent < 100 && (
+                <div className="flex justify-between text-primary">
+                  <span>Your split ({breakdown.splitPercent}%):</span>
+                  <span className="font-medium">{formatCurrency(breakdown.yourShare)}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -81,7 +87,7 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
 
           <div className="rounded-lg bg-primary/5 p-3">
             <div className="flex justify-between text-base font-semibold text-foreground">
-              <span>Net profit:</span>
+              <span>{breakdown.splitPercent < 100 ? 'Your profit:' : 'Net profit:'}</span>
               <span className={breakdown.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
                 {formatCurrency(breakdown.netProfit)}
               </span>
@@ -105,10 +111,16 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
           <p className="font-semibold text-foreground">Calculation Formula:</p>
           <ul className="mt-2 space-y-1 pl-4">
             <li><strong>Gross revenue</strong> = Linehaul rate + FSC</li>
+            {breakdown.splitPercent < 100 && (
+              <li><strong>Your share</strong> = Gross revenue × ({breakdown.splitPercent}% ÷ 100)</li>
+            )}
             <li><strong>Fuel cost</strong> = (Miles ÷ MPG) × Fuel price per gallon</li>
             <li><strong>Variable costs</strong> = Miles × Variable cost per mile</li>
             <li><strong>Fixed costs</strong> = (Daily fixed costs ÷ 2500) × Miles</li>
-            <li className="pt-1"><strong>Net profit</strong> = Gross revenue − Fuel − Tolls − Variable − Fixed</li>
+            <li className="pt-1">
+              <strong>{breakdown.splitPercent < 100 ? 'Your profit' : 'Net profit'}</strong> = 
+              {breakdown.splitPercent < 100 ? ' Your share' : ' Gross revenue'} − Fuel − Tolls − Variable − Fixed
+            </li>
           </ul>
           <p className="mt-2 italic">
             Fixed costs are prorated based on industry average of 2,500 miles per week.

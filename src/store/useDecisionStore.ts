@@ -39,7 +39,7 @@ export const useDecisionStore = create<DecisionState>()(
           ].slice(0, 100),
         })),
       clearHistory: () => set({ history: [] }),
-      updateCostProfile: (profile) => set({ costProfile: profile }),
+      updateCostProfile: (profile) => set({ costProfile: { ...profile } }),
       loadFromCloud: async () => {
         try {
           const { data: { user } } = await supabase.auth.getUser();

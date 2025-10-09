@@ -42,6 +42,8 @@ const outcomeOptions: DecisionOutcome[] = ['book', 'counter', 'pass'];
 function MainApp() {
   const [form, setForm] = useState<LoadFormInput>(() => ({ ...emptyLoadForm }));
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [useSplit, setUseSplit] = useState(false);
   const addDecision = useDecisionStore((state) => state.addDecision);
   const history = useDecisionStore((state) => state.history);
   const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
@@ -54,29 +56,41 @@ function MainApp() {
   const rate = numberOrZero(form.rate);
   const fsc = numberOrZero(form.fsc);
   const tolls = numberOrZero(form.tolls);
+  const splitPercent = numberOrZero(form.splitPercent) || 100;
 
   // Calculate detailed profit using cost profile
   const detailedCalculation = useMemo(
-    () => calculateDetailedProfit(rate, fsc, tolls, miles, costProfile),
-    [rate, fsc, tolls, miles, costProfile],
+    () => calculateDetailedProfit(rate, fsc, tolls, miles, costProfile, useSplit ? splitPercent : 100),
+    [rate, fsc, tolls, miles, costProfile, useSplit, splitPercent],
   );
 
   const profit = detailedCalculation.profit;
   const gross = rate + fsc;
+  const yourShare = detailedCalculation.breakdown.yourShare;
 
   const rpm = useMemo(() => (miles > 0 ? gross / miles : 0), [gross, miles]);
   const netRpm = useMemo(() => (miles > 0 ? profit / miles : 0), [profit, miles]);
+  const yourShareRpm = useMemo(() => (miles > 0 ? yourShare / miles : 0), [yourShare, miles]);
 
   const canLog =
     Boolean(form.origin && form.destination) &&
     rate > 0 &&
     miles > 0;
 
+  const isInvalid = (field: keyof LoadFormInput) => {
+    const requiredFields: (keyof LoadFormInput)[] = ['origin', 'destination', 'miles', 'rate'];
+    return requiredFields.includes(field) && touched[field] && !form[field];
+  };
+
   const updateForm = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleBlur = (field: keyof LoadFormInput) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
   const [showAutoFillBadge, setShowAutoFillBadge] = useState(false);
@@ -109,7 +123,16 @@ function MainApp() {
   };
 
   const handleLogDecision = () => {
-    if (!canLog) return;
+    if (!canLog) {
+      // Mark all required fields as touched to show validation
+      setTouched({
+        origin: true,
+        destination: true,
+        miles: true,
+        rate: true,
+      });
+      return;
+    }
 
     addDecision({
       outcome,
@@ -123,10 +146,13 @@ function MainApp() {
       profit,
       rpm: netRpm,
       notes: form.notes.trim() || undefined,
+      splitPercent: useSplit ? splitPercent : undefined,
     });
 
     setForm({ ...emptyLoadForm });
     setOutcome('book');
+    setTouched({});
+    setUseSplit(false);
   };
 
   return (
@@ -166,46 +192,124 @@ function MainApp() {
             </header>
 
             <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
+            {/* Revenue Split Toggle */}
+            <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-foreground">Working with carrier split?</label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Enable if you split revenue with a carrier/company
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUseSplit(!useSplit)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    useSplit ? 'bg-primary' : 'bg-muted-foreground/30'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      useSplit ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              {useSplit && (
+                <div className="mt-4 space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Your percentage: {splitPercent}%
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={form.splitPercent}
+                    onChange={(e) => updateForm('splitPercent', e.target.value)}
+                    className="w-full accent-primary"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>0%</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-4" data-onboarding="step-1">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Origin</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Origin <span className="text-rose-500">*</span>
+                  </label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                      isInvalid('origin') ? 'border-rose-500' : 'border-input'
+                    }`}
                     placeholder="City, ST"
                     value={form.origin}
                     onChange={(event) => updateForm('origin', event.target.value)}
+                    onBlur={() => handleBlur('origin')}
                   />
+                  {isInvalid('origin') && (
+                    <p className="mt-1 text-xs text-rose-500">Required</p>
+                  )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Destination</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Destination <span className="text-rose-500">*</span>
+                  </label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                      isInvalid('destination') ? 'border-rose-500' : 'border-input'
+                    }`}
                     placeholder="City, ST"
                     value={form.destination}
                     onChange={(event) => updateForm('destination', event.target.value)}
+                    onBlur={() => handleBlur('destination')}
                   />
+                  {isInvalid('destination') && (
+                    <p className="mt-1 text-xs text-rose-500">Required</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Loaded miles</label>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Loaded miles <span className="text-rose-500">*</span>
+                    </label>
                     <input
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                        isInvalid('miles') ? 'border-rose-500' : 'border-input'
+                      }`}
                       placeholder="0"
                       inputMode="numeric"
                       value={form.miles}
                       onChange={(event) => updateForm('miles', event.target.value)}
+                      onBlur={() => handleBlur('miles')}
                     />
+                    {isInvalid('miles') && (
+                      <p className="mt-1 text-xs text-rose-500">Required</p>
+                    )}
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Linehaul rate</label>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Linehaul rate <span className="text-rose-500">*</span>
+                    </label>
                     <input
-                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                        isInvalid('rate') ? 'border-rose-500' : 'border-input'
+                      }`}
                       placeholder="$0"
                       inputMode="decimal"
                       value={form.rate}
                       onChange={(event) => updateForm('rate', event.target.value)}
+                      onBlur={() => handleBlur('rate')}
                     />
+                    {isInvalid('rate') && (
+                      <p className="mt-1 text-xs text-rose-500">Required</p>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
@@ -250,19 +354,25 @@ function MainApp() {
                   />
                 </div>
               </div>
-              <div className="space-y-4" data-onboarding="step-2">
-                <div className="rounded-xl bg-primary/5 p-4">
+              <div className="space-y-4">
+                <div className="rounded-xl bg-primary/5 p-4" data-onboarding="step-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
                     <CostProfileEditor />
                   </div>
                   <h3 className="mt-2 text-3xl font-semibold text-foreground">{formatCurrency(profit)}</h3>
-                  <p className="text-sm text-muted-foreground">Net profit after all costs</p>
+                  <p className="text-sm text-muted-foreground">
+                    {useSplit ? `Your share (${splitPercent}%) after all costs` : 'Net profit after all costs'}
+                  </p>
                   
                   <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                     <div className="rounded-lg border border-border bg-background p-3">
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Gross RPM</p>
-                      <p className="mt-1 font-semibold">{formatNumber(rpm)} /mi</p>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        {useSplit ? 'Your Share RPM' : 'Gross RPM'}
+                      </p>
+                      <p className="mt-1 font-semibold">
+                        {formatNumber(useSplit ? yourShareRpm : rpm)} /mi
+                      </p>
                     </div>
                     <div className="rounded-lg border border-border bg-background p-3">
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">Net RPM</p>
@@ -307,9 +417,10 @@ function MainApp() {
                     type="button"
                     onClick={handleLogDecision}
                     disabled={!canLog}
+                    title={!canLog ? 'Complete required fields (origin, destination, miles, rate)' : ''}
                     className="mt-4 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
                   >
-                    Log decision
+                    {!canLog ? 'Complete required fields to log' : 'Log decision'}
                   </button>
                 </div>
 

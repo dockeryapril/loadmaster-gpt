@@ -17,6 +17,8 @@ export const calculateProfit = (
  */
 export interface ProfitBreakdown {
   grossRevenue: number;
+  yourShare: number;
+  splitPercent: number;
   linehaulRate: number;
   fsc: number;
   fuelCost: number;
@@ -39,10 +41,12 @@ export function calculateDetailedProfit(
   fsc: number,
   tolls: number,
   miles: number,
-  costProfile: CostAssumptions
+  costProfile: CostAssumptions,
+  splitPercent: number = 100
 ): DetailedProfitCalculation {
   // Revenue
   const grossRevenue = rate + fsc;
+  const yourShare = grossRevenue * (splitPercent / 100);
 
   // Costs
   const fuelCost = miles > 0 && costProfile.averageMPG > 0
@@ -57,12 +61,14 @@ export function calculateDetailedProfit(
     : 0;
 
   const totalCosts = fuelCost + tolls + variableCosts + fixedCosts;
-  const netProfit = grossRevenue - totalCosts;
+  const netProfit = yourShare - totalCosts;
 
   return {
     profit: netProfit,
     breakdown: {
       grossRevenue,
+      yourShare,
+      splitPercent,
       linehaulRate: rate,
       fsc,
       fuelCost,

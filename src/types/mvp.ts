@@ -9,6 +9,7 @@ export interface LoadFormInput {
   tolls: string;
   fuelCost: string;
   notes: string;
+  splitPercent: string;
 }
 
 export interface LoadEntrySnapshot {
@@ -25,6 +26,7 @@ export interface LoadEntrySnapshot {
   profit: number;
   rpm: number;
   notes?: string;
+  splitPercent?: number;
 }
 
 // Cost assumptions for future Phase 2 calculator enhancement
@@ -51,4 +53,5 @@ export const emptyLoadForm: LoadFormInput = {
   tolls: '',
   fuelCost: '',
   notes: '',
+  splitPercent: '100',
 };
