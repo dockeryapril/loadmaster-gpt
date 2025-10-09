@@ -65,11 +65,13 @@ export function OnboardingTooltip({
           finalPlacement = 'top';
         }
       } else if (placement === 'top') {
-        top = rect.top - tooltipHeight - 8;
+        // Position the tooltip so its bottom edge sits 8px above the target
+        top = rect.top - 8;
         left = rect.left + rect.width / 2;
         
-        // Flip to bottom if would go off-screen
-        if (top < 20) {
+        // Predict if going off-screen; if so, flip to bottom
+        const predictedTopEdge = rect.top - tooltipHeight - 8;
+        if (predictedTopEdge < 20) {
           top = rect.bottom + 16;
           finalPlacement = 'bottom';
         }

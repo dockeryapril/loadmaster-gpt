@@ -395,6 +395,15 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 - `/src/App.tsx` (wrapped with OnboardingTour, added data-onboarding attributes)
 - `/docs/tasks.md` (marked Phase 4 as complete)
 
+### Post-completion updates (Onboarding tour)
+- Fixed Step 3 tooltip spacing and off-screen issue by correcting 'top' placement math in `src/components/onboarding/OnboardingTooltip.tsx` so the tooltip bottom sits 8px above the highlight and only flips to bottom when truly off-screen.
+- No business logic changes.
+
+### How to test this fix
+1. Clear localStorage key `lm:v2:onboarding` and refresh.
+2. Start the tour on mobile; go to Step 3.
+3. Confirm the tooltip appears directly above the highlighted area with a small, consistent gap and remains fully visible without extra scrolling. If there’s not enough space, it should flip below.
+
 ### What's Next
 → **Phase 5: Lovable Cloud Integration** (see below)
 
