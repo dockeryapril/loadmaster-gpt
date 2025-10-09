@@ -71,12 +71,8 @@ export function calculateDetailedProfit(
   const yourShare = grossRevenue * (splitPercent / 100);
 
   // Costs
-  const fuelCost = miles > 0 && costProfile.averageMPG > 0
-    ? (miles / costProfile.averageMPG) * costProfile.fuelPricePerGallon
-    : 0;
-  
   const variableCosts = miles * costProfile.variableCostPerMile;
-  
+
   // Prorate fixed costs based on industry average of 2500 miles/week
   const fixedCosts = miles > 0
     ? (costProfile.dailyFixedCosts / 2500) * miles

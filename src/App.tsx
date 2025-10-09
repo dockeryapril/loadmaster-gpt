@@ -105,6 +105,9 @@ function MainApp() {
   const rpm = useMemo(() => (miles > 0 ? gross / miles : 0), [gross, miles]);
   const netRpm = useMemo(() => (miles > 0 ? profit / miles : 0), [profit, miles]);
   const yourShareRpm = useMemo(() => (miles > 0 ? yourShare / miles : 0), [yourShare, miles]);
+  const displayedFuelCost = includeFuel
+    ? detailedCalculation.breakdown.fuelCost
+    : detailedCalculation.adjustments.originalFuelCost;
 
   const canLog =
     Boolean(form.origin && form.destination) &&
@@ -452,12 +455,37 @@ function MainApp() {
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Auto-calculated fuel</label>
-                    <div className="mt-1 rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-                      {formatCurrency(detailedCalculation.breakdown.fuelCost)}
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-muted-foreground">Auto-calculated fuel</label>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeFuel((prev) => !prev)}
+                        aria-pressed={includeFuel}
+                        aria-label={includeFuel ? 'Exclude fuel from your costs' : 'Include fuel in your costs'}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          includeFuel ? 'bg-primary' : 'bg-muted-foreground/30'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                            includeFuel ? 'translate-x-5' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    <div
+                      className={`mt-1 rounded-lg border border-input px-3 py-2 text-sm text-muted-foreground ${
+                        includeFuel ? 'bg-muted/50' : 'border-dashed bg-muted/30'
+                      }`}
+                    >
+                      {formatCurrency(displayedFuelCost)}
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Based on your cost profile
+                      {includeFuel
+                        ? 'Subtracted using your MPG and fuel price settings.'
+                        : `Carrier covers ${formatCurrency(
+                            detailedCalculation.adjustments.originalFuelCost,
+                          )} in fuel (not subtracted).`}
                     </p>
                   </div>
                 </div>

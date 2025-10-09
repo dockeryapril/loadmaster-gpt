@@ -71,6 +71,11 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
                 <span>Fuel:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.fuelCost)}</span>
               </div>
+              {!adjustments.includeFuel && adjustments.originalFuelCost > 0 && (
+                <p className="text-right text-xs text-muted-foreground">
+                  Carrier covers {formatCurrency(adjustments.originalFuelCost)} in fuel (not subtracted)
+                </p>
+              )}
               <div className="flex justify-between">
                 <span>Tolls:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.tollCost)}</span>
@@ -128,6 +133,9 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
               <li><strong>Your share</strong> = Gross revenue × ({breakdown.splitPercent}% ÷ 100)</li>
             )}
             <li><strong>Fuel cost</strong> = (Miles ÷ MPG) × Fuel price per gallon</li>
+            {!adjustments.includeFuel && (
+              <li className="text-muted-foreground">Fuel excluded from driver costs</li>
+            )}
             <li><strong>Variable costs</strong> = Miles × Variable cost per mile</li>
             <li><strong>Fixed costs</strong> = (Daily fixed costs ÷ 2500) × Miles</li>
             <li className="pt-1">
