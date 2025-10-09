@@ -69,6 +69,7 @@ function MainApp() {
   const [useSplit, setUseSplit] = useState(() => getInitialUseSplit());
   const [includeFsc, setIncludeFsc] = useState(() => getInitialToggleState('lm:includeFsc', true));
   const [includeTolls, setIncludeTolls] = useState(() => getInitialToggleState('lm:includeTolls', true));
+  const [includeFuel, setIncludeFuel] = useState(() => getInitialToggleState('lm:includeFuel', true));
   const addDecision = useDecisionStore((state) => state.addDecision);
   const history = useDecisionStore((state) => state.history);
   const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
@@ -93,9 +94,9 @@ function MainApp() {
         miles,
         costProfile,
         useSplit ? splitPercent : 100,
-        { includeFsc, includeTolls },
+        { includeFsc, includeTolls, includeFuel },
       ),
-    [rate, rawFsc, rawTolls, miles, costProfile, useSplit, splitPercent, includeFsc, includeTolls],
+    [rate, rawFsc, rawTolls, miles, costProfile, useSplit, splitPercent, includeFsc, includeTolls, includeFuel],
   );
 
   const profit = detailedCalculation.profit;
@@ -155,6 +156,11 @@ function MainApp() {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem('lm:includeTolls', includeTolls ? 'true' : 'false');
   }, [includeTolls]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('lm:includeFuel', includeFuel ? 'true' : 'false');
+  }, [includeFuel]);
 
   // Load decisions from cloud when user signs in
   useEffect(() => {
