@@ -47,9 +47,12 @@ export function OnboardingTour({ children }: OnboardingTourProps) {
       if (currentStepConfig) {
         const element = document.querySelector(currentStepConfig.selector);
         if (element) {
+          // Use 'start' for step 1 to keep bottom tooltip visible, 'center' for others
+          const scrollBlock = currentStep === 1 ? 'start' : 'center';
+          
           element.scrollIntoView({
             behavior: 'smooth',
-            block: 'center',
+            block: scrollBlock,
           });
         }
       }
