@@ -462,7 +462,7 @@ function MainApp() {
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-muted-foreground">Auto-calculated fuel</label>
+                      <label className="text-sm font-medium text-muted-foreground">Fuel</label>
                       <button
                         type="button"
                         onClick={() => setIncludeFuel((prev) => !prev)}
@@ -488,10 +488,10 @@ function MainApp() {
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {includeFuel
-                        ? 'Subtracted using your MPG and fuel price settings.'
-                        : `Carrier covers ${formatCurrency(
+                        ? 'Fuel is auto-calculated using your MPG and fuel price settings and subtracted from your costs.'
+                        : `Fuel is auto-calculated using your MPG and fuel price settings, but your carrier covers ${formatCurrency(
                             detailedCalculation.adjustments.originalFuelCost,
-                          )} in fuel (not subtracted).`}
+                          )} (not subtracted).`}
                     </p>
                   </div>
                 </div>
