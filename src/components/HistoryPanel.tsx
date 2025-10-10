@@ -4,6 +4,9 @@ import { HistorySummaryCard } from './HistorySummaryCard';
 import { HistoryFilters } from './HistoryFilters';
 import { ExportButton } from './ExportButton';
 import { useHistoryFilters } from '@/hooks/useHistoryFilters';
+import { EditLoadDialog } from './EditLoadDialog';
+import { Pencil } from 'lucide-react';
+import type { LoadEntrySnapshot } from '@/types/mvp';
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', {
@@ -24,7 +27,9 @@ const ENTRIES_PER_PAGE = 10;
 export function HistoryPanel() {
   const history = useDecisionStore((state) => state.history);
   const clearHistory = useDecisionStore((state) => state.clearHistory);
+  const updateDecision = useDecisionStore((state) => state.updateDecision);
   const [displayCount, setDisplayCount] = useState(ENTRIES_PER_PAGE);
+  const [editingEntry, setEditingEntry] = useState<LoadEntrySnapshot | null>(null);
 
   const {
     filtered,
@@ -92,17 +97,27 @@ export function HistoryPanel() {
                   <div className="font-semibold text-foreground">
                     {entry.origin} → {entry.destination}
                   </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
-                      entry.outcome === 'book'
-                        ? 'bg-emerald-500/10 text-emerald-600'
-                        : entry.outcome === 'counter'
-                          ? 'bg-amber-500/10 text-amber-600'
-                          : 'bg-rose-500/10 text-rose-600'
-                    }`}
-                  >
-                    {decisionLabels[entry.outcome]}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
+                        entry.outcome === 'book'
+                          ? 'bg-emerald-500/10 text-emerald-600'
+                          : entry.outcome === 'counter'
+                            ? 'bg-amber-500/10 text-amber-600'
+                            : 'bg-rose-500/10 text-rose-600'
+                      }`}
+                    >
+                      {decisionLabels[entry.outcome]}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setEditingEntry(entry)}
+                      className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      aria-label="Edit entry"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
                   <div>
@@ -145,6 +160,18 @@ export function HistoryPanel() {
           </>
         )}
       </div>
+
+      {editingEntry && (
+        <EditLoadDialog
+          entry={editingEntry}
+          open={!!editingEntry}
+          onOpenChange={(open) => !open && setEditingEntry(null)}
+          onSave={(updates) => {
+            updateDecision(editingEntry.id, updates);
+            setEditingEntry(null);
+          }}
+        />
+      )}
     </div>
   );
 }

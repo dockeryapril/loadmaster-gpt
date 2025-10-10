@@ -9,6 +9,7 @@ interface DecisionState {
   costProfile: CostAssumptions;
   historyClearedAt: string | null;
   addDecision: (entry: Omit<LoadEntrySnapshot, 'id' | 'createdAt'>) => void;
+  updateDecision: (id: string, updates: Partial<Omit<LoadEntrySnapshot, 'id' | 'createdAt'>>) => void;
   clearHistory: () => void;
   updateCostProfile: (profile: CostAssumptions) => void;
   loadFromCloud: () => Promise<void>;
@@ -36,6 +37,12 @@ export const useDecisionStore = create<DecisionState>()(
             ...state.history,
           ].slice(0, 100),
           historyClearedAt: state.historyClearedAt,
+        })),
+      updateDecision: (id, updates) =>
+        set((state) => ({
+          history: state.history.map((entry) =>
+            entry.id === id ? { ...entry, ...updates } : entry
+          ),
         })),
       clearHistory: () =>
         set({
