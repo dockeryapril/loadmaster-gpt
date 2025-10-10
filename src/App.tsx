@@ -50,6 +50,19 @@ const getInitialSplitPercent = () => {
   return stored ?? emptyLoadForm.splitPercent;
 };
 
+const getInitialEquipment = (): Equipment => {
+  if (typeof window === 'undefined') return 'hotshot';
+  try {
+    const stored = window.localStorage.getItem('lm:equipment');
+    if (stored && ['hotshot', 'cargo_van', 'straight_truck'].includes(stored)) {
+      return stored as Equipment;
+    }
+  } catch (error) {
+    console.error('Failed to load equipment from localStorage', error);
+  }
+  return 'hotshot';
+};
+
 const getInitialUseSplit = () => {
   if (typeof window === 'undefined') return false;
   const stored = window.localStorage.getItem('lm:useSplit');
@@ -68,6 +81,7 @@ function MainApp() {
   const [form, setForm] = useState<LoadFormInput>(() => ({
     ...emptyLoadForm,
     splitPercent: getInitialSplitPercent(),
+    equipment: getInitialEquipment(),
   }));
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -172,6 +186,15 @@ function MainApp() {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem('lm:includeFuel', includeFuel ? 'true' : 'false');
   }, [includeFuel]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem('lm:equipment', form.equipment);
+    } catch (error) {
+      console.error('Failed to save equipment to localStorage', error);
+    }
+  }, [form.equipment]);
 
   // Load decisions from cloud when user signs in
   useEffect(() => {
