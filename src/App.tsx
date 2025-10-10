@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMemo } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, InfoIcon } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
@@ -355,23 +356,52 @@ function MainApp() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-4" data-onboarding="step-1">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Equipment Type
-                  </label>
-                  <select
-                    className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                    value={form.equipment}
-                    onChange={(event) => updateForm('equipment', event.target.value)}
-                  >
-                    <option value="hotshot">Hotshot</option>
-                    <option value="cargo_van">Cargo Van</option>
-                    <option value="straight_truck">Straight Truck</option>
-                  </select>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Used for negotiation rate calculations
-                  </p>
-                </div>
+                <TooltipProvider>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                      Equipment Type
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-sm p-4">
+                          <div className="space-y-2 text-xs">
+                            <p className="font-semibold">What this affects:</p>
+                            <ul className="list-disc pl-4 space-y-1">
+                              <li><strong>Negotiation rates:</strong> Market-appropriate RPM thresholds for your equipment type</li>
+                              <li><strong>Surcharge amounts:</strong> Contextual fees (tarping, liftgate, etc.) in negotiation messages</li>
+                            </ul>
+                            
+                            <p className="font-semibold pt-2">What this does NOT affect:</p>
+                            <ul className="list-disc pl-4 space-y-1">
+                              <li><strong>Your actual profit:</strong> Calculated using YOUR custom cost profile (fuel price, MPG, fixed costs)</li>
+                            </ul>
+                            
+                            <p className="pt-2 text-muted-foreground italic">
+                              Why? This separation ensures you negotiate using industry-standard rates while calculating profit based on YOUR real operating costs.
+                            </p>
+                            
+                            <p className="pt-2 text-muted-foreground">
+                              ✓ Your selection is saved and persists between sessions
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </label>
+                    <select
+                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      value={form.equipment}
+                      onChange={(event) => updateForm('equipment', event.target.value)}
+                    >
+                      <option value="hotshot">Hotshot</option>
+                      <option value="cargo_van">Cargo Van</option>
+                      <option value="straight_truck">Straight Truck</option>
+                    </select>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Sets market-appropriate negotiation rates
+                    </p>
+                  </div>
+                </TooltipProvider>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     Origin <span className="text-rose-500">*</span>

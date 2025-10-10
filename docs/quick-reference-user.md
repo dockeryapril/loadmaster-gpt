@@ -63,7 +63,9 @@
 ### Business (Pro Enhanced RPM)
 - **💼 Revenue Split:** % you keep (80%, 90%, 100%)
 - **💸 Fixed Costs:** Weekly expenses ($600-1500)
-- **🚛 Equipment:** Cargo van, straight truck, hotshot
+- **🚛 Equipment:** Sets negotiation rates (Cargo van, straight truck, hotshot)
+  - *Note: Profit uses YOUR custom costs, negotiation uses market standards*
+  - *Your selection persists between sessions*
 
 ---
 
