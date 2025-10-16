@@ -34,9 +34,9 @@ export function HistorySummaryCard({ history }: HistorySummaryCardProps) {
     const passed = thisWeek.filter((e) => e.outcome === 'pass').length;
 
     const bookedEntries = thisWeek.filter((e) => e.outcome === 'book');
-    const avgProfit =
+    const totalProfit =
       bookedEntries.length > 0
-        ? bookedEntries.reduce((sum, e) => sum + e.profit, 0) / bookedEntries.length
+        ? bookedEntries.reduce((sum, e) => sum + e.profit, 0)
         : 0;
 
     const bestRpm = thisWeek.length > 0 ? Math.max(...thisWeek.map((e) => e.rpm)) : 0;
@@ -45,7 +45,7 @@ export function HistorySummaryCard({ history }: HistorySummaryCardProps) {
       booked,
       countered,
       passed,
-      avgProfit,
+      totalProfit,
       bestRpm,
       total: thisWeek.length,
     };
@@ -74,8 +74,8 @@ export function HistorySummaryCard({ history }: HistorySummaryCardProps) {
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-3 text-sm">
         <div>
-          <p className="text-xs text-muted-foreground">Avg profit</p>
-          <p className="font-semibold text-foreground">{formatCurrency(weeklyStats.avgProfit)}</p>
+          <p className="text-xs text-muted-foreground">Total profit</p>
+          <p className="font-semibold text-foreground">{formatCurrency(weeklyStats.totalProfit)}</p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Best RPM</p>
