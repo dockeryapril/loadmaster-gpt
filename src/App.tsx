@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMemo } from 'react';
-import { MessageSquare, InfoIcon } from 'lucide-react';
-import truckLogo from '@/assets/truck-logo.jpeg';
+import { MessageSquare, InfoIcon, Truck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { calculateDetailedProfit } from '@/types/load';
@@ -279,7 +278,9 @@ function MainApp() {
         <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3">
-              <img src={truckLogo} alt="LoadMaster" className="h-10 w-10 rounded-lg" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Truck className="h-6 w-6 text-primary" />
+              </div>
               <div>
                 <h1 className="text-lg font-semibold">LoadMaster</h1>
                 <p className="text-xs text-muted-foreground">Quick Profitability Calculator</p>
