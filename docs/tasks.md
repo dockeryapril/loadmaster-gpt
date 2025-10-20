@@ -609,3 +609,22 @@ Only after core loop is validated:
 
 **Last Updated**: Phase 1 completion
 **Next Review**: Before Phase 2 kickoff
+
+---
+
+## ✅ Chore: Lucide Truck Icon Alignment — COMPLETED
+
+### What Was Completed
+- Header uses Lucide Truck with `text-primary` (design token) for orange brand color
+- Downloaded exact Lucide Truck SVG and generated pixel-perfect icons:
+  - `public/apple-touch-icon.png` (180x180) — orange stroke on dark slate background
+  - `public/app-icon.png` (512x512) — same styling
+- Updated `index.html` to reference the proper Apple touch icon size
+
+### How to Test
+1. Load the app — the header shows the orange Truck icon
+2. On iOS Safari: Share → Add to Home Screen → Verify the icon matches the Lucide truck exactly
+3. Inspect page source — head contains favicon and apple-touch-icon links
+
+### What's Next
+→ If you prefer a different background or stroke weight, tell me the exact spec and I’ll update the assets.
