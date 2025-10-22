@@ -156,16 +156,17 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-md md:max-w-2xl lg:max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 lg:col-span-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Truck className="h-6 w-6 text-primary-foreground" />
+            <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-primary rounded-xl flex items-center justify-center">
+              <Truck className="h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">LoadMaster Free</h1>
-              <p className="text-sm text-muted-foreground">Free Rate Calculator</p>
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">LoadMaster Free</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Free Rate Calculator</p>
             </div>
           </div>
           
@@ -194,7 +195,7 @@ function App() {
         </div>
 
         {/* Navigation */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 lg:col-span-2">
           <Button
             variant={!showHistory && !showOCR && !showSuccess ? "default" : "outline"}
             onClick={() => {
@@ -232,7 +233,7 @@ function App() {
             onClose={() => setShowOCR(false)}
           />
         ) : showHistory ? (
-          <div className="space-y-4">
+          <div className="space-y-4 lg:col-span-2">
             {history.length === 0 ? (
               <Card>
                 <CardContent className="pt-6 text-center">
@@ -246,7 +247,7 @@ function App() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {history.map((item) => (
                   <Card key={item.id}>
                     <CardContent className="pt-4">
@@ -284,7 +285,7 @@ function App() {
             )}
           </div>
         ) : showResult ? (
-          <div className="space-y-6">
+          <div className="space-y-6 lg:col-span-2 lg:max-w-4xl lg:mx-auto">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -293,18 +294,18 @@ function App() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-3 gap-4 md:gap-6 lg:gap-8 text-center">
                   <div>
-                    <p className="text-sm text-muted-foreground">Ask</p>
-                    <p className="text-xl font-bold text-primary">${result.calculation.negotiation.anchor}</p>
+                    <p className="text-sm md:text-base text-muted-foreground mb-1">Ask</p>
+                    <p className="text-xl md:text-2xl lg:text-3xl font-bold text-primary">${result.calculation.negotiation.anchor}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Settle For</p>
-                    <p className="text-xl font-bold">${result.calculation.negotiation.target}</p>
+                    <p className="text-sm md:text-base text-muted-foreground mb-1">Settle For</p>
+                    <p className="text-xl md:text-2xl lg:text-3xl font-bold">${result.calculation.negotiation.target}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Bottom Line</p>
-                    <p className="text-xl font-bold text-muted-foreground">${result.calculation.negotiation.floor}</p>
+                    <p className="text-sm md:text-base text-muted-foreground mb-1">Bottom Line</p>
+                    <p className="text-xl md:text-2xl lg:text-3xl font-bold text-muted-foreground">${result.calculation.negotiation.floor}</p>
                   </div>
                 </div>
                 
@@ -322,16 +323,16 @@ function App() {
                 )}
                 
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Suggested Message:</p>
-                  <div className="bg-muted p-3 rounded text-sm">
-                    <p className="font-semibold mb-1">Subject: {result.message.subject}</p>
-                    <p>{result.message.message}</p>
+                  <p className="text-sm md:text-base text-muted-foreground">Suggested Message:</p>
+                  <div className="bg-muted p-4 md:p-5 lg:p-6 rounded-lg text-sm md:text-base">
+                    <p className="font-semibold mb-2">Subject: {result.message.subject}</p>
+                    <p className="leading-relaxed">{result.message.message}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Button onClick={handleReset} className="w-full">
+            <Button onClick={handleReset} className="w-full h-10 md:h-11 lg:h-12">
               Calculate Another Load
             </Button>
           </div>
@@ -344,7 +345,7 @@ function App() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Miles</label>
                   <Input
@@ -352,6 +353,7 @@ function App() {
                     placeholder="500"
                     value={miles}
                     onChange={(e) => setMiles(e.target.value)}
+                    className="h-10 md:h-11 lg:h-12"
                   />
                 </div>
                 <div>
@@ -361,11 +363,9 @@ function App() {
                     placeholder="1250"
                     value={offerAllIn}
                     onChange={(e) => setOfferAllIn(e.target.value)}
+                    className="h-10 md:h-11 lg:h-12"
                   />
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Weight (lbs)</label>
                   <Input
@@ -373,6 +373,7 @@ function App() {
                     placeholder="40000"
                     value={weightLbs}
                     onChange={(e) => setWeightLbs(e.target.value)}
+                    className="h-10 md:h-11 lg:h-12"
                   />
                 </div>
                 <div>
@@ -382,6 +383,7 @@ function App() {
                     placeholder="24"
                     value={pickupInHours}
                     onChange={(e) => setPickupInHours(e.target.value)}
+                    className="h-10 md:h-11 lg:h-12"
                   />
                 </div>
               </div>
@@ -400,7 +402,7 @@ function App() {
               <div className="space-y-3">
                 <Button 
                   onClick={handleCalculate} 
-                  className="w-full"
+                  className="w-full h-10 md:h-11 lg:h-12"
                   disabled={!miles || !offerAllIn}
                 >
                   Calculate Negotiation Strategy
@@ -418,7 +420,7 @@ function App() {
                 <Button 
                   onClick={() => setShowOCR(true)}
                   variant="outline" 
-                  className="w-full"
+                  className="w-full h-10 md:h-11 lg:h-12"
                 >
                   <Camera className="h-4 w-4 mr-2" />
                   Upload Load Image
@@ -427,9 +429,10 @@ function App() {
             </CardContent>
           </Card>
         )}
+        </div>
         
         {/* Footer */}
-        <div className="mt-12 text-center text-sm text-muted-foreground">
+        <div className="mt-12 text-center text-sm text-muted-foreground lg:col-span-2">
           <p>LoadMaster Free Plan</p>
           {!user && (
             <p className="mt-2">
@@ -440,6 +443,7 @@ function App() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }
