@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { MessageSquare, InfoIcon, Truck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
 import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDecisionStore';
@@ -725,6 +726,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster />
+        <Analytics />
       </AuthProvider>
     </BrowserRouter>
   );
