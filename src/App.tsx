@@ -407,6 +407,18 @@ function MainApp() {
                     </p>
                   </div>
                 </TooltipProvider>
+
+                {/* Rate confirmation assist - OCR */}
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    OCR is optional. Drop a clear screenshot to auto-fill the fields.
+                  </p>
+                  <div className="mt-4">
+                    <OCRDropzone onParse={applyOcr} />
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     Origin <span className="text-rose-500">*</span>
@@ -677,16 +689,6 @@ function MainApp() {
                   >
                     {!canLog ? 'Complete required fields to log' : 'Log decision'}
                   </button>
-                </div>
-
-                <div className="rounded-xl border border-border bg-background p-4">
-                  <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    OCR is optional. Drop a clear screenshot to auto-fill the fields.
-                  </p>
-                  <div className="mt-4">
-                    <OCRDropzone onParse={applyOcr} />
-                  </div>
                 </div>
               </div>
             </div>
