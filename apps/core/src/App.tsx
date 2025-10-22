@@ -331,6 +331,20 @@ function App() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Feedback Section */}
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground/80 italic">
+                💬 Was this result accurate? Spot an error or have an idea?{' '}
+                <a 
+                  href="mailto:waypointlabsllc@gmail.com?subject=LoadMaster%20Feedback&body=Please%20describe%20your%20experience%20with%20this%20calculation%3A%0A%0ALoad%20Details%3A%0AOrigin%3A%0ADestination%3A%0AMiles%3A%0ARate%3A%0AResult%3A%0A%0AFeedback%3A"
+                  className="text-muted-foreground underline hover:text-foreground transition-colors"
+                >
+                  Tap here
+                </a>
+                {' '}to send feedback.
+              </p>
+            </div>
             
             <Button onClick={handleReset} className="w-full h-10 md:h-11 lg:h-12">
               Calculate Another Load
