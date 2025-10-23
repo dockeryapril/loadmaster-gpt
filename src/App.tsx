@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useMemo } from 'react';
-import { MessageSquare, InfoIcon, Truck, LogOut, User as UserIcon } from 'lucide-react';
+import { MessageSquare, InfoIcon, Truck, LogOut, User as UserIcon, Activity } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { Analytics } from '@vercel/analytics/react';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
@@ -29,6 +30,7 @@ import { useNegotiationEngine } from '@/hooks/useNegotiationEngine';
 import { NegotiationMessageSheet } from '@/components/NegotiationMessageSheet';
 import { features } from '@/utils/featureFlags';
 import Auth from '@/pages/Auth';
+import AdminAnalytics from '@/pages/AdminAnalytics';
 import type { DecisionOutcome, LoadFormInput, Equipment } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
@@ -56,6 +58,20 @@ const outcomeOptions: DecisionOutcome[] = ['book', 'counter', 'pass'];
 
 function UserMenu({ user }: { user: User }) {
   const { signOut } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, [user.id]);
   
   const handleSignOut = async () => {
     await signOut();
@@ -76,6 +92,17 @@ function UserMenu({ user }: { user: User }) {
           {user.email}
         </div>
         <DropdownMenuSeparator />
+        {isAdmin && (
+          <>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <a href="/admin/analytics">
+                <Activity className="mr-2 h-4 w-4" />
+                Analytics Dashboard
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           Sign Out
@@ -788,6 +815,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="/" element={<MainApp />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

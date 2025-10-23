@@ -195,7 +195,15 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_activity_summary"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       lane_history: {
         Row: {
@@ -306,7 +314,15 @@ export type Database = {
           user_id?: string
           weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "loads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_activity_summary"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       negotiation_settings: {
         Row: {
@@ -524,7 +540,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscribers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_activity_summary"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -548,7 +572,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_activity_summary"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       user_settings: {
         Row: {
@@ -635,13 +667,106 @@ export type Database = {
           weekly_fixed_costs?: number | null
           weight_limit?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_activity_summary"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
     }
     Views: {
-      [_ in never]: never
+      conversion_funnel: {
+        Row: {
+          calculation_rate: number | null
+          decision_rate: number | null
+          ocr_usage_rate: number | null
+          reached_calculation: number | null
+          reached_decision: number | null
+          session_date: string | null
+          total_sessions: number | null
+          used_ocr: number | null
+        }
+        Relationships: []
+      }
+      daily_analytics: {
+        Row: {
+          authenticated_users: number | null
+          calculations: number | null
+          cost_edits: number | null
+          date: string | null
+          decisions_logged: number | null
+          negotiations: number | null
+          ocr_uploads: number | null
+          sessions: number | null
+          unique_sessions: number | null
+        }
+        Relationships: []
+      }
+      user_activity_summary: {
+        Row: {
+          avg_profit: number | null
+          avg_rpm: number | null
+          email: string | null
+          first_event_date: string | null
+          first_load_date: string | null
+          last_event_date: string | null
+          last_load_date: string | null
+          role: Database["public"]["Enums"]["app_role"] | null
+          total_loads: number | null
+          total_sessions: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_conversion_funnel: {
+        Args: never
+        Returns: {
+          calculation_rate: number
+          decision_rate: number
+          ocr_usage_rate: number
+          reached_calculation: number
+          reached_decision: number
+          session_date: string
+          total_sessions: number
+          used_ocr: number
+        }[]
+      }
+      get_daily_analytics: {
+        Args: never
+        Returns: {
+          authenticated_users: number
+          calculations: number
+          cost_edits: number
+          date: string
+          decisions_logged: number
+          negotiations: number
+          ocr_uploads: number
+          sessions: number
+          unique_sessions: number
+        }[]
+      }
+      get_user_activity: {
+        Args: { target_user_id?: string }
+        Returns: {
+          avg_profit: number
+          avg_rpm: number
+          email: string
+          first_event_date: string
+          first_load_date: string
+          last_event_date: string
+          last_load_date: string
+          role: Database["public"]["Enums"]["app_role"]
+          total_loads: number
+          total_sessions: number
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
