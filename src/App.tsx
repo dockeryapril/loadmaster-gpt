@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useMemo } from 'react';
-import { MessageSquare, InfoIcon, Truck } from 'lucide-react';
+import { MessageSquare, InfoIcon, Truck, LogOut, User as UserIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { User } from '@supabase/supabase-js';
 import { Analytics } from '@vercel/analytics/react';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
@@ -51,6 +53,37 @@ function formatNumber(value: number) {
 }
 
 const outcomeOptions: DecisionOutcome[] = ['book', 'counter', 'pass'];
+
+function UserMenu({ user }: { user: User }) {
+  const { signOut } = useAuth();
+  
+  const handleSignOut = async () => {
+    await signOut();
+  };
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+          <UserIcon className="h-4 w-4" />
+          <span className="hidden sm:inline">{user.email?.split('@')[0]}</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1.5 text-xs text-muted-foreground">
+          {user.email}
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const getInitialSplitPercent = () => {
   if (typeof window === 'undefined') return emptyLoadForm.splitPercent;
@@ -308,11 +341,23 @@ function MainApp() {
                 <p className="text-xs text-muted-foreground">Quick Profitability Calculator</p>
               </div>
             </div>
-            <SyncStatus 
-              isSynced={isSynced} 
-              isSyncing={isSyncing} 
-              isAuthenticated={!!user}
-            />
+            <div className="flex items-center gap-3">
+              <SyncStatus 
+                isSynced={isSynced} 
+                isSyncing={isSyncing} 
+                isAuthenticated={!!user}
+              />
+              {user ? (
+                <UserMenu user={user} />
+              ) : (
+                <a
+                  href="/auth"
+                  className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  Sign In
+                </a>
+              )}
+            </div>
           </div>
         </header>
 
