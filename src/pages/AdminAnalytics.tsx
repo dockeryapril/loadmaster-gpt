@@ -44,7 +44,7 @@ interface UserActivity {
 }
 
 export default function AdminAnalytics() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -54,13 +54,15 @@ export default function AdminAnalytics() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       navigate('/auth');
       return;
     }
 
     checkAdminAndLoadData();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const checkAdminAndLoadData = async () => {
     try {
@@ -112,7 +114,7 @@ export default function AdminAnalytics() {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

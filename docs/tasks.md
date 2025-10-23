@@ -418,6 +418,15 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 4. Open Cost Profile Editor again and verify values persisted
 5. Test edge case: Open DevTools → Application → LocalStorage → `lm:v2:state`, manually delete `costProfile` key from JSON, refresh - should show defaults without errors
 
+### Post-completion updates (Admin Analytics Auth Redirect)
+- Fixed a race condition causing immediate redirect to /auth when opening the Analytics Dashboard before auth finished loading. Now the page waits for auth to resolve and only redirects if unauthenticated.
+- No server changes beyond prior function signature fix.
+
+### How to test this fix
+1. Sign in, then quickly click your avatar → Analytics Dashboard.
+2. You should see a spinner briefly, then the dashboard loads (if you have admin role).
+3. If not signed in, you should be redirected to /auth after the spinner.
+
 ### What's Next
 → **Phase 5: Lovable Cloud Integration** (see below)
 
