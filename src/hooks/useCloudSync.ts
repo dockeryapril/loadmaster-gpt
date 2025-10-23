@@ -10,13 +10,23 @@ export function useCloudSync() {
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const { toast } = useToast();
 
-  // Sync local decisions to cloud
+  // Sync local decisions to cloud (with rate limiting)
   const syncToCloud = async (decisions: LoadEntrySnapshot[]) => {
     if (!user || decisions.length === 0) return;
 
+    // Rate limit: Only sync once per minute
+    const now = Date.now();
+    const lastSync = sessionStorage.getItem('last_sync_time');
+    if (lastSync && now - parseInt(lastSync) < 60000) {
+      return; // Skip sync if less than 1 minute since last sync
+    }
+
     setIsSyncing(true);
     try {
-      const loads = decisions.map(decision => ({
+      // Only sync the last 50 decisions to reduce egress
+      const recentDecisions = decisions.slice(-50);
+      
+      const loads = recentDecisions.map(decision => ({
         id: decision.id,
         user_id: user.id,
         origin: decision.origin,
@@ -39,6 +49,7 @@ export function useCloudSync() {
 
       if (error) throw error;
 
+      sessionStorage.setItem('last_sync_time', now.toString());
       setLastSyncedAt(new Date());
     } catch (error) {
       console.error('Sync failed:', error);
