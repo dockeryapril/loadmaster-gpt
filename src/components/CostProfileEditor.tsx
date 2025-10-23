@@ -15,6 +15,7 @@ import { defaultCostAssumptions } from '@/types/mvp';
 import type { CostAssumptions } from '@/types/mvp';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
+import { trackCostAssumptionsEdited } from '@/utils/analytics';
 
 type EditingCostProfile = {
   fuelPricePerGallon: string;
@@ -52,6 +53,13 @@ export function CostProfileEditor() {
   );
   const [open, setOpen] = useState(false);
 
+  // Track when cost profile editor opens
+  useEffect(() => {
+    if (open) {
+      trackCostAssumptionsEdited();
+    }
+  }, [open]);
+
   // Keep local state in sync with persisted values while the sheet is closed
   useEffect(() => {
     if (!open) {
@@ -84,6 +92,10 @@ export function CostProfileEditor() {
       goodProfit: parseOrDefault(editingValues.goodProfit, mergedCostProfile.goodProfit),
       fairProfit: parseOrDefault(editingValues.fairProfit, mergedCostProfile.fairProfit),
     });
+    
+    // Track save action
+    trackCostAssumptionsEdited();
+    
     setOpen(false);
   };
 

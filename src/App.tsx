@@ -7,6 +7,12 @@ import { Analytics } from '@vercel/analytics/react';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
 import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDecisionStore';
+import { 
+  trackCalculationSubmitted, 
+  trackDecisionLogged, 
+  trackFeedbackClicked,
+  trackSessionStart 
+} from '@/utils/analytics';
 import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
 import { GuidanceBadge } from '@/components/GuidanceBadge';
@@ -99,6 +105,11 @@ function MainApp() {
   const { isSyncing, syncToCloud } = useCloudSync();
   const [isSynced, setIsSynced] = useState(false);
   const [negotiationSheetOpen, setNegotiationSheetOpen] = useState(false);
+
+  // Track session start on mount
+  useEffect(() => {
+    trackSessionStart();
+  }, []);
 
   const miles = numberOrZero(form.miles);
   const rate = numberOrZero(form.rate);
@@ -263,6 +274,16 @@ function MainApp() {
       notes: form.notes.trim() || undefined,
       splitPercent: useSplit ? splitPercent : undefined,
     });
+
+    // Track calculation submitted and decision logged
+    trackCalculationSubmitted({
+      miles,
+      rate,
+      profit,
+      netRPM: netRpm,
+      shareRPM: yourShareRpm,
+    });
+    trackDecisionLogged(outcome);
 
     setForm({
       ...emptyLoadForm,

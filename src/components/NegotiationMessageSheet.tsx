@@ -1,5 +1,5 @@
 import { Copy, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Drawer,
   DrawerClose,
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { CalcResult } from '@/lib/negotiation/types';
+import { trackNegotiationOpened } from '@/utils/analytics';
 
 interface NegotiationMessageSheetProps {
   open: boolean;
@@ -28,6 +29,13 @@ export function NegotiationMessageSheet({
   templates,
 }: NegotiationMessageSheetProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // Track when negotiation sheet is opened
+  useEffect(() => {
+    if (open) {
+      trackNegotiationOpened();
+    }
+  }, [open]);
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text).then(() => {

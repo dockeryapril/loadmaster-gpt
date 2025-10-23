@@ -4,6 +4,7 @@ import { FunctionsFetchError } from '@supabase/supabase-js';
 import type { LoadFormInput } from '@/types/mvp';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { trackScreenshotUploaded } from '@/utils/analytics';
 
 interface OCRDropzoneProps {
   onParse: (data: Partial<LoadFormInput>) => void;
@@ -121,6 +122,9 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
   const handleFile = useCallback(
     async (file: File | null) => {
       if (!file) return;
+      
+      // Track screenshot upload immediately
+      trackScreenshotUploaded();
       
       // Validate file type
       if (!file.type.startsWith('image/')) {
