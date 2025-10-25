@@ -121,12 +121,16 @@ const validateCostProfile = () => {
     'fairRpm',
     'goodProfit',
     'fairProfit',
+    'fuelType',
   ];
 
   // Check if any required field is missing or undefined
   const hasAllFields = Boolean(costProfile) &&
     requiredFields.every((field) => {
       const value = costProfile?.[field];
+      if (field === 'fuelType') {
+        return value === 'gas' || value === 'diesel';
+      }
       return typeof value === 'number' && Number.isFinite(value);
     });
 

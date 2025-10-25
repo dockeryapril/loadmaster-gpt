@@ -6,7 +6,6 @@ export type FuelType = 'gas' | 'diesel';
 
 export interface LoadFormInput {
   equipment: Equipment;
-  fuelType: FuelType;
   origin: string;
   destination: string;
   miles: string;
@@ -47,6 +46,7 @@ export interface CostAssumptions {
   goodProfit: number;
   fairProfit: number;
   useSmartHopPresets?: boolean;
+  fuelType?: FuelType;
 }
 
 export const defaultCostAssumptions: CostAssumptions = {
@@ -58,11 +58,11 @@ export const defaultCostAssumptions: CostAssumptions = {
   fairRpm: 0.7,
   goodProfit: 900,
   fairProfit: 450,
+  fuelType: 'diesel',
 };
 
 export const emptyLoadForm: LoadFormInput = {
   equipment: 'hotshot',
-  fuelType: 'diesel',
   origin: '',
   destination: '',
   miles: '',

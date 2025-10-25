@@ -16,7 +16,7 @@ import { defaultCostAssumptions } from '@/types/mvp';
 import type { CostAssumptions, Equipment, FuelType } from '@/types/mvp';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
-import { trackCostAssumptionsEdited, trackPresetToggled, trackCostEditorFirstOpen } from '@/utils/analytics';
+import { trackCostAssumptionsEdited, trackPresetToggled, trackCostEditorFirstOpen, trackFuelTypeChanged } from '@/utils/analytics';
 import { getPresetValues } from '@/config/vehicleDefaults';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 
@@ -30,11 +30,11 @@ type EditingCostProfile = {
   goodProfit: string;
   fairProfit: string;
   useSmartHopPresets: boolean;
+  fuelType: FuelType;
 };
 
 interface CostProfileEditorProps {
   currentEquipment?: Equipment;
-  currentFuelType?: FuelType;
   onPresetApplied?: (mpg: number, variableCPM: number, fixedPerDay: number) => void;
 }
 
@@ -48,9 +48,10 @@ const formatProfileForEditing = (profile: CostAssumptions): EditingCostProfile =
   goodProfit: String(profile.goodProfit),
   fairProfit: String(profile.fairProfit),
   useSmartHopPresets: profile.useSmartHopPresets ?? false,
+  fuelType: profile.fuelType ?? 'diesel',
 });
 
-export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelType = 'diesel', onPresetApplied }: CostProfileEditorProps = {}) {
+export function CostProfileEditor({ currentEquipment = 'hotshot', onPresetApplied }: CostProfileEditorProps = {}) {
   const { costProfile, updateCostProfile } = useCostProfile();
   const mergedCostProfile = useMemo(
     () => ({
@@ -92,8 +93,8 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelTyp
 
   // Apply presets when toggle is enabled and equipment/fuel changes
   useEffect(() => {
-    if (editingValues.useSmartHopPresets && currentEquipment && currentFuelType) {
-      const preset = getPresetValues(currentEquipment, currentFuelType);
+    if (editingValues.useSmartHopPresets && currentEquipment) {
+      const preset = getPresetValues(currentEquipment, editingValues.fuelType);
       setEditingValues(prev => ({
         ...prev,
         averageMPG: String(preset.mpg),
@@ -102,7 +103,7 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelTyp
       }));
       onPresetApplied?.(preset.mpg, preset.variableCPM, preset.fixedPerDay);
     }
-  }, [editingValues.useSmartHopPresets, currentEquipment, currentFuelType, onPresetApplied]);
+  }, [editingValues.useSmartHopPresets, editingValues.fuelType, currentEquipment, onPresetApplied]);
 
   const parseOrDefault = (value: string, fallback: number) => {
     const parsed = parseFloat(value);
@@ -129,6 +130,7 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelTyp
       goodProfit: parseOrDefault(editingValues.goodProfit, mergedCostProfile.goodProfit),
       fairProfit: parseOrDefault(editingValues.fairProfit, mergedCostProfile.fairProfit),
       useSmartHopPresets: editingValues.useSmartHopPresets,
+      fuelType: editingValues.fuelType,
     });
     
     // Track save action
@@ -142,8 +144,8 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelTyp
     setEditingValues(prev => ({ ...prev, useSmartHopPresets: newValue }));
     trackPresetToggled(newValue);
     
-    if (newValue && currentEquipment && currentFuelType) {
-      const preset = getPresetValues(currentEquipment, currentFuelType);
+    if (newValue && currentEquipment) {
+      const preset = getPresetValues(currentEquipment, editingValues.fuelType);
       setEditingValues(prev => ({
         ...prev,
         averageMPG: String(preset.mpg),
@@ -224,6 +226,46 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelTyp
         
         <ScrollArea className="h-[calc(90vh-120px)] sm:h-[calc(80vh-180px)]">
           <div className="mt-6 space-y-6 pr-4">
+            {/* Fuel Type Selector */}
+            <div>
+              <label className="text-sm font-medium text-foreground">
+                Fuel Type
+              </label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Your vehicle's fuel type (affects MPG defaults)
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingValues(prev => ({ ...prev, fuelType: 'gas' }));
+                    trackFuelTypeChanged('gas', currentEquipment);
+                  }}
+                  className={`flex-1 rounded-lg border py-2 px-3 text-sm font-medium transition-colors ${
+                    editingValues.fuelType === 'gas'
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-input bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  ⛽ Gas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingValues(prev => ({ ...prev, fuelType: 'diesel' }));
+                    trackFuelTypeChanged('diesel', currentEquipment);
+                  }}
+                  className={`flex-1 rounded-lg border py-2 px-3 text-sm font-medium transition-colors ${
+                    editingValues.fuelType === 'diesel'
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-input bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  🚛 Diesel
+                </button>
+              </div>
+            </div>
+
             {/* Industry Presets Toggle */}
             <div className="rounded-lg border border-border bg-muted/30 p-4">
               <div className="flex items-center justify-between">
