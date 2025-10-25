@@ -418,7 +418,7 @@ function MainApp() {
           <header className="space-y-1">
               <p className="text-sm font-medium uppercase tracking-wide text-primary">True RPM Calculator</p>
               <h2 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
-                Fast profit snapshots before you book the load
+                Run the numbers before you run the miles
               </h2>
               <p className="text-sm text-muted-foreground md:text-base">
                 Drop a screenshote or enter the load details. We will pre-fill the form, show instant profit, and let you log
