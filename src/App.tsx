@@ -596,6 +596,7 @@ function MainApp() {
                           : 'border-input bg-background text-foreground hover:bg-muted'
                       }`}
                     >
+                      🚛 Diesel
                     </button>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
