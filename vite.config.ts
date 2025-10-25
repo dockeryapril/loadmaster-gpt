@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
       "@loadmaster/engine": path.resolve(__dirname, "./packages/engine/src"),
     },
+    dedupe: ["react", "react-dom"],
   },
   build: {
     rollupOptions: {
