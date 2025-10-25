@@ -438,8 +438,8 @@ function MainApp() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:flex-row">
-        <section className="flex-1 space-y-6">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 lg:flex-row">
+        <section className="flex-1 space-y-6 lg:w-3/5">
           {/* Welcome Card for first-time users - temporarily disabled for debugging */}
           {/* <WelcomeCard /> */}
           
@@ -915,7 +915,7 @@ function MainApp() {
           </div>
         </section>
 
-        <aside className="w-full max-w-xl space-y-6" data-onboarding="step-3">
+        <aside className="w-full space-y-6 lg:w-2/5 lg:max-w-none" data-onboarding="step-3">
           <PatternInsights />
           <HistoryPanel />
         </aside>
