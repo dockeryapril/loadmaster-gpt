@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
@@ -8,6 +9,7 @@ const corsHeaders = {
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_BASE64_LENGTH = 15 * 1024 * 1024; // 15MB for base64 string
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,6 +17,50 @@ serve(async (req) => {
   }
 
   try {
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({
+        error: 'unauthorized',
+        message: 'Authentication required'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Supabase configuration missing');
+      return new Response(JSON.stringify({ 
+        error: 'configuration_error',
+        message: 'Service configuration incomplete' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const token = authHeader.replace(/bearer\s+/i, '').trim();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { persistSession: false },
+    });
+
+    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !userData?.user) {
+      console.error('Authentication failed:', authError);
+      return new Response(JSON.stringify({
+        error: 'unauthorized',
+        message: 'Invalid authentication token'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    console.log('OCR request from user:', userData.user.id);
     const contentType = req.headers.get('content-type') || '';
     let imageBase64: string | undefined;
 
@@ -73,6 +119,28 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         error: 'missing_image',
         message: 'Image data is required'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Validate base64 string length
+    if (imageBase64.length > MAX_BASE64_LENGTH) {
+      return new Response(JSON.stringify({
+        error: 'image_too_large',
+        message: 'Image data exceeds maximum size'
+      }), {
+        status: 413,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Validate base64 format
+    if (!imageBase64.startsWith('data:image/')) {
+      return new Response(JSON.stringify({
+        error: 'invalid_format',
+        message: 'Invalid image format'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

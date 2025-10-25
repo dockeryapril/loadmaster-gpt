@@ -427,8 +427,63 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 2. You should see a spinner briefly, then the dashboard loads (if you have admin role).
 3. If not signed in, you should be redirected to /auth after the spinner.
 
+### Post-completion updates (Security Hardening - Oct 25, 2025)
+**Critical security vulnerabilities fixed:**
+
+1. **Edge Function Authentication**
+   - Enabled JWT verification on `openai-chat` and `extract-load-data` functions  
+   - Added user authentication validation in extract-load-data
+   - Added input validation (file size, format, base64 length checks)
+   
+2. **Database Access Control**
+   - Fixed events table RLS to prevent unauthorized access to anonymous user data
+   - Added admin-only policy for reading all events  
+   - Restricted subscribers table INSERT to authenticated users only
+
+3. **Analytics Views Security**
+   - Analytics views protected by security definer functions checking admin role
+   - Access controlled via get_daily_analytics, get_conversion_funnel, get_user_activity
+
+### How to test security fixes
+1. **Test OCR auth**: Call extract-load-data without auth header → should return 401
+2. **Test events isolation**: Authenticated users should only see their own events
+3. **Test analytics access**: Only admin users can access analytics dashboard
+
 ### What's Next
 → **Phase 5: Lovable Cloud Integration** (see below)
+
+---
+
+## Security Hardening Completed (2025-10-25)
+
+### Critical Security Fixes Applied:
+1. **Edge Function Authentication**
+   - Enabled JWT verification on `openai-chat` and `extract-load-data` functions
+   - Added user authentication validation in extract-load-data
+   - Added input validation (file size, format, base64 length checks)
+   
+2. **Database Access Control**
+   - Fixed events table RLS to prevent unauthorized access to anonymous user data
+   - Added admin-only policy for reading all events
+   - Restricted subscribers table INSERT to authenticated users only
+
+3. **Analytics Views Security**
+   - Analytics views (daily_analytics, conversion_funnel, user_activity_summary) are protected by security definer functions
+   - Access controlled via get_daily_analytics, get_conversion_funnel, get_user_activity functions
+   - All functions check for admin role using has_role() before returning data
+
+### Testing the Security Fixes:
+1. **Test OCR authentication**: Try calling extract-load-data without auth header - should return 401
+2. **Test events isolation**: Authenticated users should only see their own events
+3. **Test analytics access**: Only admin users can access analytics dashboard and data
+
+### Remaining Supabase Linter Warnings:
+- **Exposed Auth Users**: user_activity_summary view includes email from auth.users for admin analytics
+- **Security Definer Views**: Analytics views use security definer pattern - this is intentional for admin access control
+- **Password Protection**: User should enable leaked password protection in Supabase dashboard
+- **Postgres Version**: User should upgrade Postgres version when convenient
+
+---
 
 ---
 
