@@ -15,7 +15,8 @@ import {
   trackDecisionLogged, 
   trackFeedbackClicked,
   trackSessionStart,
-  trackFuelTypeChanged
+  trackFuelTypeChanged,
+  trackScreenshotUploaded
 } from '@/utils/analytics';
 import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
@@ -23,13 +24,15 @@ import { GuidanceBadge } from '@/components/GuidanceBadge';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { PatternInsights } from '@/components/PatternInsights';
 import { SimilarLoadIndicator } from '@/components/SimilarLoadIndicator';
-import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { WelcomeCard } from '@/components/onboarding/WelcomeCard';
+import { OptionalTour } from '@/components/onboarding/OptionalTour';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { SyncStatus } from '@/components/SyncStatus';
 import { useCloudSync } from '@/hooks/useCloudSync';
 import { useNegotiationEngine } from '@/hooks/useNegotiationEngine';
 import { NegotiationMessageSheet } from '@/components/NegotiationMessageSheet';
 import { features } from '@/utils/featureFlags';
+import { toast } from '@/components/ui/use-toast';
 import Auth from '@/pages/Auth';
 import AdminAnalytics from '@/pages/AdminAnalytics';
 import type { DecisionOutcome, LoadFormInput, Equipment, FuelType } from '@/types/mvp';
@@ -308,6 +311,9 @@ function MainApp() {
   }, [history, user, syncToCloud]);
 
   const applyOcr = (data: Partial<LoadFormInput>) => {
+    // Track the screenshot upload
+    trackScreenshotUploaded();
+    
     setForm((prev) => {
       const next = { ...prev };
       Object.entries(data).forEach(([key, value]) => {
@@ -335,6 +341,12 @@ function MainApp() {
     });
     setShowAutoFillBadge(true);
     setTimeout(() => setShowAutoFillBadge(false), 5000);
+    
+    // Show toast notification
+    toast({
+      title: '✅ Fields auto-filled!',
+      description: 'Review and adjust the values before calculating',
+    });
   };
 
   const handleLogDecision = () => {
@@ -347,6 +359,14 @@ function MainApp() {
         rate: true,
       });
       return;
+    }
+
+    // Track milestone for 5th load
+    if (history.length === 4) {
+      toast({
+        title: '🎉 Milestone!',
+        description: 'Check your Pattern Insights to see booking trends',
+      });
     }
 
     addDecision({
@@ -386,10 +406,9 @@ function MainApp() {
   };
 
   return (
-    <OnboardingTour>
-      <div className="min-h-screen bg-muted/30">
-        {/* Sync Status Header */}
-        <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="min-h-screen bg-muted/30">
+      {/* Sync Status Header */}
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -417,12 +436,15 @@ function MainApp() {
                 </a>
               )}
             </div>
-          </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:flex-row">
-          <section className="flex-1 space-y-6">
-            <header className="space-y-1">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:flex-row">
+        <section className="flex-1 space-y-6">
+          {/* Welcome Card for first-time users */}
+          <WelcomeCard />
+          
+          <header className="space-y-1">
               <p className="text-sm font-medium uppercase tracking-wide text-primary">Load Worth Calculator</p>
               <h2 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
                 Fast profit snapshots before you book the load
@@ -535,11 +557,20 @@ function MainApp() {
                 </TooltipProvider>
 
                 {/* Fuel Type Selector */}
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Fuel Type
-                  </label>
-                  <div className="mt-1 flex gap-2">
+                <TooltipProvider>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                      Fuel Type
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>Gas vs diesel impacts fuel economy defaults</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </label>
+                    <div className="mt-1 flex gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -566,13 +597,13 @@ function MainApp() {
                           : 'border-input bg-background text-foreground hover:bg-muted'
                       }`}
                     >
-                      🚛 Diesel
                     </button>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Affects MPG defaults in cost profile
                   </p>
                 </div>
+              </TooltipProvider>
 
                 {/* Rate confirmation assist - OCR */}
                 <div className="rounded-xl border border-border bg-background p-4">
@@ -658,11 +689,20 @@ function MainApp() {
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-muted-foreground" htmlFor="fsc-input">
-                        FSC
-                      </label>
+                  <TooltipProvider>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-1.5" htmlFor="fsc-input">
+                          FSC
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <InfoIcon className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <p>Include fuel surcharge in your net profit?</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </label>
                       <button
                         type="button"
                         onClick={() => setIncludeFsc((prev) => !prev)}
@@ -695,10 +735,20 @@ function MainApp() {
                         : 'Excluded from your share (carrier keeps FSC).'}
                     </p>
                   </div>
+                </TooltipProvider>
+                <TooltipProvider>
                   <div>
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-muted-foreground" htmlFor="tolls-input">
+                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-1.5" htmlFor="tolls-input">
                         Tolls
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <InfoIcon className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <p>Include toll costs in your expenses?</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </label>
                       <button
                         type="button"
@@ -732,6 +782,7 @@ function MainApp() {
                         : 'Covered by carrier (not subtracted).'}
                     </p>
                   </div>
+                </TooltipProvider>
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-muted-foreground">Fuel</label>
@@ -879,8 +930,10 @@ function MainApp() {
           templates={negotiation.templates}
         />
       )}
+      
+      {/* Optional Tour Modal */}
+      <OptionalTour />
     </div>
-    </OnboardingTour>
   );
 }
 

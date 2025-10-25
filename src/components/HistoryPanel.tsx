@@ -5,7 +5,7 @@ import { HistoryFilters } from './HistoryFilters';
 import { ExportButton } from './ExportButton';
 import { useHistoryFilters } from '@/hooks/useHistoryFilters';
 import { EditLoadDialog } from './EditLoadDialog';
-import { Pencil } from 'lucide-react';
+import { Pencil, Truck } from 'lucide-react';
 import type { LoadEntrySnapshot } from '@/types/mvp';
 
 function formatCurrency(value: number) {
@@ -50,9 +50,13 @@ export function HistoryPanel() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Decision history</h2>
         </div>
-        <p className="rounded-xl border border-dashed border-border bg-background/70 p-4 text-sm text-muted-foreground">
-          No decisions logged yet. Book or pass a load to start tracking.
-        </p>
+        <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-border bg-background/70 text-center">
+          <Truck className="h-12 w-12 text-muted-foreground/30 mb-3" />
+          <p className="text-sm font-medium text-foreground">No loads logged yet</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Log your first load to start tracking patterns and insights
+          </p>
+        </div>
       </div>
     );
   }

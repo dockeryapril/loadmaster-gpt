@@ -119,3 +119,38 @@ export function trackPresetApplied(equipment: string, fuelType: 'gas' | 'diesel'
 export function trackPresetToggled(enabled: boolean) {
   return trackEvent('preset_toggled', { enabled });
 }
+
+/**
+ * Track welcome card dismissed
+ */
+export function trackWelcomeCardDismissed() {
+  return trackEvent('welcome_card_dismissed');
+}
+
+/**
+ * Track cost editor opened for first time
+ */
+export function trackCostEditorFirstOpen() {
+  return trackEvent('cost_editor_first_open');
+}
+
+/**
+ * Track optional tour started
+ */
+export function trackOptionalTourStarted() {
+  return trackEvent('optional_tour_started');
+}
+
+/**
+ * Track optional tour completed
+ */
+export function trackOptionalTourCompleted() {
+  return trackEvent('optional_tour_completed');
+}
+
+/**
+ * Track optional tour skipped
+ */
+export function trackOptionalTourSkipped(step: number) {
+  return trackEvent('optional_tour_skipped', { step });
+}

@@ -9,9 +9,21 @@ export function PatternInsights() {
     return null;
   }
 
-  // Only show if user has at least 5 decisions
+  // Show "need more data" message if less than 5 decisions
   if (insights.totalDecisions < 5) {
-    return null;
+    return (
+      <Card className="border-border">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-3" />
+            <p className="text-sm font-medium text-foreground">Need more data</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Log {5 - insights.totalDecisions} more load{5 - insights.totalDecisions > 1 ? 's' : ''} to see your performance patterns
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

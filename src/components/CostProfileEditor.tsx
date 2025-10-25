@@ -16,8 +16,9 @@ import { defaultCostAssumptions } from '@/types/mvp';
 import type { CostAssumptions, Equipment, FuelType } from '@/types/mvp';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
-import { trackCostAssumptionsEdited, trackPresetToggled } from '@/utils/analytics';
+import { trackCostAssumptionsEdited, trackPresetToggled, trackCostEditorFirstOpen } from '@/utils/analytics';
 import { getPresetValues } from '@/config/vehicleDefaults';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 
 type EditingCostProfile = {
   fuelPricePerGallon: string;
@@ -62,13 +63,25 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelTyp
     formatProfileForEditing(mergedCostProfile),
   );
   const [open, setOpen] = useState(false);
+  const hasOpenedCostEditor = useOnboardingStore((state) => state.hasOpenedCostEditor);
+  const markCostEditorOpened = useOnboardingStore((state) => state.markCostEditorOpened);
 
   // Track when cost profile editor opens
   useEffect(() => {
     if (open) {
       trackCostAssumptionsEdited();
+      
+      // Track and mark first time opening
+      if (!hasOpenedCostEditor) {
+        markCostEditorOpened();
+        trackCostEditorFirstOpen();
+        toast({
+          title: '💡 Tip',
+          description: 'Customize MPG, fuel price & costs to match your truck',
+        });
+      }
     }
-  }, [open]);
+  }, [open, hasOpenedCostEditor, markCostEditorOpened]);
 
   // Keep local state in sync with persisted values while the sheet is closed
   useEffect(() => {
@@ -184,9 +197,21 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelTyp
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-primary">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 font-medium relative"
+          data-onboarding="cost-editor-trigger"
+        >
           <Settings className="h-4 w-4" />
           Edit Cost Assumptions
+          {/* First-time user hint badge */}
+          {!hasOpenedCostEditor && (
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+            </span>
+          )}
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] sm:h-auto sm:max-h-[90vh]">
