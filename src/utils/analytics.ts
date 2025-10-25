@@ -98,3 +98,24 @@ export function trackSessionStart() {
 export function trackCostAssumptionsEdited() {
   return trackEvent('cost_assumptions_edited');
 }
+
+/**
+ * Track fuel type changed
+ */
+export function trackFuelTypeChanged(fuelType: 'gas' | 'diesel', equipment: string) {
+  return trackEvent('fuel_type_changed', { fuelType, equipment });
+}
+
+/**
+ * Track industry preset applied
+ */
+export function trackPresetApplied(equipment: string, fuelType: 'gas' | 'diesel') {
+  return trackEvent('preset_applied', { equipment, fuelType });
+}
+
+/**
+ * Track preset toggle changed
+ */
+export function trackPresetToggled(enabled: boolean) {
+  return trackEvent('preset_toggled', { enabled });
+}

@@ -14,7 +14,8 @@ import {
   trackCalculationSubmitted, 
   trackDecisionLogged, 
   trackFeedbackClicked,
-  trackSessionStart 
+  trackSessionStart,
+  trackFuelTypeChanged
 } from '@/utils/analytics';
 import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
@@ -31,7 +32,7 @@ import { NegotiationMessageSheet } from '@/components/NegotiationMessageSheet';
 import { features } from '@/utils/featureFlags';
 import Auth from '@/pages/Auth';
 import AdminAnalytics from '@/pages/AdminAnalytics';
-import type { DecisionOutcome, LoadFormInput, Equipment } from '@/types/mvp';
+import type { DecisionOutcome, LoadFormInput, Equipment, FuelType } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -131,6 +132,19 @@ const getInitialEquipment = (): Equipment => {
   return 'hotshot';
 };
 
+const getInitialFuelType = (): FuelType => {
+  if (typeof window === 'undefined') return 'diesel';
+  try {
+    const stored = window.localStorage.getItem('lm:fuelType');
+    if (stored && ['gas', 'diesel'].includes(stored)) {
+      return stored as FuelType;
+    }
+  } catch (error) {
+    console.error('Failed to load fuel type from localStorage', error);
+  }
+  return 'diesel';
+};
+
 const getInitialUseSplit = () => {
   if (typeof window === 'undefined') return false;
   const stored = window.localStorage.getItem('lm:useSplit');
@@ -150,6 +164,7 @@ function MainApp() {
     ...emptyLoadForm,
     splitPercent: getInitialSplitPercent(),
     equipment: getInitialEquipment(),
+    fuelType: getInitialFuelType(),
   }));
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -269,6 +284,15 @@ function MainApp() {
     }
   }, [form.equipment]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem('lm:fuelType', form.fuelType);
+    } catch (error) {
+      console.error('Failed to save fuel type to localStorage', error);
+    }
+  }, [form.fuelType]);
+
   // Load decisions from cloud when user signs in
   useEffect(() => {
     if (user) {
@@ -295,8 +319,13 @@ function MainApp() {
           if (validEquipment.includes(stringValue as Equipment)) {
             next.equipment = stringValue as Equipment;
           }
-        } else {
-          next[key as keyof typeof next] = stringValue as any;
+        } else if (key === 'fuelType') {
+          const validFuelTypes: FuelType[] = ['gas', 'diesel'];
+          if (validFuelTypes.includes(stringValue as FuelType)) {
+            next.fuelType = stringValue as FuelType;
+          }
+        } else if (key in next) {
+          (next as any)[key] = stringValue;
         }
         if (key === 'splitPercent') {
           setPersistedSplitPercent(stringValue);
@@ -333,6 +362,7 @@ function MainApp() {
       rpm: netRpm,
       notes: form.notes.trim() || undefined,
       splitPercent: useSplit ? splitPercent : undefined,
+      fuelType: form.fuelType,
     });
 
     // Track calculation submitted and decision logged
@@ -348,6 +378,8 @@ function MainApp() {
     setForm({
       ...emptyLoadForm,
       splitPercent: persistedSplitPercent,
+      equipment: form.equipment, // Keep equipment selection
+      fuelType: form.fuelType, // Keep fuel type selection
     });
     setOutcome('book');
     setTouched({});
@@ -501,6 +533,46 @@ function MainApp() {
                     </p>
                   </div>
                 </TooltipProvider>
+
+                {/* Fuel Type Selector */}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Fuel Type
+                  </label>
+                  <div className="mt-1 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateForm('fuelType', 'gas');
+                        trackFuelTypeChanged('gas', form.equipment);
+                      }}
+                      className={`flex-1 rounded-lg border py-2 px-3 text-sm font-medium transition-colors ${
+                        form.fuelType === 'gas'
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-input bg-background text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      ⛽ Gas
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateForm('fuelType', 'diesel');
+                        trackFuelTypeChanged('diesel', form.equipment);
+                      }}
+                      className={`flex-1 rounded-lg border py-2 px-3 text-sm font-medium transition-colors ${
+                        form.fuelType === 'diesel'
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-input bg-background text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      🚛 Diesel
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Affects MPG defaults in cost profile
+                  </p>
+                </div>
 
                 {/* Rate confirmation assist - OCR */}
                 <div className="rounded-xl border border-border bg-background p-4">
@@ -708,7 +780,10 @@ function MainApp() {
                 <div className="rounded-xl bg-primary/5 p-4" data-onboarding="step-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
-                    <CostProfileEditor />
+                    <CostProfileEditor 
+                      currentEquipment={form.equipment} 
+                      currentFuelType={form.fuelType}
+                    />
                   </div>
                   <h3 className="mt-2 text-3xl font-semibold text-foreground">{formatCurrency(profit)}</h3>
                   <p className="text-sm text-muted-foreground">

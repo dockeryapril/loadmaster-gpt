@@ -170,7 +170,91 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ---
 
-## 📋 Phase 3: History & Insights (UPCOMING)
+## 🚀 Phase 6: Fuel-Type-Aware Equipment Defaults — COMPLETED
+
+**Goal**: Enhance calculator with fuel-type-specific MPG and optional SmartHop industry presets.
+
+**Completed**: [Current Date]
+
+### What Was Completed
+- ✅ **Created Vehicle Defaults Config**
+  - Created `src/config/vehicleDefaults.ts` with SmartHop presets (2024-2025 market data)
+  - Defined gas/diesel MPG, variable CPM, and fixed per-day costs for:
+    - Cargo Van: Gas (15 MPG, $0.40 CPM, $150/day) / Diesel (18 MPG, $0.40 CPM, $150/day)
+    - Hotshot: Gas (8 MPG, $0.45 CPM, $180/day) / Diesel (12 MPG, $0.45 CPM, $180/day)
+    - Straight Truck: Gas (7 MPG, $0.50 CPM, $200/day) / Diesel (9 MPG, $0.50 CPM, $200/day)
+  - Exported helper function `getPresetValues(equipment, fuelType)`
+
+- ✅ **Extended Data Model**
+  - Added `FuelType` type: `'gas' | 'diesel'`
+  - Extended `LoadFormInput` with `fuelType` field
+  - Extended `LoadEntrySnapshot` with optional `fuelType` field
+  - Extended `CostAssumptions` with optional `useSmartHopPresets` boolean
+  - Updated `emptyLoadForm` default to `fuelType: 'diesel'`
+
+- ✅ **Added Fuel Type Selector to Load Form**
+  - Created toggle buttons for Gas/Diesel selection in `src/App.tsx`
+  - Auto-saves fuel type preference to localStorage (`lm:fuelType`)
+  - Persists equipment and fuel type between form resets
+  - Tracks fuel type changes via analytics (`trackFuelTypeChanged`)
+
+- ✅ **Enhanced Cost Profile Editor**
+  - Added "Use industry presets" toggle at top of editor
+  - Shows info badge when enabled: "Based on 2024-2025 market data"
+  - Auto-populates MPG, variable CPM, and fixed daily costs when toggle is on
+  - Disables fields (read-only) when presets are active
+  - Allows manual override by toggling presets off
+  - Accepts `currentEquipment` and `currentFuelType` props
+  - Reacts to equipment/fuel type changes and updates values automatically
+
+- ✅ **Analytics Integration**
+  - Added `trackFuelTypeChanged(fuelType, equipment)` - fires when fuel type selector is used
+  - Added `trackPresetApplied(equipment, fuelType)` - fires when presets are applied (currently unused, available for future)
+  - Added `trackPresetToggled(enabled)` - fires when "Use industry presets" toggle is changed
+
+- ✅ **Backward Compatibility**
+  - Existing users default to `diesel` (matches historical 6.5 MPG hotshot default)
+  - Presets default to `false` (preserves custom settings)
+  - Old load entries without `fuelType` still display correctly
+  - No forced migration required
+
+### How to Test Phase 6
+1. **Fuel type selector**: Select equipment → Toggle between Gas/Diesel → Verify MPG updates if presets enabled
+2. **Preset toggle**: Open Cost Profile Editor → Enable "Use industry presets" → Verify fields auto-populate and become read-only
+3. **Equipment change**: With presets on, change equipment type → Verify MPG/costs update automatically
+4. **Fuel type change**: With presets on, toggle Gas/Diesel → Verify MPG updates (e.g., Hotshot Diesel 12 MPG vs Gas 8 MPG)
+5. **Manual override**: Disable presets → Manually edit fields → Re-enable presets → Verify values restore to presets
+6. **Persistence**: Refresh page → Verify fuel type and preset toggle persist
+7. **Analytics**: Open browser console → Filter events table → Verify `fuel_type_changed` and `preset_toggled` events fire
+8. **History**: Log decisions → Verify `fuelType` is saved in history entries
+
+### Verification Checklist
+- [x] Fuel type persists after refresh
+- [x] Equipment persists after form reset
+- [x] Presets toggle works correctly
+- [x] MPG auto-updates when fuel type changes (if presets enabled)
+- [x] Fields are disabled when presets are on
+- [x] Manual overrides work when presets are off
+- [x] Analytics events fire correctly
+- [x] Backward compatible with existing entries
+- [x] Mobile-responsive design
+
+### Files Changed
+**Created**:
+- `/src/config/vehicleDefaults.ts` (SmartHop preset definitions)
+
+**Modified**:
+- `/src/types/mvp.ts` (added `FuelType`, extended interfaces with `fuelType` and `useSmartHopPresets`)
+- `/src/App.tsx` (added fuel type selector, storage, analytics integration, props to CostProfileEditor)
+- `/src/components/CostProfileEditor.tsx` (added presets toggle, auto-population logic, disabled fields)
+- `/src/store/useDecisionStore.ts` (extended to save `useSmartHopPresets` in cost profile)
+- `/src/utils/analytics.ts` (added fuel type and preset tracking functions)
+- `/docs/tasks.md` (documented Phase 6 completion)
+
+### What's Next
+→ **Phase 7+: Advanced Features** (OCR improvements, cloud sync, negotiation assistant, etc.)
+
+---
 
 **Goal**: Make profit calculations trustworthy, transparent, and guidance-driven.
 

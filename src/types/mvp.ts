@@ -2,8 +2,11 @@ export type DecisionOutcome = 'book' | 'pass' | 'counter';
 
 export type Equipment = 'hotshot' | 'cargo_van' | 'straight_truck';
 
+export type FuelType = 'gas' | 'diesel';
+
 export interface LoadFormInput {
   equipment: Equipment;
+  fuelType: FuelType;
   origin: string;
   destination: string;
   miles: string;
@@ -30,9 +33,10 @@ export interface LoadEntrySnapshot {
   rpm: number;
   notes?: string;
   splitPercent?: number;
+  fuelType?: FuelType;
 }
 
-// Cost assumptions for future Phase 2 calculator enhancement
+// Cost assumptions for calculator
 export interface CostAssumptions {
   fuelPricePerGallon: number;
   averageMPG: number;
@@ -42,6 +46,7 @@ export interface CostAssumptions {
   fairRpm: number;
   goodProfit: number;
   fairProfit: number;
+  useSmartHopPresets?: boolean;
 }
 
 export const defaultCostAssumptions: CostAssumptions = {
@@ -57,6 +62,7 @@ export const defaultCostAssumptions: CostAssumptions = {
 
 export const emptyLoadForm: LoadFormInput = {
   equipment: 'hotshot',
+  fuelType: 'diesel',
   origin: '',
   destination: '',
   miles: '',

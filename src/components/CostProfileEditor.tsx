@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -10,12 +10,14 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { useCostProfile } from '@/store/useDecisionStore';
 import { defaultCostAssumptions } from '@/types/mvp';
-import type { CostAssumptions } from '@/types/mvp';
+import type { CostAssumptions, Equipment, FuelType } from '@/types/mvp';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
-import { trackCostAssumptionsEdited } from '@/utils/analytics';
+import { trackCostAssumptionsEdited, trackPresetToggled } from '@/utils/analytics';
+import { getPresetValues } from '@/config/vehicleDefaults';
 
 type EditingCostProfile = {
   fuelPricePerGallon: string;
@@ -26,7 +28,14 @@ type EditingCostProfile = {
   fairRpm: string;
   goodProfit: string;
   fairProfit: string;
+  useSmartHopPresets: boolean;
 };
+
+interface CostProfileEditorProps {
+  currentEquipment?: Equipment;
+  currentFuelType?: FuelType;
+  onPresetApplied?: (mpg: number, variableCPM: number, fixedPerDay: number) => void;
+}
 
 const formatProfileForEditing = (profile: CostAssumptions): EditingCostProfile => ({
   fuelPricePerGallon: profile.fuelPricePerGallon.toFixed(2),
@@ -37,9 +46,10 @@ const formatProfileForEditing = (profile: CostAssumptions): EditingCostProfile =
   fairRpm: profile.fairRpm.toFixed(2),
   goodProfit: String(profile.goodProfit),
   fairProfit: String(profile.fairProfit),
+  useSmartHopPresets: profile.useSmartHopPresets ?? false,
 });
 
-export function CostProfileEditor() {
+export function CostProfileEditor({ currentEquipment = 'hotshot', currentFuelType = 'diesel', onPresetApplied }: CostProfileEditorProps = {}) {
   const { costProfile, updateCostProfile } = useCostProfile();
   const mergedCostProfile = useMemo(
     () => ({
@@ -67,6 +77,20 @@ export function CostProfileEditor() {
     }
   }, [mergedCostProfile, open]);
 
+  // Apply presets when toggle is enabled and equipment/fuel changes
+  useEffect(() => {
+    if (editingValues.useSmartHopPresets && currentEquipment && currentFuelType) {
+      const preset = getPresetValues(currentEquipment, currentFuelType);
+      setEditingValues(prev => ({
+        ...prev,
+        averageMPG: String(preset.mpg),
+        variableCostPerMile: preset.variableCPM.toFixed(2),
+        dailyFixedCosts: String(preset.fixedPerDay),
+      }));
+      onPresetApplied?.(preset.mpg, preset.variableCPM, preset.fixedPerDay);
+    }
+  }, [editingValues.useSmartHopPresets, currentEquipment, currentFuelType, onPresetApplied]);
+
   const parseOrDefault = (value: string, fallback: number) => {
     const parsed = parseFloat(value);
     return Number.isNaN(parsed) ? fallback : parsed;
@@ -91,12 +115,31 @@ export function CostProfileEditor() {
       fairRpm: parseOrDefault(editingValues.fairRpm, mergedCostProfile.fairRpm),
       goodProfit: parseOrDefault(editingValues.goodProfit, mergedCostProfile.goodProfit),
       fairProfit: parseOrDefault(editingValues.fairProfit, mergedCostProfile.fairProfit),
+      useSmartHopPresets: editingValues.useSmartHopPresets,
     });
     
     // Track save action
     trackCostAssumptionsEdited();
     
     setOpen(false);
+  };
+
+  const handlePresetToggle = () => {
+    const newValue = !editingValues.useSmartHopPresets;
+    setEditingValues(prev => ({ ...prev, useSmartHopPresets: newValue }));
+    trackPresetToggled(newValue);
+    
+    if (newValue && currentEquipment && currentFuelType) {
+      const preset = getPresetValues(currentEquipment, currentFuelType);
+      setEditingValues(prev => ({
+        ...prev,
+        averageMPG: String(preset.mpg),
+        variableCostPerMile: preset.variableCPM.toFixed(2),
+        dailyFixedCosts: String(preset.fixedPerDay),
+        useSmartHopPresets: true,
+      }));
+      onPresetApplied?.(preset.mpg, preset.variableCPM, preset.fixedPerDay);
+    }
   };
 
   const handleCancel = () => {
@@ -156,6 +199,36 @@ export function CostProfileEditor() {
         
         <ScrollArea className="h-[calc(90vh-120px)] sm:h-[calc(80vh-180px)]">
           <div className="mt-6 space-y-6 pr-4">
+            {/* Industry Presets Toggle */}
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-foreground">Use industry presets</label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Auto-populate MPG, costs based on equipment and fuel type
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handlePresetToggle}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    editingValues.useSmartHopPresets ? 'bg-primary' : 'bg-muted-foreground/30'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      editingValues.useSmartHopPresets ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              {editingValues.useSmartHopPresets && (
+                <Badge variant="secondary" className="mt-3 gap-1">
+                  <Info className="h-3 w-3" />
+                  Based on 2024-2025 market data
+                </Badge>
+              )}
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Fuel price per gallon
@@ -189,7 +262,8 @@ export function CostProfileEditor() {
                 min="0"
                 value={editingValues.averageMPG}
                 onChange={(e) => setEditingValues({ ...editingValues, averageMPG: e.target.value })}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                disabled={editingValues.useSmartHopPresets}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -208,7 +282,8 @@ export function CostProfileEditor() {
                   min="0"
                   value={editingValues.dailyFixedCosts}
                   onChange={(e) => setEditingValues({ ...editingValues, dailyFixedCosts: e.target.value })}
-                  className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
+                  disabled={editingValues.useSmartHopPresets}
+                  className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -228,7 +303,8 @@ export function CostProfileEditor() {
                   min="0"
                   value={editingValues.variableCostPerMile}
                   onChange={(e) => setEditingValues({ ...editingValues, variableCostPerMile: e.target.value })}
-                  className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none"
+                  disabled={editingValues.useSmartHopPresets}
+                  className="w-full rounded-lg border border-input bg-background py-2 pl-7 pr-3 text-sm focus:border-primary focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
