@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MessageSquare, InfoIcon, Truck, LogOut, User as UserIcon, Activity } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -24,8 +23,8 @@ import { GuidanceBadge } from '@/components/GuidanceBadge';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { PatternInsights } from '@/components/PatternInsights';
 import { SimilarLoadIndicator } from '@/components/SimilarLoadIndicator';
-import { WelcomeCard } from '@/components/onboarding/WelcomeCard';
-import { OptionalTour } from '@/components/onboarding/OptionalTour';
+// import { WelcomeCard } from '@/components/onboarding/WelcomeCard';
+// import { OptionalTour } from '@/components/onboarding/OptionalTour';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { SyncStatus } from '@/components/SyncStatus';
 import { useCloudSync } from '@/hooks/useCloudSync';
@@ -441,8 +440,8 @@ function MainApp() {
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:flex-row">
         <section className="flex-1 space-y-6">
-          {/* Welcome Card for first-time users */}
-          <WelcomeCard />
+          {/* Welcome Card for first-time users - temporarily disabled for debugging */}
+          {/* <WelcomeCard /> */}
           
           <header className="space-y-1">
               <p className="text-sm font-medium uppercase tracking-wide text-primary">Load Worth Calculator</p>
@@ -931,8 +930,8 @@ function MainApp() {
         />
       )}
       
-      {/* Optional Tour Modal */}
-      <OptionalTour />
+      {/* Optional Tour Modal - temporarily disabled for debugging */}
+      {/* <OptionalTour /> */}
     </div>
   );
 }
