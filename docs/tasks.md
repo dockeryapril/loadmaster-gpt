@@ -341,16 +341,19 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 ### What Was Completed
 - ✅ **Created Tableau Embed Component**
   - Built reusable `TableauEmbed.tsx` component with iframe embed approach
-  - Simple and reliable iframe-based implementation
+  - **Mobile Detection**: Uses `useIsMobile` hook to detect devices < 768px
+  - **Mobile Experience**: Shows static preview image + "View Interactive Map" button to open Tableau Public
+  - **Desktop Experience**: Full interactive iframe embed with responsive height (maxHeight: 70vh)
   - Shows skeleton loading state while visualization loads
   - Error handling with fallback static preview image
   - "View on Tableau Public" button when iframe fails to load
-  - Handles corporate firewalls and ad blockers gracefully
+  - Handles corporate firewalls, ad blockers, and iOS Safari limitations gracefully
 
 - ✅ **Created Market Insights Page**
   - Dedicated `/market-insights` route with full-width layout
   - Page header with context: "Weekly National RPM by Division"
   - Info banner explaining external data source (FTR Intel)
+  - **Mobile-optimized layout**: Reduced padding (p-3 vs p-4), compact banner (p-3 on mobile)
   - Embedded Tableau visualization: WeeklyNationalRPMbyDivisionFinal
   - Back button to return to calculator
   - External link to source (spot.ftrintel.com)
@@ -367,23 +370,35 @@ We're building a mobile-first, local-first calculator that delivers instant prof
   - Public access (no authentication required)
   - Maintains consistent layout with other pages
 
+- ✅ **Mobile Rationale**
+  - iOS Safari has limitations with iframe embeds (fixed positioning, scroll conflicts)
+  - Tableau's mobile site provides better touch optimization
+  - Faster loading on mobile data connections
+  - More reliable user experience across mobile devices
+
 ### How to Test Phase 9
 1. **Navigation**: Click "📊 Market Rates" in header → Should navigate to /market-insights
-2. **Visualization loads**: Wait for Tableau embed → Should show interactive map/chart
-3. **Interactions**: Click/hover on visualization → Should respond (filters, tooltips, etc.)
-4. **Back button**: Click "Back to Calculator" → Returns to main page
-5. **External link**: Click "View Source" → Opens spot.ftrintel.com in new tab
-6. **Mobile responsive**: Test on mobile viewport → Visualization should adapt
-7. **Direct access**: Navigate to /market-insights directly → Page loads correctly
-8. **Loading state**: Refresh page → Should show skeleton while loading
+2. **Desktop visualization**: On desktop/tablet → Should show interactive iframe embed
+3. **Mobile fallback**: On mobile (< 768px) → Should show static image + "View Interactive Map" button
+4. **Mobile interaction**: Tap "View Interactive Map" → Opens Tableau Public in new tab
+5. **Interactions (desktop)**: Click/hover on visualization → Should respond (filters, tooltips, etc.)
+6. **Back button**: Click "Back to Calculator" → Returns to main page
+7. **External link**: Click "View Source" → Opens spot.ftrintel.com in new tab
+8. **Responsive height**: Test on different desktop sizes → Iframe height adapts (max 70vh)
+9. **Direct access**: Navigate to /market-insights directly → Page loads correctly
+10. **Loading state**: Refresh page → Should show skeleton while loading
 
 ### Verification Checklist
-- [x] Tableau visualization loads successfully
+- [x] Tableau visualization loads successfully on desktop
+- [x] Mobile shows static fallback instead of iframe
+- [x] "View Interactive Map" button works on mobile
 - [x] Navigation link appears in header (desktop)
 - [x] Navigation link hidden on mobile
 - [x] Back button returns to calculator
 - [x] External links work correctly
-- [x] Loading skeleton displays during init
+- [x] Loading skeleton displays during init (desktop)
+- [x] Responsive height works on various desktop sizes
+- [x] Mobile layout is compact with reduced padding
 - [x] Error handling works (if Tableau fails to load)
 - [x] Mobile-responsive design
 - [x] No console errors
