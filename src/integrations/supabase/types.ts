@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_clicks: {
+        Row: {
+          context: Json
+          created_at: string
+          id: string
+          offer_id: string
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          id?: string
+          offer_id: string
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          id?: string
+          offer_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_clicks_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_clicks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_activity_summary"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      affiliate_offers: {
+        Row: {
+          category: string
+          conditions: Json | null
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          placement: string[]
+          priority: number
+          slug: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          category: string
+          conditions?: Json | null
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          name: string
+          placement: string[]
+          priority?: number
+          slug: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          category?: string
+          conditions?: Json | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          placement?: string[]
+          priority?: number
+          slug?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       business_setup: {
         Row: {
           admin_fee_flat: number | null
