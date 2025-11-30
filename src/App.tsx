@@ -37,6 +37,8 @@ import AdminAnalytics from '@/pages/AdminAnalytics';
 import type { DecisionOutcome, LoadFormInput, Equipment, FuelType } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
+import { AffiliatePanel } from '@/components/AffiliatePanel';
+import type { AffiliateContext } from '@/types/affiliate';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ''));
@@ -812,6 +814,19 @@ function MainApp() {
 
                 <GuidanceBadge netRpm={netRpm} profit={profit} thresholds={costProfile} />
 
+                {/* Affiliate Panel - Offer Result Placement */}
+                {canLog && (
+                  <AffiliatePanel 
+                    context={{
+                      screen: 'offer_result',
+                      equipmentType: form.equipment,
+                      rpm: netRpm,
+                      signals: netRpm < 1.5 ? ['low_rpm_offer'] : [],
+                    }}
+                    maxOffers={2}
+                  />
+                )}
+
                 {features.advancedNegotiation && canLog && (
                   <button
                     type="button"
@@ -859,6 +874,17 @@ function MainApp() {
         <aside className="w-full space-y-6 lg:w-2/5 lg:max-w-none" data-onboarding="step-3">
           <PatternInsights />
           <HistoryPanel />
+          
+          {/* Affiliate Panel - Dashboard Placement */}
+          <AffiliatePanel 
+            context={{
+              screen: 'dashboard',
+              equipmentType: form.equipment,
+              userPaysFuel: includeFuel,
+              hasOfferHistory: history.length > 0,
+            }}
+            maxOffers={3}
+          />
         </aside>
       </main>
 

@@ -154,3 +154,10 @@ export function trackOptionalTourCompleted() {
 export function trackOptionalTourSkipped(step: number) {
   return trackEvent('optional_tour_skipped', { step });
 }
+
+/**
+ * Track affiliate panel viewed
+ */
+export function trackAffiliateView(placement: string, offerCount: number) {
+  return trackEvent('affiliate_panel_viewed', { placement, offerCount });
+}
