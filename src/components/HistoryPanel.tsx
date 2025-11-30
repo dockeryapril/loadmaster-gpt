@@ -7,7 +7,6 @@ import { useHistoryFilters } from '@/hooks/useHistoryFilters';
 import { EditLoadDialog } from './EditLoadDialog';
 import { Pencil, Truck } from 'lucide-react';
 import type { LoadEntrySnapshot } from '@/types/mvp';
-import { AffiliatePanel } from './AffiliatePanel';
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', {
@@ -58,15 +57,6 @@ export function HistoryPanel() {
             Log your first load to start tracking patterns and insights
           </p>
         </div>
-        
-        {/* Affiliate Panel - Empty State Placement */}
-        <AffiliatePanel 
-          context={{
-            screen: 'empty_state',
-            hasOfferHistory: false,
-          }}
-          maxOffers={3}
-        />
       </div>
     );
   }
