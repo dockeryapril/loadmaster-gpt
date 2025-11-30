@@ -334,91 +334,62 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ## ✅ Phase 9: Market Insights Integration — COMPLETED
 
-**Goal**: Add external market intelligence via Tableau Public visualization showing national RPM trends.
+**Goal**: Provide access to real-time freight market data via FTR Intel Tableau visualization.
 
 **Completed**: [Current Date]
 
 ### What Was Completed
-- ✅ **Created Tableau Embed Component**
-  - Built reusable `TableauEmbed.tsx` component with iframe embed approach
-  - **Mobile Detection**: Uses `useIsMobile` hook to detect devices < 768px
-  - **Mobile Experience**: Shows static preview image + "View Interactive Map" button to open Tableau Public
-  - **Desktop Experience**: Full interactive iframe embed with responsive height (maxHeight: 70vh)
-  - Shows skeleton loading state while visualization loads
-  - Error handling with fallback static preview image
-  - "View on Tableau Public" button when iframe fails to load
-  - Handles corporate firewalls, ad blockers, and iOS Safari limitations gracefully
-
-- ✅ **Created Market Insights Page**
-  - Dedicated `/market-insights` route with full-width layout
-  - Page header with context: "Weekly National RPM by Division"
-  - Info banner explaining external data source (FTR Intel)
-  - **Mobile-optimized layout**: Reduced padding (p-3 vs p-4), compact banner (p-3 on mobile)
-  - Embedded Tableau visualization: WeeklyNationalRPMbyDivisionFinal
-  - Back button to return to calculator
-  - External link to source (spot.ftrintel.com)
-  - Footer attribution with proper links
-
-- ✅ **Added Navigation**
-  - "📊 Market Rates" link in main header
+- ✅ **Direct External Link Implementation**
+  - "📊 Market Rates" button links directly to Tableau Public
+  - Opens in new tab with proper security attributes (`target="_blank"` and `rel="noopener noreferrer"`)
   - **Desktop (≥640px)**: Full button with emoji and text ("📊 Market Rates")
   - **Mobile (<640px)**: Compact icon-only button (📊) with accessible title
-  - Positioned between logo and sync status
+  - Positioned between logo and sync status in header
   - Consistent styling with other header elements
+  - **Copyright Compliance**: No embedding to avoid copyright concerns with FTR Intel content
 
-- ✅ **Routing Integration**
-  - Added `/market-insights` route to App.tsx
-  - Public access (no authentication required)
-  - Maintains consistent layout with other pages
-
-- ✅ **Mobile Rationale**
-  - iOS Safari has limitations with iframe embeds (fixed positioning, scroll conflicts)
-  - Tableau's mobile site provides better touch optimization
-  - Faster loading on mobile data connections
-  - More reliable user experience across mobile devices
+### Key Decision
+- **Removed embedded Tableau visualization** due to copyright restrictions
+  - FTR/Truckstop site states: "No portion of this site may be copied or distributed by any means, including electronic distribution, without our express written consent."
+- **Direct link approach** ensures full compliance
+  - Users access full interactive visualization on Tableau's platform
+  - Zero maintenance overhead
+  - No legal concerns
+  - Better mobile experience (Tableau's native mobile site)
 
 ### How to Test Phase 9
-1. **Navigation**: Click "📊 Market Rates" in header → Should navigate to /market-insights
-2. **Desktop visualization**: On desktop/tablet → Should show interactive iframe embed
-3. **Mobile fallback**: On mobile (< 768px) → Should show static image + "View Interactive Map" button
-4. **Mobile interaction**: Tap "View Interactive Map" → Opens Tableau Public in new tab
-5. **Interactions (desktop)**: Click/hover on visualization → Should respond (filters, tooltips, etc.)
-6. **Back button**: Click "Back to Calculator" → Returns to main page
-7. **External link**: Click "View Source" → Opens spot.ftrintel.com in new tab
-8. **Responsive height**: Test on different desktop sizes → Iframe height adapts (max 70vh)
-9. **Direct access**: Navigate to /market-insights directly → Page loads correctly
-10. **Loading state**: Refresh page → Should show skeleton while loading
+1. **Desktop Navigation**: Click "📊 Market Rates" in header → Opens Tableau Public in new tab
+2. **Mobile Navigation**: Tap 📊 icon in header → Opens Tableau Public in new tab
+3. **External link**: Verify URL is `https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2`
+4. **New tab**: Ensure link opens in new tab/window
+5. **No console errors**: Verify no errors in console
 
 ### Verification Checklist
-- [x] Tableau visualization loads successfully on desktop
-- [x] Mobile shows static fallback instead of iframe
-- [x] "View Interactive Map" button works on mobile
-- [x] Navigation link appears in header (desktop)
-- [x] Navigation link hidden on mobile
-- [x] Back button returns to calculator
-- [x] External links work correctly
-- [x] Loading skeleton displays during init (desktop)
-- [x] Responsive height works on various desktop sizes
-- [x] Mobile layout is compact with reduced padding
-- [x] Error handling works (if Tableau fails to load)
-- [x] Mobile-responsive design
+- [x] Navigation link appears in header (desktop and mobile)
+- [x] Links to correct Tableau Public URL
+- [x] Opens in new tab with security attributes
+- [x] Mobile icon-only button works
+- [x] Desktop full button works
+- [x] No copyright infringement
 - [x] No console errors
 
 ### Files Changed
-**Created**:
-- `/src/components/TableauEmbed.tsx` (reusable Tableau embed component)
-- `/src/pages/MarketInsights.tsx` (market insights page)
+**Deleted**:
+- `/src/components/TableauEmbed.tsx` (removed embedded visualization)
+- `/src/pages/MarketInsights.tsx` (removed dedicated page)
 
 **Modified**:
-- `/src/App.tsx` (added route, navigation link, import)
-- `/docs/tasks.md` (documented Phase 9 completion)
+- `/src/App.tsx` (updated header links to external URL, removed route and imports)
+- `/docs/tasks.md` (documented Phase 9 completion with external link approach)
 
 ### Technical Notes
-- Tableau API loaded lazily (only on /market-insights page)
-- Visualization URL: `WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2`
-- No authentication required to view (public data)
-- Visualization cleanup on unmount prevents memory leaks
-- Min height ensures no layout shift during load
+- External URL: `https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2`
+- No authentication required (public data)
+- No API dependencies
+- Zero maintenance required
+- Full copyright compliance
+
+**Data Source**: FTR Intel via Tableau Public
 
 ### What's Next
 → **Phase 10+: Additional Features** (Advanced negotiation templates, OCR improvements, etc.)
