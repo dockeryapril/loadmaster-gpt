@@ -814,19 +814,6 @@ function MainApp() {
 
                 <GuidanceBadge netRpm={netRpm} profit={profit} thresholds={costProfile} />
 
-                {/* Affiliate Panel - Offer Result Placement */}
-                {canLog && (
-                  <AffiliatePanel 
-                    context={{
-                      screen: 'offer_result',
-                      equipmentType: form.equipment,
-                      rpm: netRpm,
-                      signals: netRpm < 1.5 ? ['low_rpm_offer'] : [],
-                    }}
-                    maxOffers={2}
-                  />
-                )}
-
                 {features.advancedNegotiation && canLog && (
                   <button
                     type="button"
