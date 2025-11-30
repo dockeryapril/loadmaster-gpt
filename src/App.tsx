@@ -861,17 +861,6 @@ function MainApp() {
         <aside className="w-full space-y-6 lg:w-2/5 lg:max-w-none" data-onboarding="step-3">
           <PatternInsights />
           <HistoryPanel />
-          
-          {/* Affiliate Panel - Dashboard Placement */}
-          <AffiliatePanel 
-            context={{
-              screen: 'dashboard',
-              equipmentType: form.equipment,
-              userPaysFuel: includeFuel,
-              hasOfferHistory: history.length > 0,
-            }}
-            maxOffers={3}
-          />
         </aside>
       </main>
 
