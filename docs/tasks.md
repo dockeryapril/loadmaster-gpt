@@ -360,10 +360,11 @@ We're building a mobile-first, local-first calculator that delivers instant prof
   - Footer attribution with proper links
 
 - ✅ **Added Navigation**
-  - "📊 Market Rates" link in main header (desktop only)
+  - "📊 Market Rates" link in main header
+  - **Desktop (≥640px)**: Full button with emoji and text ("📊 Market Rates")
+  - **Mobile (<640px)**: Compact icon-only button (📊) with accessible title
   - Positioned between logo and sync status
   - Consistent styling with other header elements
-  - Mobile-responsive (hidden on small screens to save space)
 
 - ✅ **Routing Integration**
   - Added `/market-insights` route to App.tsx

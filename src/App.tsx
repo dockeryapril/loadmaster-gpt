@@ -392,6 +392,15 @@ function MainApp() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {/* Mobile: Icon-only button */}
+              <a
+                href="/market-insights"
+                className="flex sm:hidden items-center justify-center rounded-lg border border-border bg-background p-2 text-foreground transition-colors hover:bg-muted"
+                title="Market Rates"
+              >
+                📊
+              </a>
+              {/* Desktop: Full button with text */}
               <a
                 href="/market-insights"
                 className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
