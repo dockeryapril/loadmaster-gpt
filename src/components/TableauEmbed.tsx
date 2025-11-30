@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TableauEmbedProps {
   vizUrl: string;
@@ -11,6 +12,7 @@ interface TableauEmbedProps {
 export function TableauEmbed({ vizUrl, className = '' }: TableauEmbedProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const isMobile = useIsMobile();
 
   // Build the proper embed URL with Tableau parameters
   const embedUrl = `${vizUrl}?:embed=y&:display_count=y&:showVizHome=no&:toolbar=yes`;
@@ -26,6 +28,36 @@ export function TableauEmbed({ vizUrl, className = '' }: TableauEmbedProps) {
     setIsLoading(false);
     setError(true);
   };
+
+  // Mobile-optimized fallback: show static image + link to Tableau Public
+  if (isMobile) {
+    return (
+      <div className={`space-y-4 ${className}`}>
+        <div className="overflow-hidden rounded-lg border border-border">
+          <img 
+            src={fallbackImageUrl} 
+            alt="Market Insights Preview" 
+            className="w-full"
+          />
+        </div>
+        <div className="rounded-lg bg-primary/10 p-4 text-center">
+          <p className="mb-3 text-sm text-muted-foreground">
+            For the best experience, view the interactive map on Tableau Public
+          </p>
+          <Button asChild className="w-full gap-2">
+            <a 
+              href={vizUrl}
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-4 w-4" />
+              View Interactive Map
+            </a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative w-full ${className}`}>
@@ -73,7 +105,7 @@ export function TableauEmbed({ vizUrl, className = '' }: TableauEmbedProps) {
         </div>
       )}
 
-      {/* Iframe Embed */}
+      {/* Iframe Embed (Desktop/Tablet) */}
       {!error && (
         <iframe
           src={embedUrl}
@@ -84,6 +116,7 @@ export function TableauEmbed({ vizUrl, className = '' }: TableauEmbedProps) {
           onLoad={handleLoad}
           onError={handleError}
           className={isLoading ? 'hidden' : 'rounded-lg'}
+          style={{ maxHeight: '70vh', minHeight: '600px' }}
           title="Market Insights Visualization"
         />
       )}

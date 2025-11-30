@@ -42,8 +42,8 @@ export default function MarketInsights() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="space-y-6">
+      <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">
+        <div className="space-y-4 md:space-y-6">
           {/* Page Header */}
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -58,13 +58,13 @@ export default function MarketInsights() {
           </div>
 
           {/* Info Banner */}
-          <div className="rounded-lg border border-border bg-background/80 p-4 backdrop-blur">
-            <div className="flex items-start gap-3">
-              <div className="rounded-full bg-primary/10 p-2">
-                <ExternalLink className="h-4 w-4 text-primary" />
+          <div className="rounded-lg border border-border bg-background/80 p-3 backdrop-blur md:p-4">
+            <div className="flex items-start gap-2 md:gap-3">
+              <div className="rounded-full bg-primary/10 p-1.5 md:p-2">
+                <ExternalLink className="h-3 w-3 text-primary md:h-4 md:w-4" />
               </div>
               <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-xs font-medium text-foreground md:text-sm">
                   External Data Source
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -75,7 +75,7 @@ export default function MarketInsights() {
           </div>
 
           {/* Tableau Embed */}
-          <div className="overflow-hidden rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
+          <div className="overflow-hidden rounded-2xl border border-border bg-background/80 p-4 shadow-sm backdrop-blur md:p-6">
             <TableauEmbed 
               vizUrl={TABLEAU_VIZ_URL}
               className="w-full"
