@@ -34,7 +34,6 @@ import { features } from '@/utils/featureFlags';
 import { toast } from '@/components/ui/use-toast';
 import Auth from '@/pages/Auth';
 import AdminAnalytics from '@/pages/AdminAnalytics';
-import MarketInsights from '@/pages/MarketInsights';
 import type { DecisionOutcome, LoadFormInput, Equipment, FuelType } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
@@ -394,7 +393,9 @@ function MainApp() {
             <div className="flex items-center gap-3">
               {/* Mobile: Icon-only button */}
               <a
-                href="/market-insights"
+                href="https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex sm:hidden items-center justify-center rounded-lg border border-border bg-background p-2 text-foreground transition-colors hover:bg-muted"
                 title="Market Rates"
               >
@@ -402,12 +403,14 @@ function MainApp() {
               </a>
               {/* Desktop: Full button with text */}
               <a
-                href="/market-insights"
+                href="https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 📊 Market Rates
               </a>
-              <SyncStatus 
+              <SyncStatus
                 isSynced={isSynced} 
                 isSyncing={isSyncing} 
                 isAuthenticated={!!user}
@@ -882,7 +885,6 @@ export default function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
-          <Route path="/market-insights" element={<MarketInsights />} />
           <Route path="/" element={<MainApp />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
