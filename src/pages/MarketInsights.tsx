@@ -30,7 +30,7 @@ export default function MarketInsights() {
             className="gap-2"
           >
             <a 
-              href="https://spot.ftrintel.com/" 
+              href="https://spot.ftrintel.com/equipment" 
               target="_blank" 
               rel="noopener noreferrer"
             >
@@ -87,7 +87,7 @@ export default function MarketInsights() {
             <p>
               Data provided by{' '}
               <a 
-                href="https://spot.ftrintel.com/" 
+                href="https://spot.ftrintel.com/equipment" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="font-medium text-primary hover:underline"
