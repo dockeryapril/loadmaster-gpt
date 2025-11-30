@@ -340,11 +340,12 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ### What Was Completed
 - ✅ **Created Tableau Embed Component**
-  - Built reusable `TableauEmbed.tsx` component with loading states
-  - Dynamically loads Tableau JS API on demand
-  - Handles initialization and cleanup properly
+  - Built reusable `TableauEmbed.tsx` component with iframe embed approach
+  - Simple and reliable iframe-based implementation
   - Shows skeleton loading state while visualization loads
-  - Error handling with user-friendly messages
+  - Error handling with fallback static preview image
+  - "View on Tableau Public" button when iframe fails to load
+  - Handles corporate firewalls and ad blockers gracefully
 
 - ✅ **Created Market Insights Page**
   - Dedicated `/market-insights` route with full-width layout
