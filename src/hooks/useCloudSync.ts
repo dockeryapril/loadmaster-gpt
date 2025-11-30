@@ -40,6 +40,9 @@ export function useCloudSync() {
         profit: decision.profit,
         quality: 'good' as const,
         notes: decision.notes,
+        outcome: decision.outcome,
+        counter_result: decision.counterResult,
+        final_rate: decision.finalRate,
         created_at: decision.createdAt,
       }));
 

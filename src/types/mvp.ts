@@ -1,5 +1,7 @@
 export type DecisionOutcome = 'book' | 'pass' | 'counter';
 
+export type CounterResult = 'accepted' | 'declined' | 'pending';
+
 export type Equipment = 'hotshot' | 'cargo_van' | 'straight_truck';
 
 export type FuelType = 'gas' | 'diesel';
@@ -33,6 +35,8 @@ export interface LoadEntrySnapshot {
   notes?: string;
   splitPercent?: number;
   fuelType?: FuelType;
+  counterResult?: CounterResult;
+  finalRate?: number;
 }
 
 // Cost assumptions for calculator

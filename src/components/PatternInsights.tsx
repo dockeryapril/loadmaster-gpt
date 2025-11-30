@@ -71,6 +71,18 @@ export function PatternInsights() {
           </div>
         </div>
 
+        {/* Counter success rate (if any counters logged) */}
+        {insights.counterSuccessRate > 0 && (
+          <div className="rounded-lg bg-teal-500/10 p-3 border border-teal-500/20">
+            <div className="text-xs text-teal-600 dark:text-teal-400 mb-1">
+              Counter Offer Success
+            </div>
+            <div className="text-lg font-semibold text-teal-700 dark:text-teal-300">
+              {insights.counterSuccessRate.toFixed(0)}% accepted
+            </div>
+          </div>
+        )}
+
         {/* Most common route */}
         {insights.mostCommonRoute && (
           <div className="rounded-lg bg-muted/50 p-3">

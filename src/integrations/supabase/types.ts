@@ -246,9 +246,11 @@ export type Database = {
       }
       loads: {
         Row: {
+          counter_result: string | null
           created_at: string
           deadhead_miles: number | null
           destination: string
+          final_rate: number | null
           fsc: number | null
           fuel_cost: number | null
           id: string
@@ -258,6 +260,7 @@ export type Database = {
           negotiation_tone: string | null
           notes: string | null
           origin: string
+          outcome: string | null
           profit: number
           quality: string
           rate: number
@@ -269,9 +272,11 @@ export type Database = {
           weight: number | null
         }
         Insert: {
+          counter_result?: string | null
           created_at?: string
           deadhead_miles?: number | null
           destination: string
+          final_rate?: number | null
           fsc?: number | null
           fuel_cost?: number | null
           id?: string
@@ -281,6 +286,7 @@ export type Database = {
           negotiation_tone?: string | null
           notes?: string | null
           origin: string
+          outcome?: string | null
           profit: number
           quality: string
           rate: number
@@ -292,9 +298,11 @@ export type Database = {
           weight?: number | null
         }
         Update: {
+          counter_result?: string | null
           created_at?: string
           deadhead_miles?: number | null
           destination?: string
+          final_rate?: number | null
           fsc?: number | null
           fuel_cost?: number | null
           id?: string
@@ -304,6 +312,7 @@ export type Database = {
           negotiation_tone?: string | null
           notes?: string | null
           origin?: string
+          outcome?: string | null
           profit?: number
           quality?: string
           rate?: number

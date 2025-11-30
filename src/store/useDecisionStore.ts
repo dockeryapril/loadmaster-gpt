@@ -1,7 +1,7 @@
 import { create } from '@/lib/zustand';
 import { persist } from '@/lib/zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
-import type { DecisionOutcome, LoadEntrySnapshot, CostAssumptions } from '@/types/mvp';
+import type { DecisionOutcome, LoadEntrySnapshot, CostAssumptions, CounterResult } from '@/types/mvp';
 import { defaultCostAssumptions } from '@/types/mvp';
 
 interface DecisionState {
@@ -59,7 +59,7 @@ export const useDecisionStore = create<DecisionState>()(
           // Only load recent 100 records to reduce egress
           const { data, error } = await supabase
             .from('loads')
-            .select('id, origin, destination, miles, rate, fsc, tolls, fuel_cost, rpm, profit, notes, created_at')
+            .select('id, origin, destination, miles, rate, fsc, tolls, fuel_cost, rpm, profit, notes, outcome, counter_result, final_rate, created_at')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(100);
@@ -70,7 +70,7 @@ export const useDecisionStore = create<DecisionState>()(
             .map(load => ({
             id: load.id,
             createdAt: load.created_at,
-            outcome: 'book' as DecisionOutcome, // Default for existing data
+            outcome: (load.outcome as DecisionOutcome) || 'book', // Default for existing data
             origin: load.origin,
             destination: load.destination,
             miles: Number(load.miles),
@@ -81,6 +81,8 @@ export const useDecisionStore = create<DecisionState>()(
             profit: Number(load.profit),
             rpm: Number(load.rpm),
             notes: load.notes || undefined,
+            counterResult: load.counter_result as CounterResult | undefined,
+            finalRate: load.final_rate ? Number(load.final_rate) : undefined,
           }))
             .filter((entry) => {
               if (!historyClearedAt) return true;
