@@ -332,6 +332,82 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ---
 
+## ✅ Phase 9: Market Insights Integration — COMPLETED
+
+**Goal**: Add external market intelligence via Tableau Public visualization showing national RPM trends.
+
+**Completed**: [Current Date]
+
+### What Was Completed
+- ✅ **Created Tableau Embed Component**
+  - Built reusable `TableauEmbed.tsx` component with loading states
+  - Dynamically loads Tableau JS API on demand
+  - Handles initialization and cleanup properly
+  - Shows skeleton loading state while visualization loads
+  - Error handling with user-friendly messages
+
+- ✅ **Created Market Insights Page**
+  - Dedicated `/market-insights` route with full-width layout
+  - Page header with context: "Weekly National RPM by Division"
+  - Info banner explaining external data source (FTR Intel)
+  - Embedded Tableau visualization: WeeklyNationalRPMbyDivisionFinal
+  - Back button to return to calculator
+  - External link to source (spot.ftrintel.com)
+  - Footer attribution with proper links
+
+- ✅ **Added Navigation**
+  - "📊 Market Rates" link in main header (desktop only)
+  - Positioned between logo and sync status
+  - Consistent styling with other header elements
+  - Mobile-responsive (hidden on small screens to save space)
+
+- ✅ **Routing Integration**
+  - Added `/market-insights` route to App.tsx
+  - Public access (no authentication required)
+  - Maintains consistent layout with other pages
+
+### How to Test Phase 9
+1. **Navigation**: Click "📊 Market Rates" in header → Should navigate to /market-insights
+2. **Visualization loads**: Wait for Tableau embed → Should show interactive map/chart
+3. **Interactions**: Click/hover on visualization → Should respond (filters, tooltips, etc.)
+4. **Back button**: Click "Back to Calculator" → Returns to main page
+5. **External link**: Click "View Source" → Opens spot.ftrintel.com in new tab
+6. **Mobile responsive**: Test on mobile viewport → Visualization should adapt
+7. **Direct access**: Navigate to /market-insights directly → Page loads correctly
+8. **Loading state**: Refresh page → Should show skeleton while loading
+
+### Verification Checklist
+- [x] Tableau visualization loads successfully
+- [x] Navigation link appears in header (desktop)
+- [x] Navigation link hidden on mobile
+- [x] Back button returns to calculator
+- [x] External links work correctly
+- [x] Loading skeleton displays during init
+- [x] Error handling works (if Tableau fails to load)
+- [x] Mobile-responsive design
+- [x] No console errors
+
+### Files Changed
+**Created**:
+- `/src/components/TableauEmbed.tsx` (reusable Tableau embed component)
+- `/src/pages/MarketInsights.tsx` (market insights page)
+
+**Modified**:
+- `/src/App.tsx` (added route, navigation link, import)
+- `/docs/tasks.md` (documented Phase 9 completion)
+
+### Technical Notes
+- Tableau API loaded lazily (only on /market-insights page)
+- Visualization URL: `WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2`
+- No authentication required to view (public data)
+- Visualization cleanup on unmount prevents memory leaks
+- Min height ensures no layout shift during load
+
+### What's Next
+→ **Phase 10+: Additional Features** (Advanced negotiation templates, OCR improvements, etc.)
+
+---
+
 **Goal**: Make profit calculations trustworthy, transparent, and guidance-driven.
 
 **Timeline**: 2-3 days
