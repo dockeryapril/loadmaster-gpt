@@ -34,6 +34,7 @@ import { features } from '@/utils/featureFlags';
 import { toast } from '@/components/ui/use-toast';
 import Auth from '@/pages/Auth';
 import AdminAnalytics from '@/pages/AdminAnalytics';
+import MarketInsights from '@/pages/MarketInsights';
 import type { DecisionOutcome, LoadFormInput, Equipment, FuelType } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
@@ -391,6 +392,12 @@ function MainApp() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <a
+                href="/market-insights"
+                className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                📊 Market Rates
+              </a>
               <SyncStatus 
                 isSynced={isSynced} 
                 isSyncing={isSyncing} 
@@ -866,6 +873,7 @@ export default function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
+          <Route path="/market-insights" element={<MarketInsights />} />
           <Route path="/" element={<MainApp />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
