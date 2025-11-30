@@ -16,6 +16,7 @@ export interface PatternInsights {
   mostCommonRoute: string | null;
   totalDecisions: number;
   bookingRate: number;
+  counterSuccessRate: number;
 }
 
 export interface SimilarLoad {
@@ -37,6 +38,7 @@ export function analyzePatterns(decisions: LoadEntrySnapshot[]): PatternInsights
       mostCommonRoute: null,
       totalDecisions: 0,
       bookingRate: 0,
+      counterSuccessRate: 0,
     };
   }
 
@@ -57,6 +59,11 @@ export function analyzePatterns(decisions: LoadEntrySnapshot[]): PatternInsights
   const bookedCount = decisions.filter(d => d.outcome === 'book').length;
   const bookingRate = (bookedCount / decisions.length) * 100;
 
+  // Calculate counter success rate
+  const counterLoads = decisions.filter(d => d.outcome === 'counter');
+  const acceptedCounters = counterLoads.filter(d => d.counterResult === 'accepted').length;
+  const counterSuccessRate = counterLoads.length > 0 ? (acceptedCounters / counterLoads.length) * 100 : 0;
+
   return {
     rpmRanges,
     avgProfit,
@@ -64,6 +71,7 @@ export function analyzePatterns(decisions: LoadEntrySnapshot[]): PatternInsights
     mostCommonRoute,
     totalDecisions: decisions.length,
     bookingRate,
+    counterSuccessRate,
   };
 }
 

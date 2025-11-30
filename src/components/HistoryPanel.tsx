@@ -113,6 +113,19 @@ export function HistoryPanel() {
                     >
                       {decisionLabels[entry.outcome]}
                     </span>
+                    {entry.outcome === 'counter' && entry.counterResult && (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          entry.counterResult === 'accepted'
+                            ? 'bg-teal-500/10 text-teal-600'
+                            : entry.counterResult === 'declined'
+                              ? 'bg-rose-500/10 text-rose-600'
+                              : 'bg-amber-500/10 text-amber-600'
+                        }`}
+                      >
+                        {entry.counterResult === 'accepted' ? '✓' : entry.counterResult === 'declined' ? '✗' : '⏳'}
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => setEditingEntry(entry)}
@@ -147,6 +160,12 @@ export function HistoryPanel() {
                       })}
                     </p>
                   </div>
+                  {entry.finalRate && entry.finalRate !== entry.rate && (
+                    <div className="col-span-2">
+                      <p>Final rate (negotiated)</p>
+                      <p className="font-medium text-foreground">{formatCurrency(entry.finalRate)}</p>
+                    </div>
+                  )}
                 </div>
                 {entry.notes && <p className="mt-3 text-xs text-muted-foreground">{entry.notes}</p>}
               </div>

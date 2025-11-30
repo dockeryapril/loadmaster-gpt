@@ -256,6 +256,82 @@ We're building a mobile-first, local-first calculator that delivers instant prof
 
 ---
 
+## ✅ Phase 8: Counter Offer Outcome Tracking — COMPLETED
+
+**Goal**: Enable users to record and track the results of counter offers (accepted, declined, pending) and final negotiated rates.
+
+**Completed**: [Current Date]
+
+### What Was Completed
+- ✅ **Database Schema Update**
+  - Added `outcome` column to `loads` table (stores: 'book', 'counter', 'pass')
+  - Added `counter_result` column (stores: 'accepted', 'declined', 'pending')
+  - Added `final_rate` column (stores negotiated rate when different from original)
+  - Added validation constraints and indexes for performance
+  - Backward compatible: all new columns are nullable
+
+- ✅ **Type System Updates**
+  - Added `CounterResult` type: `'accepted' | 'declined' | 'pending'`
+  - Extended `LoadEntrySnapshot` with `counterResult?` and `finalRate?` fields
+  - Updated cloud sync and store to handle new fields
+
+- ✅ **Cloud Sync Enhancements**
+  - Updated `useCloudSync.ts` to sync counter outcome data
+  - Updated `useDecisionStore.ts` to load and store counter results
+  - Maintains backward compatibility with existing entries
+
+- ✅ **UI Updates**
+  - **EditLoadDialog**: 
+    - Added counter result dropdown (Accepted/Declined/Pending) when outcome is 'counter'
+    - Added final rate input field for negotiated amounts
+    - Recalculates profit/RPM based on final rate
+  - **HistoryPanel**: 
+    - Shows counter result badges (✓ for accepted, ✗ for declined, ⏳ for pending)
+    - Color-coded: Teal for accepted, Rose for declined, Amber for pending
+    - Displays final negotiated rate when different from original
+  - **PatternInsights**:
+    - Added counter success rate stat: "X% accepted"
+    - Shows in teal highlight card when counter offers exist
+
+### How to Test Phase 8
+1. **Log a counter offer**: Select "Counter offer" as outcome → Log decision
+2. **Edit counter**: Click edit on counter entry → Select result (Accepted/Declined/Pending)
+3. **Add final rate**: Enter negotiated rate in "Final negotiated rate" field
+4. **Verify display**: Check history shows counter badge and final rate
+5. **Check insights**: After 5+ counters, verify "Counter Offer Success" stat appears
+6. **Test persistence**: Refresh page → Verify counter data persists
+7. **Cloud sync**: Sign in → Verify counter data syncs to Supabase
+8. **Backward compatibility**: Verify old entries without counter data still display
+
+### Verification Checklist
+- [x] Counter result dropdown works
+- [x] Final rate calculation correct
+- [x] Counter badges display with correct colors
+- [x] Counter success rate shows in Pattern Insights
+- [x] Data persists after refresh
+- [x] Cloud sync includes counter fields
+- [x] Backward compatible with existing entries
+- [x] Mobile-responsive design
+
+### Files Changed
+**Database**:
+- Created migration: `20231XXX_add_outcome_tracking.sql`
+
+**Modified**:
+- `/src/types/mvp.ts` (added CounterResult, extended LoadEntrySnapshot)
+- `/src/store/useDecisionStore.ts` (added counter fields to cloud load)
+- `/src/hooks/useCloudSync.ts` (sync counter outcome data)
+- `/src/components/EditLoadDialog.tsx` (counter result UI)
+- `/src/components/HistoryPanel.tsx` (counter badges display)
+- `/src/utils/patternAnalysis.ts` (counter success rate calculation)
+- `/src/components/PatternInsights.tsx` (counter success stat display)
+- `/docs/tasks.md` (documented Phase 8 completion)
+
+### What's Next
+→ **Phase 9+: Additional Features** (Advanced negotiation templates, OCR improvements, etc.)
+
+---
+
 **Goal**: Make profit calculations trustworthy, transparent, and guidance-driven.
 
 **Timeline**: 2-3 days

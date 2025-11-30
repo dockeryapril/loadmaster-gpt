@@ -25,6 +25,8 @@ export function EditLoadDialog({ entry, open, onOpenChange, onSave }: EditLoadDi
     tolls: entry.tolls.toString(),
     fuelCost: entry.fuelCost.toString(),
     outcome: entry.outcome,
+    counterResult: entry.counterResult || 'pending',
+    finalRate: entry.finalRate?.toString() || entry.rate.toString(),
     notes: entry.notes || '',
   });
 
@@ -34,8 +36,11 @@ export function EditLoadDialog({ entry, open, onOpenChange, onSave }: EditLoadDi
     const fsc = parseFloat(formData.fsc) || 0;
     const tolls = parseFloat(formData.tolls) || 0;
     const fuelCost = parseFloat(formData.fuelCost) || 0;
+    const finalRate = formData.outcome === 'counter' ? (parseFloat(formData.finalRate) || rate) : undefined;
 
-    const totalRevenue = rate + fsc;
+    // Use finalRate for revenue if it's a counter, otherwise use original rate
+    const effectiveRate = finalRate !== undefined ? finalRate : rate;
+    const totalRevenue = effectiveRate + fsc;
     const totalCosts = fuelCost + tolls;
     const profit = totalRevenue - totalCosts;
     const rpm = miles > 0 ? profit / miles : 0;
@@ -51,6 +56,8 @@ export function EditLoadDialog({ entry, open, onOpenChange, onSave }: EditLoadDi
       profit,
       rpm,
       outcome: formData.outcome,
+      counterResult: formData.outcome === 'counter' ? formData.counterResult : undefined,
+      finalRate,
       notes: formData.notes || undefined,
     });
 
@@ -79,6 +86,36 @@ export function EditLoadDialog({ entry, open, onOpenChange, onSave }: EditLoadDi
               </SelectContent>
             </Select>
           </div>
+
+          {formData.outcome === 'counter' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="counterResult">Counter offer result</Label>
+                <Select value={formData.counterResult} onValueChange={(value) => setFormData({ ...formData, counterResult: value as any })}>
+                  <SelectTrigger id="counterResult">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="accepted">✓ Accepted</SelectItem>
+                    <SelectItem value="declined">✗ Declined</SelectItem>
+                    <SelectItem value="pending">⏳ Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="finalRate">Final negotiated rate ($)</Label>
+                <Input
+                  id="finalRate"
+                  type="number"
+                  step="0.01"
+                  value={formData.finalRate}
+                  onChange={(e) => setFormData({ ...formData, finalRate: e.target.value })}
+                  placeholder="Enter final rate if different"
+                />
+              </div>
+            </>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
