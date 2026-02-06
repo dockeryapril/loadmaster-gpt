@@ -32,6 +32,7 @@ export function useCloudSync() {
         origin: decision.origin,
         destination: decision.destination,
         miles: decision.miles,
+        deadhead_miles: decision.deadheadMiles ?? 0,
         rate: decision.rate,
         fsc: decision.fsc,
         tolls: decision.tolls,

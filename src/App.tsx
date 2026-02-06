@@ -178,6 +178,7 @@ function MainApp() {
   }, []);
 
   const miles = numberOrZero(form.miles);
+  const deadheadMiles = numberOrZero(form.deadheadMiles);
   const rate = numberOrZero(form.rate);
   const rawFsc = numberOrZero(form.fsc);
   const rawTolls = numberOrZero(form.tolls);
@@ -194,16 +195,18 @@ function MainApp() {
         costProfile,
         useSplit ? splitPercent : 100,
         { includeFsc, includeTolls, includeFuel },
+        deadheadMiles,
       ),
-    [rate, rawFsc, rawTolls, miles, costProfile, useSplit, splitPercent, includeFsc, includeTolls, includeFuel],
+    [rate, rawFsc, rawTolls, miles, deadheadMiles, costProfile, useSplit, splitPercent, includeFsc, includeTolls, includeFuel],
   );
 
   const profit = detailedCalculation.profit;
   const gross = detailedCalculation.breakdown.grossRevenue;
   const yourShare = detailedCalculation.breakdown.yourShare;
 
+  // Use RPM values from the breakdown
+  const { loadedRpm, trueRpm } = detailedCalculation.breakdown;
   const rpm = useMemo(() => (miles > 0 ? gross / miles : 0), [gross, miles]);
-  const netRpm = useMemo(() => (miles > 0 ? profit / miles : 0), [profit, miles]);
   const yourShareRpm = useMemo(() => (miles > 0 ? yourShare / miles : 0), [yourShare, miles]);
   const displayedFuelCost = includeFuel
     ? detailedCalculation.breakdown.fuelCost
@@ -348,12 +351,13 @@ function MainApp() {
       origin: form.origin.trim(),
       destination: form.destination.trim(),
       miles,
+      deadheadMiles: deadheadMiles > 0 ? deadheadMiles : undefined,
       rate,
       fsc: detailedCalculation.adjustments.appliedFsc,
       tolls: detailedCalculation.adjustments.appliedTolls,
       fuelCost: detailedCalculation.breakdown.fuelCost,
       profit,
-      rpm: netRpm,
+      rpm: trueRpm, // Use true RPM for decisions
       notes: form.notes.trim() || undefined,
       splitPercent: useSplit ? splitPercent : undefined,
       fuelType: costProfile.fuelType,
@@ -364,7 +368,7 @@ function MainApp() {
       miles,
       rate,
       profit,
-      netRPM: netRpm,
+      netRPM: trueRpm, // Use true RPM for analytics
       shareRPM: yourShareRpm,
     });
     trackDecisionLogged(outcome);
@@ -615,6 +619,23 @@ function MainApp() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">
+                      Deadhead
+                    </label>
+                    <input
+                      className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      placeholder="Empty mi"
+                      inputMode="numeric"
+                      value={form.deadheadMiles}
+                      onChange={(event) => updateForm('deadheadMiles', event.target.value)}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Miles to pickup
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
                       Linehaul rate <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -794,8 +815,15 @@ function MainApp() {
                       </p>
                     </div>
                     <div className="rounded-lg border border-border bg-background p-3">
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Net RPM</p>
-                      <p className="mt-1 font-semibold">{formatNumber(netRpm)} /mi</p>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        {deadheadMiles > 0 ? 'True RPM' : 'Net RPM'}
+                      </p>
+                      <p className="mt-1 font-semibold">{formatNumber(trueRpm)} /mi</p>
+                      {deadheadMiles > 0 && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Loaded: {formatNumber(loadedRpm)} /mi
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -806,13 +834,13 @@ function MainApp() {
 
                 <SimilarLoadIndicator 
                   currentLoad={form.origin && form.destination && miles > 0 ? { 
-                    rpm: netRpm, 
+                    rpm: trueRpm, 
                     origin: form.origin, 
                     destination: form.destination 
                   } : null} 
                 />
 
-                <GuidanceBadge netRpm={netRpm} profit={profit} thresholds={costProfile} />
+                <GuidanceBadge netRpm={trueRpm} profit={profit} thresholds={costProfile} />
 
                 {features.advancedNegotiation && canLog && (
                   <button

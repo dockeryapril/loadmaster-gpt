@@ -11,6 +11,7 @@ export interface LoadFormInput {
   origin: string;
   destination: string;
   miles: string;
+  deadheadMiles: string;
   rate: string;
   fsc: string;
   tolls: string;
@@ -26,6 +27,7 @@ export interface LoadEntrySnapshot {
   origin: string;
   destination: string;
   miles: number;
+  deadheadMiles?: number;
   rate: number;
   fsc: number;
   tolls: number;
@@ -70,6 +72,7 @@ export const emptyLoadForm: LoadFormInput = {
   origin: '',
   destination: '',
   miles: '',
+  deadheadMiles: '',
   rate: '',
   fsc: '',
   tolls: '',

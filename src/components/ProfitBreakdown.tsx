@@ -67,8 +67,14 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
           <div className="space-y-2">
             <p className="font-semibold text-foreground">Costs:</p>
             <div className="space-y-1 pl-4 text-muted-foreground">
+              {breakdown.deadheadMiles > 0 && (
+                <div className="flex justify-between text-amber-600">
+                  <span>Total miles (loaded + deadhead):</span>
+                  <span className="font-medium">{breakdown.totalMiles.toLocaleString()} mi</span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span>Fuel:</span>
+                <span>Fuel{breakdown.deadheadMiles > 0 ? ` (${breakdown.totalMiles} mi)` : ''}:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.fuelCost)}</span>
               </div>
               {!adjustments.includeFuel && adjustments.originalFuelCost > 0 && (
@@ -86,7 +92,7 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
                 </p>
               )}
               <div className="flex justify-between">
-                <span>Variable costs:</span>
+                <span>Variable costs{breakdown.deadheadMiles > 0 ? ` (${breakdown.totalMiles} mi)` : ''}:</span>
                 <span className="font-medium text-foreground">{formatCurrency(breakdown.variableCosts)}</span>
               </div>
               <div className="flex justify-between">
@@ -132,20 +138,30 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
             {breakdown.splitPercent < 100 && (
               <li><strong>Your share</strong> = Gross revenue × ({breakdown.splitPercent}% ÷ 100)</li>
             )}
-            <li><strong>Fuel cost</strong> = (Miles ÷ MPG) × Fuel price per gallon</li>
+            {breakdown.deadheadMiles > 0 && (
+              <li className="text-amber-600"><strong>Total miles</strong> = Loaded miles ({breakdown.loadedMiles}) + Deadhead ({breakdown.deadheadMiles}) = {breakdown.totalMiles} mi</li>
+            )}
+            <li><strong>Fuel cost</strong> = ({breakdown.deadheadMiles > 0 ? 'Total' : 'Loaded'} miles ÷ MPG) × Fuel price per gallon</li>
             {!adjustments.includeFuel && (
               <li className="text-muted-foreground">Fuel excluded from driver costs</li>
             )}
-            <li><strong>Variable costs</strong> = Miles × Variable cost per mile</li>
-            <li><strong>Fixed costs</strong> = (Daily fixed costs ÷ 2500) × Miles</li>
+            <li><strong>Variable costs</strong> = {breakdown.deadheadMiles > 0 ? 'Total' : 'Loaded'} miles × Variable cost per mile</li>
+            <li><strong>Fixed costs</strong> = (Daily fixed costs ÷ 2500) × {breakdown.deadheadMiles > 0 ? 'Total' : 'Loaded'} miles</li>
             <li className="pt-1">
               <strong>{breakdown.splitPercent < 100 ? 'Your profit' : 'Net profit'}</strong> =
               {breakdown.splitPercent < 100 ? ' Your share' : ' Gross revenue'} − Fuel
               {adjustments.includeTolls ? ' − Tolls' : ''} − Variable − Fixed
             </li>
+            {breakdown.deadheadMiles > 0 && (
+              <>
+                <li className="pt-1"><strong>Loaded RPM</strong> = Net profit ÷ Loaded miles = ${breakdown.loadedRpm.toFixed(2)}/mi</li>
+                <li className="text-amber-600"><strong>True RPM</strong> = Net profit ÷ Total miles = ${breakdown.trueRpm.toFixed(2)}/mi</li>
+              </>
+            )}
           </ul>
           <p className="mt-2 italic">
             Fixed costs are prorated based on industry average of 2,500 miles per week.
+            {breakdown.deadheadMiles > 0 && ' Deadhead miles increase your costs but not your revenue, reducing true RPM.'}
           </p>
         </CollapsibleContent>
       </Collapsible>

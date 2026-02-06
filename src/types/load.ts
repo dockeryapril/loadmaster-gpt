@@ -27,6 +27,11 @@ export interface ProfitBreakdown {
   fixedCosts: number;
   totalCosts: number;
   netProfit: number;
+  loadedMiles: number;
+  deadheadMiles: number;
+  totalMiles: number;
+  loadedRpm: number;
+  trueRpm: number;
 }
 
 export interface CalculationAdjustments {
@@ -59,10 +64,11 @@ export function calculateDetailedProfit(
   rate: number,
   fsc: number,
   tolls: number,
-  miles: number,
+  loadedMiles: number,
   costProfile: CostAssumptions,
   splitPercent: number = 100,
-  options: CalculationOptions = {}
+  options: CalculationOptions = {},
+  deadheadMiles: number = 0
 ): DetailedProfitCalculation {
   const includeFsc = options.includeFsc ?? true;
   const includeTolls = options.includeTolls ?? true;
@@ -71,26 +77,33 @@ export function calculateDetailedProfit(
   const appliedFsc = includeFsc ? fsc : 0;
   const appliedTolls = includeTolls ? tolls : 0;
 
+  // Total miles includes deadhead for cost calculations
+  const totalMiles = loadedMiles + deadheadMiles;
+
   // Revenue
   const grossRevenue = rate + appliedFsc;
   const yourShare = grossRevenue * (splitPercent / 100);
 
-  // Costs
-  const variableCosts = miles * costProfile.variableCostPerMile;
+  // Costs - calculated on TOTAL miles (loaded + deadhead)
+  const variableCosts = totalMiles * costProfile.variableCostPerMile;
 
   const originalFuelCost =
-    miles > 0 && costProfile.averageMPG > 0
-      ? (miles / costProfile.averageMPG) * costProfile.fuelPricePerGallon
+    totalMiles > 0 && costProfile.averageMPG > 0
+      ? (totalMiles / costProfile.averageMPG) * costProfile.fuelPricePerGallon
       : 0;
   const fuelCost = includeFuel ? originalFuelCost : 0;
 
   // Prorate fixed costs based on industry average of 2500 miles/week
-  const fixedCosts = miles > 0
-    ? (costProfile.dailyFixedCosts / 2500) * miles
+  const fixedCosts = totalMiles > 0
+    ? (costProfile.dailyFixedCosts / 2500) * totalMiles
     : 0;
 
   const totalCosts = fuelCost + appliedTolls + variableCosts + fixedCosts;
   const netProfit = yourShare - totalCosts;
+
+  // Calculate both RPM values
+  const loadedRpm = loadedMiles > 0 ? netProfit / loadedMiles : 0;
+  const trueRpm = totalMiles > 0 ? netProfit / totalMiles : 0;
 
   return {
     profit: netProfit,
@@ -106,6 +119,11 @@ export function calculateDetailedProfit(
       fixedCosts,
       totalCosts,
       netProfit,
+      loadedMiles,
+      deadheadMiles,
+      totalMiles,
+      loadedRpm,
+      trueRpm,
     },
     fuelPriceUsed: costProfile.fuelPricePerGallon,
     timestamp: new Date().toISOString(),
