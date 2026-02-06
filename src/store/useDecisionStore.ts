@@ -59,7 +59,7 @@ export const useDecisionStore = create<DecisionState>()(
           // Only load recent 100 records to reduce egress
           const { data, error } = await supabase
             .from('loads')
-            .select('id, origin, destination, miles, rate, fsc, tolls, fuel_cost, rpm, profit, notes, outcome, counter_result, final_rate, created_at')
+            .select('id, origin, destination, miles, deadhead_miles, rate, fsc, tolls, fuel_cost, rpm, profit, notes, outcome, counter_result, final_rate, created_at')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(100);
@@ -74,6 +74,7 @@ export const useDecisionStore = create<DecisionState>()(
             origin: load.origin,
             destination: load.destination,
             miles: Number(load.miles),
+            deadheadMiles: load.deadhead_miles ? Number(load.deadhead_miles) : undefined,
             rate: Number(load.rate),
             fsc: Number(load.fsc),
             tolls: Number(load.tolls),
