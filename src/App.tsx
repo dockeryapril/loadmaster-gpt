@@ -39,6 +39,7 @@ import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
 import { AffiliatePanel } from '@/components/AffiliatePanel';
 import type { AffiliateContext } from '@/types/affiliate';
+import { Switch } from '@/components/ui/switch';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ''));
@@ -466,19 +467,10 @@ function MainApp() {
                     Enable if you split revenue with a carrier/company
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setUseSplit(!useSplit)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    useSplit ? 'bg-primary' : 'bg-muted-foreground/30'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      useSplit ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
+                <Switch
+                  checked={useSplit}
+                  onCheckedChange={setUseSplit}
+                />
               </div>
               {useSplit && (
                 <div className="mt-4 space-y-2">
@@ -668,21 +660,11 @@ function MainApp() {
                             </TooltipContent>
                           </Tooltip>
                         </label>
-                      <button
-                        type="button"
-                        onClick={() => setIncludeFsc((prev) => !prev)}
-                        aria-pressed={includeFsc}
+                      <Switch
+                        checked={includeFsc}
+                        onCheckedChange={setIncludeFsc}
                         aria-label={includeFsc ? 'Exclude FSC from your revenue' : 'Include FSC in your revenue'}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          includeFsc ? 'bg-primary' : 'bg-muted-foreground/30'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                            includeFsc ? 'translate-x-5' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                      />
                     </div>
                     <input
                       id="fsc-input"
@@ -715,21 +697,11 @@ function MainApp() {
                           </TooltipContent>
                         </Tooltip>
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => setIncludeTolls((prev) => !prev)}
-                        aria-pressed={includeTolls}
+                      <Switch
+                        checked={includeTolls}
+                        onCheckedChange={setIncludeTolls}
                         aria-label={includeTolls ? 'Exclude tolls from your costs' : 'Include tolls in your costs'}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          includeTolls ? 'bg-primary' : 'bg-muted-foreground/30'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                            includeTolls ? 'translate-x-5' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                      />
                     </div>
                     <input
                       id="tolls-input"
@@ -751,21 +723,11 @@ function MainApp() {
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-muted-foreground">Fuel</label>
-                      <button
-                        type="button"
-                        onClick={() => setIncludeFuel((prev) => !prev)}
-                        aria-pressed={includeFuel}
+                      <Switch
+                        checked={includeFuel}
+                        onCheckedChange={setIncludeFuel}
                         aria-label={includeFuel ? 'Exclude fuel from your costs' : 'Include fuel in your costs'}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          includeFuel ? 'bg-primary' : 'bg-muted-foreground/30'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                            includeFuel ? 'translate-x-5' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                      />
                     </div>
                     <div
                       className={`mt-1 rounded-lg border border-input px-3 py-2 text-sm text-muted-foreground ${
