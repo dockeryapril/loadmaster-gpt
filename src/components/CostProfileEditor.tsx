@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Settings, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import {
   Sheet,
   SheetContent,
@@ -275,19 +276,11 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', onPresetApplie
                     Auto-populate MPG, costs based on equipment and fuel type
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handlePresetToggle}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    editingValues.useSmartHopPresets ? 'bg-primary' : 'bg-muted-foreground/30'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      editingValues.useSmartHopPresets ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
+                <Switch
+                  checked={editingValues.useSmartHopPresets}
+                  onCheckedChange={handlePresetToggle}
+                  aria-label="Use industry presets"
+                />
               </div>
               {editingValues.useSmartHopPresets && (
                 <Badge variant="secondary" className="mt-3 gap-1">
