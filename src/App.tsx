@@ -9,14 +9,14 @@ import { Analytics } from '@vercel/analytics/react';
 import { calculateDetailedProfit } from '@/types/load';
 import { OCRDropzone } from '@/components/OCRDropzone';
 import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDecisionStore';
-import { 
-  trackCalculationSubmitted, 
-  trackDecisionLogged, 
+import {
+  trackCalculationSubmitted,
+  trackDecisionLogged,
   trackFeedbackClicked,
   trackSessionStart,
   trackFuelTypeChanged,
-  trackScreenshotUploaded
-} from '@/utils/analytics';
+  trackScreenshotUploaded } from
+'@/utils/analytics';
 import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
 import { GuidanceBadge } from '@/components/GuidanceBadge';
@@ -50,39 +50,39 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(value);
 }
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(value);
 }
 
 const outcomeOptions: DecisionOutcome[] = ['book', 'counter', 'pass'];
 
-function UserMenu({ user }: { user: User }) {
+function UserMenu({ user }: {user: User;}) {
   const { signOut } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
-  
+
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
+      const { data } = await supabase.
+      from('user_roles').
+      select('role').
+      eq('user_id', user.id).
+      eq('role', 'admin').
+      maybeSingle();
       setIsAdmin(!!data);
     };
     checkAdmin();
   }, [user.id]);
-  
+
   const handleSignOut = async () => {
     await signOut();
   };
-  
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -98,8 +98,8 @@ function UserMenu({ user }: { user: User }) {
           {user.email}
         </div>
         <DropdownMenuSeparator />
-        {isAdmin && (
-          <>
+        {isAdmin &&
+        <>
             <DropdownMenuItem asChild className="cursor-pointer">
               <a href="/admin/analytics">
                 <Activity className="mr-2 h-4 w-4" />
@@ -108,14 +108,14 @@ function UserMenu({ user }: { user: User }) {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
-        )}
+        }
         <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
-  );
+    </DropdownMenu>);
+
 }
 
 const getInitialSplitPercent = () => {
@@ -156,7 +156,7 @@ function MainApp() {
   const [form, setForm] = useState<LoadFormInput>(() => ({
     ...emptyLoadForm,
     splitPercent: getInitialSplitPercent(),
-    equipment: getInitialEquipment(),
+    equipment: getInitialEquipment()
   }));
   const [outcome, setOutcome] = useState<DecisionOutcome>('book');
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -188,17 +188,17 @@ function MainApp() {
   // Calculate detailed profit using cost profile
   const detailedCalculation = useMemo(
     () =>
-      calculateDetailedProfit(
-        rate,
-        rawFsc,
-        rawTolls,
-        miles,
-        costProfile,
-        useSplit ? splitPercent : 100,
-        { includeFsc, includeTolls, includeFuel },
-        deadheadMiles,
-      ),
-    [rate, rawFsc, rawTolls, miles, deadheadMiles, costProfile, useSplit, splitPercent, includeFsc, includeTolls, includeFuel],
+    calculateDetailedProfit(
+      rate,
+      rawFsc,
+      rawTolls,
+      miles,
+      costProfile,
+      useSplit ? splitPercent : 100,
+      { includeFsc, includeTolls, includeFuel },
+      deadheadMiles
+    ),
+    [rate, rawFsc, rawTolls, miles, deadheadMiles, costProfile, useSplit, splitPercent, includeFsc, includeTolls, includeFuel]
   );
 
   const profit = detailedCalculation.profit;
@@ -207,21 +207,21 @@ function MainApp() {
 
   // Use RPM values from the breakdown
   const { loadedRpm, trueRpm } = detailedCalculation.breakdown;
-  const rpm = useMemo(() => (miles > 0 ? gross / miles : 0), [gross, miles]);
-  const yourShareRpm = useMemo(() => (miles > 0 ? yourShare / miles : 0), [yourShare, miles]);
-  const displayedFuelCost = includeFuel
-    ? detailedCalculation.breakdown.fuelCost
-    : detailedCalculation.adjustments.originalFuelCost;
+  const rpm = useMemo(() => miles > 0 ? gross / miles : 0, [gross, miles]);
+  const yourShareRpm = useMemo(() => miles > 0 ? yourShare / miles : 0, [yourShare, miles]);
+  const displayedFuelCost = includeFuel ?
+  detailedCalculation.breakdown.fuelCost :
+  detailedCalculation.adjustments.originalFuelCost;
 
   // Negotiation engine (only when feature enabled)
-  const negotiation = features.advancedNegotiation
-    ? useNegotiationEngine(form, profit)
-    : { calculation: null, templates: [], isReady: false };
+  const negotiation = features.advancedNegotiation ?
+  useNegotiationEngine(form, profit) :
+  { calculation: null, templates: [], isReady: false };
 
   const canLog =
-    Boolean(form.origin && form.destination) &&
-    rate > 0 &&
-    miles > 0;
+  Boolean(form.origin && form.destination) &&
+  rate > 0 &&
+  miles > 0;
 
   const isInvalid = (field: keyof LoadFormInput) => {
     const requiredFields: (keyof LoadFormInput)[] = ['origin', 'destination', 'miles', 'rate'];
@@ -235,7 +235,7 @@ function MainApp() {
 
     setForm((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: value
     }));
   };
 
@@ -296,7 +296,7 @@ function MainApp() {
   const applyOcr = (data: Partial<LoadFormInput>) => {
     // Track the screenshot upload
     trackScreenshotUploaded();
-    
+
     setForm((prev) => {
       const next = { ...prev };
       Object.entries(data).forEach(([key, value]) => {
@@ -319,11 +319,11 @@ function MainApp() {
     });
     setShowAutoFillBadge(true);
     setTimeout(() => setShowAutoFillBadge(false), 5000);
-    
+
     // Show toast notification
     toast({
       title: '✅ Fields auto-filled!',
-      description: 'Review and adjust the values before calculating',
+      description: 'Review and adjust the values before calculating'
     });
   };
 
@@ -334,7 +334,7 @@ function MainApp() {
         origin: true,
         destination: true,
         miles: true,
-        rate: true,
+        rate: true
       });
       return;
     }
@@ -343,7 +343,7 @@ function MainApp() {
     if (history.length === 4) {
       toast({
         title: '🎉 Milestone!',
-        description: 'Check your Pattern Insights to see booking trends',
+        description: 'Check your Pattern Insights to see booking trends'
       });
     }
 
@@ -361,7 +361,7 @@ function MainApp() {
       rpm: trueRpm, // Use true RPM for decisions
       notes: form.notes.trim() || undefined,
       splitPercent: useSplit ? splitPercent : undefined,
-      fuelType: costProfile.fuelType,
+      fuelType: costProfile.fuelType
     });
 
     // Track calculation submitted and decision logged
@@ -370,14 +370,14 @@ function MainApp() {
       rate,
       profit,
       netRPM: trueRpm, // Use true RPM for analytics
-      shareRPM: yourShareRpm,
+      shareRPM: yourShareRpm
     });
     trackDecisionLogged(outcome);
 
     setForm({
       ...emptyLoadForm,
       splitPercent: persistedSplitPercent,
-      equipment: form.equipment, // Keep equipment selection
+      equipment: form.equipment // Keep equipment selection
     });
     setOutcome('book');
     setTouched({});
@@ -400,38 +400,38 @@ function MainApp() {
             <div className="flex items-center gap-3">
               {/* Mobile: Icon-only button */}
               <a
-                href="https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex sm:hidden items-center justify-center rounded-lg border border-border bg-background p-2 text-foreground transition-colors hover:bg-muted"
-                title="Market Rates"
-              >
+              href="https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex sm:hidden items-center justify-center rounded-lg border border-border bg-background p-2 text-foreground transition-colors hover:bg-muted"
+              title="Market Rates">
+              
                 📊
               </a>
               {/* Desktop: Full button with text */}
               <a
-                href="https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              >
+              href="https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+              
                 📊 Market Rates
               </a>
               <SyncStatus
-                isSynced={isSynced} 
-                isSyncing={isSyncing} 
-                isAuthenticated={!!user}
-              />
-              {user ? (
-                <UserMenu user={user} />
-              ) : (
-                <a
-                  href="/auth"
-                  className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                >
+              isSynced={isSynced}
+              isSyncing={isSyncing}
+              isAuthenticated={!!user} />
+            
+              {user ?
+            <UserMenu user={user} /> :
+
+            <a
+              href="/auth"
+              className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+              
                   Sign In
                 </a>
-              )}
+            }
             </div>
         </div>
       </header>
@@ -447,14 +447,14 @@ function MainApp() {
                 Run the numbers before you run the miles
               </h2>
               <p className="text-sm text-muted-foreground md:text-base">
-                Drop a screenshote or enter the load details. We will pre-fill the form, show instant profit, and let you log
-                your decision for future reference.
-              </p>
-              {showAutoFillBadge && (
-                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                Drop a screenshot or enter the load details. We will pre-fill the form, show instant profit, and let you log your decision for future reference.
+              
+            </p>
+              {showAutoFillBadge &&
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   ✨ Auto-filled from image
                 </div>
-              )}
+            }
             </header>
 
             <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
@@ -469,30 +469,30 @@ function MainApp() {
                 </div>
                 <Switch
                   checked={useSplit}
-                  onCheckedChange={setUseSplit}
-                />
+                  onCheckedChange={setUseSplit} />
+                
               </div>
-              {useSplit && (
-                <div className="mt-4 space-y-2">
+              {useSplit &&
+              <div className="mt-4 space-y-2">
                   <label className="text-sm font-medium text-foreground">
                     Your percentage: {splitPercent}%
                   </label>
                   <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={form.splitPercent}
-                    onChange={(e) => updateForm('splitPercent', e.target.value)}
-                    className="w-full accent-primary"
-                  />
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={form.splitPercent}
+                  onChange={(e) => updateForm('splitPercent', e.target.value)}
+                  className="w-full accent-primary" />
+                
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>0%</span>
                     <span>50%</span>
                     <span>100%</span>
                   </div>
                 </div>
-              )}
+              }
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -532,8 +532,8 @@ function MainApp() {
                     <select
                       className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                       value={form.equipment}
-                      onChange={(event) => updateForm('equipment', event.target.value)}
-                    >
+                      onChange={(event) => updateForm('equipment', event.target.value)}>
+                      
                       <option value="hotshot">Hotshot</option>
                       <option value="cargo_van">Cargo Van</option>
                       <option value="straight_truck">Straight Truck</option>
@@ -562,16 +562,16 @@ function MainApp() {
                   </label>
                   <input
                     className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
-                      isInvalid('origin') ? 'border-rose-500' : 'border-input'
-                    }`}
+                    isInvalid('origin') ? 'border-rose-500' : 'border-input'}`
+                    }
                     placeholder="City, ST"
                     value={form.origin}
                     onChange={(event) => updateForm('origin', event.target.value)}
-                    onBlur={() => handleBlur('origin')}
-                  />
-                  {isInvalid('origin') && (
-                    <p className="mt-1 text-xs text-rose-500">Required</p>
-                  )}
+                    onBlur={() => handleBlur('origin')} />
+                  
+                  {isInvalid('origin') &&
+                  <p className="mt-1 text-xs text-rose-500">Required</p>
+                  }
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
@@ -579,16 +579,16 @@ function MainApp() {
                   </label>
                   <input
                     className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
-                      isInvalid('destination') ? 'border-rose-500' : 'border-input'
-                    }`}
+                    isInvalid('destination') ? 'border-rose-500' : 'border-input'}`
+                    }
                     placeholder="City, ST"
                     value={form.destination}
                     onChange={(event) => updateForm('destination', event.target.value)}
-                    onBlur={() => handleBlur('destination')}
-                  />
-                  {isInvalid('destination') && (
-                    <p className="mt-1 text-xs text-rose-500">Required</p>
-                  )}
+                    onBlur={() => handleBlur('destination')} />
+                  
+                  {isInvalid('destination') &&
+                  <p className="mt-1 text-xs text-rose-500">Required</p>
+                  }
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -597,17 +597,17 @@ function MainApp() {
                     </label>
                     <input
                       className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
-                        isInvalid('miles') ? 'border-rose-500' : 'border-input'
-                      }`}
+                      isInvalid('miles') ? 'border-rose-500' : 'border-input'}`
+                      }
                       placeholder="0"
                       inputMode="numeric"
                       value={form.miles}
                       onChange={(event) => updateForm('miles', event.target.value)}
-                      onBlur={() => handleBlur('miles')}
-                    />
-                    {isInvalid('miles') && (
-                      <p className="mt-1 text-xs text-rose-500">Required</p>
-                    )}
+                      onBlur={() => handleBlur('miles')} />
+                    
+                    {isInvalid('miles') &&
+                    <p className="mt-1 text-xs text-rose-500">Required</p>
+                    }
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">
@@ -618,8 +618,8 @@ function MainApp() {
                       placeholder="Empty mi"
                       inputMode="numeric"
                       value={form.deadheadMiles}
-                      onChange={(event) => updateForm('deadheadMiles', event.target.value)}
-                    />
+                      onChange={(event) => updateForm('deadheadMiles', event.target.value)} />
+                    
                     <p className="mt-1 text-xs text-muted-foreground">
                       Miles to pickup
                     </p>
@@ -632,17 +632,17 @@ function MainApp() {
                     </label>
                     <input
                       className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
-                        isInvalid('rate') ? 'border-rose-500' : 'border-input'
-                      }`}
+                      isInvalid('rate') ? 'border-rose-500' : 'border-input'}`
+                      }
                       placeholder="$0"
                       inputMode="decimal"
                       value={form.rate}
                       onChange={(event) => updateForm('rate', event.target.value)}
-                      onBlur={() => handleBlur('rate')}
-                    />
-                    {isInvalid('rate') && (
-                      <p className="mt-1 text-xs text-rose-500">Required</p>
-                    )}
+                      onBlur={() => handleBlur('rate')} />
+                    
+                    {isInvalid('rate') &&
+                    <p className="mt-1 text-xs text-rose-500">Required</p>
+                    }
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
@@ -661,25 +661,25 @@ function MainApp() {
                           </Tooltip>
                         </label>
                       <Switch
-                        checked={includeFsc}
-                        onCheckedChange={setIncludeFsc}
-                        aria-label={includeFsc ? 'Exclude FSC from your revenue' : 'Include FSC in your revenue'}
-                      />
+                          checked={includeFsc}
+                          onCheckedChange={setIncludeFsc}
+                          aria-label={includeFsc ? 'Exclude FSC from your revenue' : 'Include FSC in your revenue'} />
+                        
                     </div>
                     <input
-                      id="fsc-input"
-                      className={`mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
-                        includeFsc ? '' : 'border-dashed text-muted-foreground'
-                      }`}
-                      placeholder="$0"
-                      inputMode="decimal"
-                      value={form.fsc}
-                      onChange={(event) => updateForm('fsc', event.target.value)}
-                    />
+                        id="fsc-input"
+                        className={`mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                        includeFsc ? '' : 'border-dashed text-muted-foreground'}`
+                        }
+                        placeholder="$0"
+                        inputMode="decimal"
+                        value={form.fsc}
+                        onChange={(event) => updateForm('fsc', event.target.value)} />
+                      
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {includeFsc
-                        ? 'Included in your revenue calculations.'
-                        : 'Excluded from your share (carrier keeps FSC).'}
+                      {includeFsc ?
+                        'Included in your revenue calculations.' :
+                        'Excluded from your share (carrier keeps FSC).'}
                     </p>
                   </div>
                 </TooltipProvider>
@@ -698,25 +698,25 @@ function MainApp() {
                         </Tooltip>
                       </label>
                       <Switch
-                        checked={includeTolls}
-                        onCheckedChange={setIncludeTolls}
-                        aria-label={includeTolls ? 'Exclude tolls from your costs' : 'Include tolls in your costs'}
-                      />
+                          checked={includeTolls}
+                          onCheckedChange={setIncludeTolls}
+                          aria-label={includeTolls ? 'Exclude tolls from your costs' : 'Include tolls in your costs'} />
+                        
                     </div>
                     <input
-                      id="tolls-input"
-                      className={`mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
-                        includeTolls ? '' : 'border-dashed text-muted-foreground'
-                      }`}
-                      placeholder="$0"
-                      inputMode="decimal"
-                      value={form.tolls}
-                      onChange={(event) => updateForm('tolls', event.target.value)}
-                    />
+                        id="tolls-input"
+                        className={`mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none ${
+                        includeTolls ? '' : 'border-dashed text-muted-foreground'}`
+                        }
+                        placeholder="$0"
+                        inputMode="decimal"
+                        value={form.tolls}
+                        onChange={(event) => updateForm('tolls', event.target.value)} />
+                      
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {includeTolls
-                        ? 'Subtracted as part of your costs.'
-                        : 'Covered by carrier (not subtracted).'}
+                      {includeTolls ?
+                        'Subtracted as part of your costs.' :
+                        'Covered by carrier (not subtracted).'}
                     </p>
                   </div>
                 </TooltipProvider>
@@ -726,20 +726,20 @@ function MainApp() {
                       <Switch
                         checked={includeFuel}
                         onCheckedChange={setIncludeFuel}
-                        aria-label={includeFuel ? 'Exclude fuel from your costs' : 'Include fuel in your costs'}
-                      />
+                        aria-label={includeFuel ? 'Exclude fuel from your costs' : 'Include fuel in your costs'} />
+                      
                     </div>
                     <div
                       className={`mt-1 rounded-lg border border-input px-3 py-2 text-sm text-muted-foreground ${
-                        includeFuel ? 'bg-muted/50' : 'border-dashed bg-muted/30'
-                      }`}
-                    >
+                      includeFuel ? 'bg-muted/50' : 'border-dashed bg-muted/30'}`
+                      }>
+                      
                       {formatCurrency(displayedFuelCost)}
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {includeFuel
-                        ? 'Fuel is auto-calculated using your MPG and fuel price settings and subtracted from your costs.'
-                        : 'Fuel is auto-calculated using your MPG and fuel price settings, but your carrier covers it, so $0.00 is taken out.'}
+                      {includeFuel ?
+                      'Fuel is auto-calculated using your MPG and fuel price settings and subtracted from your costs.' :
+                      'Fuel is auto-calculated using your MPG and fuel price settings, but your carrier covers it, so $0.00 is taken out.'}
                     </p>
                   </div>
                 </div>
@@ -750,17 +750,17 @@ function MainApp() {
                     rows={3}
                     placeholder="Equipment, broker, must-knows"
                     value={form.notes}
-                    onChange={(event) => updateForm('notes', event.target.value)}
-                  />
+                    onChange={(event) => updateForm('notes', event.target.value)} />
+                  
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="rounded-xl bg-primary/5 p-4" data-onboarding="step-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium uppercase tracking-wide text-primary">Instant result</p>
-                    <CostProfileEditor 
-                      currentEquipment={form.equipment}
-                    />
+                    <CostProfileEditor
+                      currentEquipment={form.equipment} />
+                    
                   </div>
                   <h3 className="mt-2 text-3xl font-semibold text-foreground">{formatCurrency(profit)}</h3>
                   <p className="text-sm text-muted-foreground">
@@ -781,11 +781,11 @@ function MainApp() {
                         {deadheadMiles > 0 ? 'True RPM' : 'Net RPM'}
                       </p>
                       <p className="mt-1 font-semibold">{formatNumber(trueRpm)} /mi</p>
-                      {deadheadMiles > 0 && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {deadheadMiles > 0 &&
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
                           Loaded: {formatNumber(loadedRpm)} /mi
                         </p>
-                      )}
+                      }
                     </div>
                   </div>
 
@@ -794,52 +794,52 @@ function MainApp() {
                   </div>
                 </div>
 
-                <SimilarLoadIndicator 
-                  currentLoad={form.origin && form.destination && miles > 0 ? { 
-                    rpm: trueRpm, 
-                    origin: form.origin, 
-                    destination: form.destination 
-                  } : null} 
-                />
+                <SimilarLoadIndicator
+                  currentLoad={form.origin && form.destination && miles > 0 ? {
+                    rpm: trueRpm,
+                    origin: form.origin,
+                    destination: form.destination
+                  } : null} />
+                
 
                 <GuidanceBadge netRpm={trueRpm} profit={profit} thresholds={costProfile} />
 
-                {features.advancedNegotiation && canLog && (
-                  <button
-                    type="button"
-                    onClick={() => setNegotiationSheetOpen(true)}
-                    className="w-full rounded-lg border-2 border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary transition hover:bg-primary/10 hover:border-primary/30"
-                  >
+                {features.advancedNegotiation && canLog &&
+                <button
+                  type="button"
+                  onClick={() => setNegotiationSheetOpen(true)}
+                  className="w-full rounded-lg border-2 border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary transition hover:bg-primary/10 hover:border-primary/30">
+                  
                     <MessageSquare className="inline-block mr-2 h-4 w-4" />
                     Generate Negotiation Message
                   </button>
-                )}
+                }
 
                 <div className="rounded-xl border border-border bg-background p-4">
                   <p className="text-sm font-semibold">Decision</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {outcomeOptions.map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setOutcome(value)}
-                        className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                          outcome === value
-                            ? 'bg-primary text-primary-foreground shadow'
-                            : 'border border-border text-muted-foreground hover:border-primary hover:text-primary'
-                        }`}
-                      >
+                    {outcomeOptions.map((value) =>
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setOutcome(value)}
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                      outcome === value ?
+                      'bg-primary text-primary-foreground shadow' :
+                      'border border-border text-muted-foreground hover:border-primary hover:text-primary'}`
+                      }>
+                      
                         {decisionLabels[value]}
                       </button>
-                    ))}
+                    )}
                   </div>
                   <button
                     type="button"
                     onClick={handleLogDecision}
                     disabled={!canLog}
                     title={!canLog ? 'Complete required fields (origin, destination, miles, rate)' : ''}
-                    className="mt-4 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
-                  >
+                    className="mt-4 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground">
+                    
                     {!canLog ? 'Complete required fields to log' : 'Log decision'}
                   </button>
                 </div>
@@ -855,19 +855,19 @@ function MainApp() {
       </main>
 
       {/* Negotiation Message Sheet */}
-      {features.advancedNegotiation && negotiation.calculation && (
-        <NegotiationMessageSheet
-          open={negotiationSheetOpen}
-          onOpenChange={setNegotiationSheetOpen}
-          calculation={negotiation.calculation}
-          templates={negotiation.templates}
-        />
-      )}
+      {features.advancedNegotiation && negotiation.calculation &&
+      <NegotiationMessageSheet
+        open={negotiationSheetOpen}
+        onOpenChange={setNegotiationSheetOpen}
+        calculation={negotiation.calculation}
+        templates={negotiation.templates} />
+
+      }
       
       {/* Optional Tour Modal - temporarily disabled for debugging */}
       {/* <OptionalTour /> */}
-    </div>
-  );
+    </div>);
+
 }
 
 export default function App() {
@@ -883,6 +883,6 @@ export default function App() {
         <Toaster />
         <Analytics />
       </AuthProvider>
-    </BrowserRouter>
-  );
+    </BrowserRouter>);
+
 }
