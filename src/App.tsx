@@ -167,6 +167,8 @@ function MainApp() {
   const { isSyncing, syncToCloud } = useCloudSync();
   const [isSynced, setIsSynced] = useState(false);
   const [negotiationSheetOpen, setNegotiationSheetOpen] = useState(false);
+  const isAuthUIEnabled = features.authEnabled;
+  const isOCRVisible = features.ocrEnabled && features.authEnabled;
 
   // Track session start on mount
   useEffect(() => {
@@ -409,21 +411,25 @@ function MainApp() {
               
                 📊 Market Rates
               </a>
-              <SyncStatus
-              isSynced={isSynced}
-              isSyncing={isSyncing}
-              isAuthenticated={!!user} />
-            
-              {user ?
-            <UserMenu user={user} /> :
-
-            <a
-              href="/auth"
-              className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+              {isAuthUIEnabled &&
+              <>
+                  <SyncStatus
+                isSynced={isSynced}
+                isSyncing={isSyncing}
+                isAuthenticated={!!user} />
               
-                  Sign In
-                </a>
-            }
+                  {user ?
+                <UserMenu user={user} /> :
+
+                <a
+                  href="/auth"
+                  className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+                  
+                      Sign In
+                    </a>
+                }
+                </>
+              }
             </div>
         </div>
       </header>
