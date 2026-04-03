@@ -168,7 +168,7 @@ function MainApp() {
   const [isSynced, setIsSynced] = useState(false);
   const [negotiationSheetOpen, setNegotiationSheetOpen] = useState(false);
   const isAuthUIEnabled = features.authEnabled;
-  const isOCRVisible = features.ocrEnabled && features.authEnabled;
+  const isOCRVisible = features.ocrEnabled;
 
   // Track session start on mount
   useEffect(() => {
@@ -445,9 +445,10 @@ function MainApp() {
                 Run the numbers before you run the miles
               </h2>
               <p className="text-sm text-muted-foreground md:text-base">
-                Enter the load details to get instant profit guidance. Sign in to unlock OCR auto-fill from screenshots.
-              
-            </p>
+                {isOCRVisible ?
+                'Enter the load details or sign in to unlock OCR auto-fill from screenshots.' :
+                'Enter the load details to get instant profit guidance and decision support.'}
+              </p>
               {showAutoFillBadge &&
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   ✨ Auto-filled from image
@@ -544,13 +545,20 @@ function MainApp() {
 
 
                 {/* Rate confirmation assist - OCR */}
-                {features.ocrEnabled &&
-                <div className="rounded-xl border border-border bg-background p-4">
-                    <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
+                {isOCRVisible &&
+                <div className={`rounded-xl border p-4 ${user ? 'border-border bg-background' : 'border-dashed border-primary/40 bg-primary/5'}`}>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
+                      {!user &&
+                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                          Sign-in required
+                        </span>
+                    }
+                    </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {user ?
                     'Drop a clear screenshot to auto-fill the fields.' :
-                    'Sign in to use OCR auto-fill from screenshots.'}
+                    'Sign in to use OCR auto-fill.'}
                     </p>
                     <div className="mt-4">
                       <OCRDropzone onParse={applyOcr} disabled={!user} />
