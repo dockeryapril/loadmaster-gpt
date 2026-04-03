@@ -332,13 +332,12 @@ serve(async (req) => {
     let userMessage = 'An unexpected error occurred. Please try again.';
     let statusCode = 500;
     
-    if (error.message.includes('OpenAI API error')) {
-      userMessage = 'There was an issue processing your request. Please try again.';
-    } else if (error.message.includes('Prompt is required')) {
-      userMessage = 'Request is missing required data.';
-      statusCode = 400;
-    } else if (error.message.includes('fetch')) {
-      userMessage = 'Network error occurred. Please check your connection and try again.';
+    if (error instanceof Error) {
+      if (error.message.includes('OpenAI API error')) {
+        userMessage = 'There was an issue processing your request. Please try again.';
+      } else if (error.message.includes('fetch')) {
+        userMessage = 'Network error occurred. Please check your connection and try again.';
+      }
     }
     
     return new Response(JSON.stringify({ 
