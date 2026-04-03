@@ -21,6 +21,7 @@ export function useNegotiationEngine(
 ): NegotiationResult {
   return useMemo(() => {
     const miles = Number(loadForm.miles || 0);
+    const deadheadMiles = Number(loadForm.deadheadMiles || 0);
     const baseRate = Number(loadForm.rate || 0);
     
     // Not ready if missing critical fields
@@ -28,6 +29,10 @@ export function useNegotiationEngine(
       return {
         calculation: {
           baseRpm: 0,
+          effectiveRpm: 0,
+          loadedMiles: 0,
+          deadheadMiles: 0,
+          effectiveMiles: 0,
           surcharges: {
             tarp: 0, heavyPerMile: 0, oversizeWidth: 0, oversizeHeight: 0,
             multiStop: 0, rush: 0, weekend: 0, afterHours: 0,
@@ -47,6 +52,7 @@ export function useNegotiationEngine(
       pickup: loadForm.origin,
       delivery: loadForm.destination,
       distanceMi: miles,
+      deadheadMi: deadheadMiles > 0 ? deadheadMiles : undefined,
       offerFlat: baseRate,
       equipment: loadForm.equipment,
     };

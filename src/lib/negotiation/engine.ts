@@ -141,9 +141,13 @@ function colorFromRpm(rpm: number, profile: EquipmentProfile): 'red' | 'yellow' 
 
 export function computeCalc(fields: LoadFields, margins: NegotiationMargins, profile?: EquipmentProfile): CalcResult {
   const p = profile ?? selectProfile(fields.equipment);
-  const miles = Math.max(1, Number(fields.distanceMi || 0));
+  const loadedMiles = Math.max(1, Number(fields.distanceMi || 0));
+  const deadheadMiles = Math.max(0, Number(fields.deadheadMi || 0));
+  const effectiveMiles = loadedMiles + deadheadMiles;
+  const miles = Math.max(1, effectiveMiles);
   const baseFlat = Number(fields.offerFlat || 0);
-  const baseRpm = round2(baseFlat / miles);
+  const baseRpm = round2(baseFlat / loadedMiles);
+  const effectiveRpm = round2(baseFlat / miles);
 
   // Shared adders across all equipment types
   const rush = isRush(fields.pickupAt) ? p.surcharges.rush : 0;
@@ -219,9 +223,13 @@ export function computeCalc(fields: LoadFields, margins: NegotiationMargins, pro
 
   return {
     baseRpm,
+    effectiveRpm,
+    loadedMiles,
+    deadheadMiles,
+    effectiveMiles: miles,
     surcharges: sur,
     negotiation: { anchor, target, floor },
-    resultColor: colorFromRpm(baseRpm, p),
+    resultColor: colorFromRpm(effectiveRpm, p),
   };
 }
 

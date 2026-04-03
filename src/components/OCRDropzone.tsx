@@ -15,6 +15,7 @@ interface ExtractedData {
   origin?: string;
   destination?: string;
   miles?: string;
+  deadheadMiles?: string;
   rate?: string;
   fsc?: string;
   tolls?: string;
@@ -210,6 +211,7 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
       origin: extractedData.origin || "",
       destination: extractedData.destination || "",
       miles: extractedData.miles || "",
+      deadheadMiles: extractedData.deadheadMiles || "",
       rate: extractedData.rate || "",
       fsc: extractedData.fsc || "",
       tolls: extractedData.tolls || "",
@@ -303,6 +305,12 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Miles:</span>
                 <span className="font-medium">{extractedData.miles}</span>
+              </div>
+            )}
+            {extractedData.deadheadMiles && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Deadhead:</span>
+                <span className="font-medium">{extractedData.deadheadMiles}</span>
               </div>
             )}
             {extractedData.rate && (

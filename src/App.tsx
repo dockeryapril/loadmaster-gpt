@@ -903,7 +903,11 @@ function MainApp() {
                   <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                     <div className="rounded-lg border border-border bg-background p-3">
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        {useSplit ? "Your Share RPM" : "Gross RPM"}
+                        {useSplit
+                          ? deadheadMiles > 0
+                            ? "Your Share RPM (Loaded)"
+                            : "Your Share RPM"
+                          : "Gross RPM"}
                       </p>
                       <p className="mt-1 font-semibold">
                         {formatNumber(useSplit ? yourShareRpm : rpm)} /mi
@@ -911,7 +915,9 @@ function MainApp() {
                     </div>
                     <div className="rounded-lg border border-border bg-background p-3">
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        {deadheadMiles > 0 ? "True RPM" : "Net RPM"}
+                        {deadheadMiles > 0
+                          ? "Net RPM (True)"
+                          : "Net RPM"}
                       </p>
                       <p className="mt-1 font-semibold">
                         {formatNumber(trueRpm)} /mi

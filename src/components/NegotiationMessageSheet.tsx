@@ -72,6 +72,12 @@ export function NegotiationMessageSheet({
             <h3 className="text-sm font-medium text-muted-foreground">
               Recommended Rate Tiers
             </h3>
+            <p className="text-xs text-muted-foreground">
+              Based on {calculation.loadedMiles} loaded mi
+              {calculation.deadheadMiles > 0
+                ? ` + ${calculation.deadheadMiles} deadhead mi (${calculation.effectiveMiles} effective mi)`
+                : ''}.
+            </p>
             
             <div className="grid gap-2">
               <Card className="p-3 border-l-4 border-l-emerald-500 bg-emerald-50 dark:bg-emerald-950/20">
