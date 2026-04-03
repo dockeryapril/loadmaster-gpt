@@ -5,6 +5,7 @@
 export const features = {
   // Phase 5: OCR enabled (current)
   ocrEnabled: true,
+  authEnabled: false,
   supabaseSync: false,
 
   // Phase 6: Template negotiation enabled
