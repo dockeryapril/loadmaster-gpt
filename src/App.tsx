@@ -445,10 +445,9 @@ function MainApp() {
                 Run the numbers before you run the miles
               </h2>
               <p className="text-sm text-muted-foreground md:text-base">
-                {isOCRVisible ?
-                'Enter the load details or sign in to unlock OCR auto-fill from screenshots.' :
-                'Enter the load details to get instant profit guidance and decision support.'}
-              </p>
+                Enter the load details to get instant profit guidance. Sign in to unlock OCR auto-fill from screenshots.
+              
+            </p>
               {showAutoFillBadge &&
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   ✨ Auto-filled from image
@@ -545,7 +544,7 @@ function MainApp() {
 
 
                 {/* Rate confirmation assist - OCR */}
-                {isOCRVisible &&
+                {features.ocrEnabled &&
                 <div className="rounded-xl border border-border bg-background p-4">
                     <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
                     <p className="mt-1 text-xs text-muted-foreground">
