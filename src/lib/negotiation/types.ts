@@ -31,6 +31,10 @@ export interface LoadFields {
 
 export interface CalcResult {
   baseRpm: number;
+  effectiveRpm: number;
+  loadedMiles: number;
+  deadheadMiles: number;
+  effectiveMiles: number;
   surcharges: {
     tarp: number;
     heavyPerMile: number;

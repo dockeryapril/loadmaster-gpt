@@ -176,7 +176,7 @@ serve(async (req) => {
             content: [
               { 
                 type: 'text', 
-                text: 'Extract load details from this rate confirmation or load board screenshot. Look for origin city/state, destination city/state, total miles, linehaul rate (base pay), FSC (fuel surcharge), tolls, and weight in pounds. Return structured data with confidence score.' 
+                text: 'Extract load details from this rate confirmation or load board screenshot. Look for origin city/state, destination city/state, loaded miles, deadhead miles (if explicitly shown), linehaul rate (base pay), FSC (fuel surcharge), tolls, and weight in pounds. Return structured data with confidence score. If deadhead is not explicitly shown, omit it.' 
               },
               { 
                 type: 'image_url', 
@@ -204,6 +204,10 @@ serve(async (req) => {
                 miles: { 
                   type: 'string', 
                   description: 'Total miles as string (will be parsed to number)' 
+                },
+                deadheadMiles: {
+                  type: 'string',
+                  description: 'Deadhead miles as string when explicitly provided (e.g., "80")'
                 },
                 rate: { 
                   type: 'string', 
