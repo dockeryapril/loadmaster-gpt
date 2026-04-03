@@ -1,63 +1,40 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  MessageSquare,
-  InfoIcon,
-  Truck,
-  LogOut,
-  User as UserIcon,
-  Activity,
-} from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import { Analytics } from "@vercel/analytics/react";
-import { calculateDetailedProfit } from "@/types/load";
-import { OCRDropzone } from "@/components/OCRDropzone";
-import {
-  decisionLabels,
-  useDecisionStore,
-  useCostProfile,
-} from "@/store/useDecisionStore";
+import React, { useState, useEffect, useMemo } from 'react';
+import { MessageSquare, InfoIcon, Truck, LogOut, User as UserIcon, Activity } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { Analytics } from '@vercel/analytics/react';
+import { calculateDetailedProfit } from '@/types/load';
+import { OCRDropzone } from '@/components/OCRDropzone';
+import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDecisionStore';
 import {
   trackCalculationSubmitted,
   trackDecisionLogged,
-  trackSessionStart,
-} from "@/utils/analytics";
-import { CostProfileEditor } from "@/components/CostProfileEditor";
-import { ProfitBreakdown } from "@/components/ProfitBreakdown";
-import { GuidanceBadge } from "@/components/GuidanceBadge";
-import { HistoryPanel } from "@/components/HistoryPanel";
-import { PatternInsights } from "@/components/PatternInsights";
-import { SimilarLoadIndicator } from "@/components/SimilarLoadIndicator";
+  trackSessionStart } from
+'@/utils/analytics';
+import { CostProfileEditor } from '@/components/CostProfileEditor';
+import { ProfitBreakdown } from '@/components/ProfitBreakdown';
+import { GuidanceBadge } from '@/components/GuidanceBadge';
+import { HistoryPanel } from '@/components/HistoryPanel';
+import { PatternInsights } from '@/components/PatternInsights';
+import { SimilarLoadIndicator } from '@/components/SimilarLoadIndicator';
 // import { WelcomeCard } from '@/components/onboarding/WelcomeCard';
 // import { OptionalTour } from '@/components/onboarding/OptionalTour';
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { SyncStatus } from "@/components/SyncStatus";
-import { useCloudSync } from "@/hooks/useCloudSync";
-import { useNegotiationEngine } from "@/hooks/useNegotiationEngine";
-import { NegotiationMessageSheet } from "@/components/NegotiationMessageSheet";
-import { features } from "@/utils/featureFlags";
-import { toast } from "@/components/ui/use-toast";
-import Auth from "@/pages/Auth";
-import AdminAnalytics from "@/pages/AdminAnalytics";
-import type { DecisionOutcome, LoadFormInput, Equipment } from "@/types/mvp";
-import { emptyLoadForm } from "@/types/mvp";
-import { Toaster } from "@/components/ui/toaster";
-import { Switch } from "@/components/ui/switch";
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { SyncStatus } from '@/components/SyncStatus';
+import { useCloudSync } from '@/hooks/useCloudSync';
+import { useNegotiationEngine } from '@/hooks/useNegotiationEngine';
+import { NegotiationMessageSheet } from '@/components/NegotiationMessageSheet';
+import { features } from '@/utils/featureFlags';
+import { toast } from '@/components/ui/use-toast';
+import Auth from '@/pages/Auth';
+import AdminAnalytics from '@/pages/AdminAnalytics';
+import type { DecisionOutcome, LoadFormInput, Equipment } from '@/types/mvp';
+import { emptyLoadForm } from '@/types/mvp';
+import { Toaster } from '@/components/ui/toaster';
+import { Switch } from '@/components/ui/switch';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -467,31 +444,30 @@ function MainApp() {
               href="https://public.tableau.com/views/WeeklyNationalRPMbyDivisionFinal/1_MapRPMbyModeandEquipNEWDash2"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              📊 Market Rates
-            </a>
-            {isAuthUIEnabled && (
+              className="hidden sm:flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+              
+                📊 Market Rates
+              </a>
+              {isAuthUIEnabled &&
               <>
-                <SyncStatus
-                  isSynced={isSynced}
-                  isSyncing={isSyncing}
-                  isAuthenticated={!!user}
-                />
+                  <SyncStatus
+                isSynced={isSynced}
+                isSyncing={isSyncing}
+                isAuthenticated={!!user} />
+              
+                  {user ?
+                <UserMenu user={user} /> :
 
-                {user ? (
-                  <UserMenu user={user} />
-                ) : (
-                  <a
-                    href="/auth"
-                    className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    Sign In
-                  </a>
-                )}
-              </>
-            )}
-          </div>
+                <a
+                  href="/auth"
+                  className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+                  
+                      Sign In
+                    </a>
+                }
+                </>
+              }
+            </div>
         </div>
       </header>
 
@@ -501,23 +477,21 @@ function MainApp() {
           {/* <WelcomeCard /> */}
 
           <header className="space-y-1">
-            <p className="text-sm font-medium uppercase tracking-wide text-primary">
-              True RPM Calculator
-            </p>
-            <h2 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
-              Run the numbers before you run the miles
-            </h2>
-            <p className="text-sm text-muted-foreground md:text-base">
-              {isOCRVisible
-                ? "Enter the load details or sign in to unlock OCR auto-fill from screenshots."
-                : "Enter the load details to get instant profit guidance and decision support."}
-            </p>
-            {showAutoFillBadge && (
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                ✨ Auto-filled from image
-              </div>
-            )}
-          </header>
+              <p className="text-sm font-medium uppercase tracking-wide text-primary">True RPM Calculator</p>
+              <h2 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">
+                Run the numbers before you run the miles
+              </h2>
+              <p className="text-sm text-muted-foreground md:text-base">
+                {isOCRVisible ?
+                'Enter the load details or sign in to unlock OCR auto-fill from screenshots.' :
+                'Enter the load details to get instant profit guidance and decision support.'}
+              </p>
+              {showAutoFillBadge &&
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  ✨ Auto-filled from image
+                </div>
+            }
+            </header>
 
           <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
             {/* Revenue Split Toggle */}
@@ -626,38 +600,34 @@ function MainApp() {
                 </TooltipProvider>
 
                 {/* Rate confirmation assist - OCR */}
-                {isOCRVisible && (
-                  <div
-                    className={`rounded-xl border p-4 ${user ? "border-border bg-background" : "border-dashed border-primary/40 bg-primary/5"}`}
-                  >
+                {isOCRVisible &&
+                <div className={`rounded-xl border p-4 ${user ? 'border-border bg-background' : 'border-dashed border-primary/40 bg-primary/5'}`}>
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold">
-                        Rate confirmation assist
-                      </h4>
-                      {!user && (
-                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                      <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
+                      {!user &&
+                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                           Sign-in required
                         </span>
-                      )}
+                    }
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {user
-                        ? "Drop a clear screenshot to auto-fill the fields."
-                        : "Sign in to use OCR auto-fill."}
+                      {user ?
+                    'Drop a clear screenshot to auto-fill the fields.' :
+                    'Sign in to use OCR auto-fill.'}
                     </p>
                     <div className="mt-4">
                       <OCRDropzone onParse={applyOcr} disabled={!user} />
                     </div>
-                    {!user && (
-                      <Link
-                        to="/auth"
-                        className="mt-3 inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary hover:bg-primary/10"
-                      >
+                    {!user &&
+                  <Link
+                    to="/auth"
+                    className="mt-3 inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary hover:bg-primary/10">
+                    
                         Sign in to use OCR
                       </Link>
-                    )}
+                  }
                   </div>
-                )}
+                }
 
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
@@ -1065,6 +1035,6 @@ export default function App() {
         <Toaster />
         <Analytics />
       </AuthProvider>
-    </BrowserRouter>
-  );
+    </BrowserRouter>);
+
 }

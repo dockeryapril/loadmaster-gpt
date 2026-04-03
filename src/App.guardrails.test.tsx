@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
-import App from "./App";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import App from './App';
 
 const mockFeatures = vi.hoisted(() => ({
   ocrEnabled: true,
@@ -32,40 +32,37 @@ const storeState = vi.hoisted(() => ({
     fairRpm: 0.7,
     goodProfit: 900,
     fairProfit: 450,
-    fuelType: "diesel" as const,
+    fuelType: 'diesel' as const,
   },
 }));
 
-vi.mock("@/utils/featureFlags", () => ({
+vi.mock('@/utils/featureFlags', () => ({
   features: mockFeatures,
   isFeatureEnabled: (flag: keyof typeof mockFeatures) => mockFeatures[flag],
 }));
 
-vi.mock("@/hooks/useAuth", () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+vi.mock('@/hooks/useAuth', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useAuth: () => ({
     user: mockAuthState.user,
     signOut: vi.fn(),
   }),
 }));
 
-vi.mock("@/hooks/useCloudSync", () => ({
+vi.mock('@/hooks/useCloudSync', () => ({
   useCloudSync: () => ({
     isSyncing: false,
     syncToCloud: syncToCloudMock,
   }),
 }));
 
-vi.mock("@/store/useDecisionStore", () => ({
-  useDecisionStore: (selector: (state: typeof storeState) => unknown) =>
-    selector(storeState),
+vi.mock('@/store/useDecisionStore', () => ({
+  useDecisionStore: (selector: (state: typeof storeState) => unknown) => selector(storeState),
   useCostProfile: () => ({ costProfile: storeState.costProfile }),
-  decisionLabels: { book: "Book it", pass: "Pass", counter: "Counter offer" },
+  decisionLabels: { book: 'Book it', pass: 'Pass', counter: 'Counter offer' },
 }));
 
-vi.mock("@/types/load", () => ({
+vi.mock('@/types/load', () => ({
   calculateDetailedProfit: () => ({
     profit: 100,
     breakdown: {
@@ -83,57 +80,38 @@ vi.mock("@/types/load", () => ({
   }),
 }));
 
-vi.mock("@/utils/analytics", () => ({
+vi.mock('@/utils/analytics', () => ({
   trackCalculationSubmitted: vi.fn(),
   trackDecisionLogged: vi.fn(),
   trackSessionStart: vi.fn(),
 }));
 
-vi.mock("@/hooks/useNegotiationEngine", () => ({
-  useNegotiationEngine: () => ({
-    calculation: null,
-    templates: [],
-    isReady: false,
-  }),
+vi.mock('@/hooks/useNegotiationEngine', () => ({
+  useNegotiationEngine: () => ({ calculation: null, templates: [], isReady: false }),
 }));
 
-vi.mock("@/components/OCRDropzone", () => ({
+vi.mock('@/components/OCRDropzone', () => ({
   OCRDropzone: ({ disabled }: { disabled?: boolean }) => (
-    <div
-      data-testid="ocr-dropzone"
-      data-disabled={disabled ? "true" : "false"}
-    />
+    <div data-testid="ocr-dropzone" data-disabled={disabled ? 'true' : 'false'} />
   ),
 }));
 
-vi.mock("@/components/CostProfileEditor", () => ({
-  CostProfileEditor: () => <div />,
-}));
-vi.mock("@/components/ProfitBreakdown", () => ({
-  ProfitBreakdown: () => <div />,
-}));
-vi.mock("@/components/GuidanceBadge", () => ({ GuidanceBadge: () => <div /> }));
-vi.mock("@/components/HistoryPanel", () => ({ HistoryPanel: () => <div /> }));
-vi.mock("@/components/PatternInsights", () => ({
-  PatternInsights: () => <div />,
-}));
-vi.mock("@/components/SimilarLoadIndicator", () => ({
-  SimilarLoadIndicator: () => <div />,
-}));
-vi.mock("@/components/SyncStatus", () => ({ SyncStatus: () => <div /> }));
-vi.mock("@/components/NegotiationMessageSheet", () => ({
-  NegotiationMessageSheet: () => <div />,
-}));
-vi.mock("@/components/ui/toaster", () => ({ Toaster: () => <div /> }));
-vi.mock("@vercel/analytics/react", () => ({ Analytics: () => null }));
-vi.mock("@/pages/Auth", () => ({ default: () => <div>Auth Page</div> }));
-vi.mock("@/pages/AdminAnalytics", () => ({
-  default: () => <div>Admin Page</div>,
-}));
+vi.mock('@/components/CostProfileEditor', () => ({ CostProfileEditor: () => <div /> }));
+vi.mock('@/components/ProfitBreakdown', () => ({ ProfitBreakdown: () => <div /> }));
+vi.mock('@/components/GuidanceBadge', () => ({ GuidanceBadge: () => <div /> }));
+vi.mock('@/components/HistoryPanel', () => ({ HistoryPanel: () => <div /> }));
+vi.mock('@/components/PatternInsights', () => ({ PatternInsights: () => <div /> }));
+vi.mock('@/components/SimilarLoadIndicator', () => ({ SimilarLoadIndicator: () => <div /> }));
+vi.mock('@/components/SyncStatus', () => ({ SyncStatus: () => <div /> }));
+vi.mock('@/components/NegotiationMessageSheet', () => ({ NegotiationMessageSheet: () => <div /> }));
+vi.mock('@/components/ui/toaster', () => ({ Toaster: () => <div /> }));
+vi.mock('@vercel/analytics/react', () => ({ Analytics: () => null }));
+vi.mock('@/pages/Auth', () => ({ default: () => <div>Auth Page</div> }));
+vi.mock('@/pages/AdminAnalytics', () => ({ default: () => <div>Admin Page</div> }));
 
-describe("App guardrails", () => {
+describe('App guardrails', () => {
   beforeEach(() => {
-    window.history.pushState({}, "", "/");
+    window.history.pushState({}, '', '/');
     mockFeatures.ocrEnabled = true;
     mockFeatures.authEnabled = false;
     mockFeatures.supabaseSync = false;
@@ -143,17 +121,17 @@ describe("App guardrails", () => {
     syncToCloudMock.mockClear();
   });
 
-  it("hides OCR entry point when ocrEnabled is false", () => {
+  it('hides OCR entry point when ocrEnabled is false', () => {
     mockFeatures.ocrEnabled = false;
     render(<App />);
 
-    expect(screen.queryByText("Rate confirmation assist")).toBeNull();
-    expect(screen.queryByTestId("ocr-dropzone")).toBeNull();
+    expect(screen.queryByText('Rate confirmation assist')).toBeNull();
+    expect(screen.queryByTestId('ocr-dropzone')).toBeNull();
   });
 
-  it("does not invoke load/sync side effects when supabaseSync is false", async () => {
-    mockAuthState.user = { id: "user-1", email: "driver@example.com" };
-    storeState.history = [{ id: "1" }];
+  it('does not invoke load/sync side effects when supabaseSync is false', async () => {
+    mockAuthState.user = { id: 'user-1', email: 'driver@example.com' };
+    storeState.history = [{ id: '1' }];
     mockFeatures.supabaseSync = false;
 
     render(<App />);
@@ -164,19 +142,15 @@ describe("App guardrails", () => {
     });
   });
 
-  it("shows sign-in-required OCR copy and disabled dropzone when unauthenticated", () => {
+  it('shows sign-in-required OCR copy and disabled dropzone when unauthenticated', () => {
     mockFeatures.ocrEnabled = true;
     mockAuthState.user = null;
 
     render(<App />);
 
-    expect(screen.getByText("Sign-in required")).toBeDefined();
-    expect(screen.getByText("Sign in to use OCR auto-fill.")).toBeDefined();
-    expect(
-      screen.getByRole("link", { name: "Sign in to use OCR" }),
-    ).toBeDefined();
-    expect(
-      screen.getByTestId("ocr-dropzone").getAttribute("data-disabled"),
-    ).toBe("true");
+    expect(screen.getByText('Sign-in required')).toBeDefined();
+    expect(screen.getByText('Sign in to use OCR auto-fill.')).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Sign in to use OCR' })).toBeDefined();
+    expect(screen.getByTestId('ocr-dropzone').getAttribute('data-disabled')).toBe('true');
   });
 });

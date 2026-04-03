@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useAuth } from "./useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { LoadEntrySnapshot } from "@/types/mvp";
+import { useState } from 'react';
+import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { LoadEntrySnapshot } from '@/types/mvp';
 
 export function useCloudSync() {
   const { user } = useAuth();
