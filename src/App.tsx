@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MessageSquare, InfoIcon, Truck, LogOut, User as UserIcon, Activity } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,10 +12,7 @@ import { decisionLabels, useDecisionStore, useCostProfile } from '@/store/useDec
 import {
   trackCalculationSubmitted,
   trackDecisionLogged,
-  trackFeedbackClicked,
-  trackSessionStart,
-  trackFuelTypeChanged,
-  trackScreenshotUploaded } from
+  trackSessionStart } from
 '@/utils/analytics';
 import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
@@ -34,11 +31,9 @@ import { features } from '@/utils/featureFlags';
 import { toast } from '@/components/ui/use-toast';
 import Auth from '@/pages/Auth';
 import AdminAnalytics from '@/pages/AdminAnalytics';
-import type { DecisionOutcome, LoadFormInput, Equipment, FuelType } from '@/types/mvp';
+import type { DecisionOutcome, LoadFormInput, Equipment } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
-import { AffiliatePanel } from '@/components/AffiliatePanel';
-import type { AffiliateContext } from '@/types/affiliate';
 import { Switch } from '@/components/ui/switch';
 
 const numberOrZero = (value: string) => {
@@ -172,6 +167,8 @@ function MainApp() {
   const { isSyncing, syncToCloud } = useCloudSync();
   const [isSynced, setIsSynced] = useState(false);
   const [negotiationSheetOpen, setNegotiationSheetOpen] = useState(false);
+  const isAuthUIEnabled = features.authEnabled;
+  const isOCRVisible = features.ocrEnabled && features.authEnabled;
 
   // Track session start on mount
   useEffect(() => {
@@ -281,22 +278,19 @@ function MainApp() {
 
   // Load decisions from cloud when user signs in
   useEffect(() => {
-    if (user) {
+    if (features.supabaseSync && user) {
       loadFromCloud();
     }
   }, [user, loadFromCloud]);
 
   // Sync to cloud when decisions change (if authenticated)
   useEffect(() => {
-    if (user && history.length > 0) {
+    if (features.supabaseSync && user && history.length > 0) {
       syncToCloud(history).then(() => setIsSynced(true));
     }
   }, [history, user, syncToCloud]);
 
   const applyOcr = (data: Partial<LoadFormInput>) => {
-    // Track the screenshot upload
-    trackScreenshotUploaded();
-
     setForm((prev) => {
       const next = { ...prev };
       Object.entries(data).forEach(([key, value]) => {
@@ -417,21 +411,25 @@ function MainApp() {
               
                 📊 Market Rates
               </a>
-              <SyncStatus
-              isSynced={isSynced}
-              isSyncing={isSyncing}
-              isAuthenticated={!!user} />
-            
-              {user ?
-            <UserMenu user={user} /> :
-
-            <a
-              href="/auth"
-              className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+              {isAuthUIEnabled &&
+              <>
+                  <SyncStatus
+                isSynced={isSynced}
+                isSyncing={isSyncing}
+                isAuthenticated={!!user} />
               
-                  Sign In
-                </a>
-            }
+                  {user ?
+                <UserMenu user={user} /> :
+
+                <a
+                  href="/auth"
+                  className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+                  
+                      Sign In
+                    </a>
+                }
+                </>
+              }
             </div>
         </div>
       </header>
@@ -447,9 +445,10 @@ function MainApp() {
                 Run the numbers before you run the miles
               </h2>
               <p className="text-sm text-muted-foreground md:text-base">
-                Drop a screenshot or enter the load details. We will pre-fill the form, show instant profit, and let you log your decision for future reference.
-              
-            </p>
+                {isOCRVisible ?
+                'Enter the load details or sign in to unlock OCR auto-fill from screenshots.' :
+                'Enter the load details to get instant profit guidance and decision support.'}
+              </p>
               {showAutoFillBadge &&
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   ✨ Auto-filled from image
@@ -546,15 +545,27 @@ function MainApp() {
 
 
                 {/* Rate confirmation assist - OCR */}
+                {isOCRVisible &&
                 <div className="rounded-xl border border-border bg-background p-4">
-                  <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    OCR is optional. Drop a clear screenshot to auto-fill the fields.
-                  </p>
-                  <div className="mt-4">
-                    <OCRDropzone onParse={applyOcr} />
+                    <h4 className="text-sm font-semibold">Rate confirmation assist</h4>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {user ?
+                    'Drop a clear screenshot to auto-fill the fields.' :
+                    'Sign in to use OCR auto-fill from screenshots.'}
+                    </p>
+                    <div className="mt-4">
+                      <OCRDropzone onParse={applyOcr} disabled={!user} />
+                    </div>
+                    {!user &&
+                  <Link
+                    to="/auth"
+                    className="mt-3 inline-flex items-center rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary hover:bg-primary/10">
+                    
+                        Sign in to use OCR
+                      </Link>
+                  }
                   </div>
-                </div>
+                }
 
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
