@@ -44,13 +44,6 @@ export type Database = {
             referencedRelation: "affiliate_offers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "affiliate_clicks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_activity_summary"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       affiliate_offers: {
@@ -279,15 +272,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_activity_summary"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       lane_history: {
         Row: {
@@ -407,15 +392,7 @@ export type Database = {
           user_id?: string
           weight?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "loads_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_activity_summary"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       negotiation_settings: {
         Row: {
@@ -633,15 +610,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "subscribers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_activity_summary"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -665,15 +634,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_activity_summary"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_settings: {
         Row: {
@@ -760,61 +721,11 @@ export type Database = {
           weekly_fixed_costs?: number | null
           weight_limit?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "user_activity_summary"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
-      conversion_funnel: {
-        Row: {
-          calculation_rate: number | null
-          decision_rate: number | null
-          ocr_usage_rate: number | null
-          reached_calculation: number | null
-          reached_decision: number | null
-          session_date: string | null
-          total_sessions: number | null
-          used_ocr: number | null
-        }
-        Relationships: []
-      }
-      daily_analytics: {
-        Row: {
-          authenticated_users: number | null
-          calculations: number | null
-          cost_edits: number | null
-          date: string | null
-          decisions_logged: number | null
-          negotiations: number | null
-          ocr_uploads: number | null
-          sessions: number | null
-          unique_sessions: number | null
-        }
-        Relationships: []
-      }
-      user_activity_summary: {
-        Row: {
-          avg_profit: number | null
-          avg_rpm: number | null
-          email: string | null
-          first_event_date: string | null
-          first_load_date: string | null
-          last_event_date: string | null
-          last_load_date: string | null
-          role: Database["public"]["Enums"]["app_role"] | null
-          total_loads: number | null
-          total_sessions: number | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_conversion_funnel: {
