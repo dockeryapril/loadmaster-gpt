@@ -134,8 +134,20 @@ serve(async (req) => {
 
     const { prompt, systemMessage, imageBase64 } = await req.json();
 
-    if (!prompt) {
-      throw new Error('Prompt is required');
+    if (!prompt || typeof prompt !== 'string') {
+      return new Response(JSON.stringify({ error: 'validation_error', message: 'Prompt must be a non-empty string' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (prompt.length > 10000) {
+      return new Response(JSON.stringify({ error: 'validation_error', message: 'Prompt exceeds 10,000 character limit' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (systemMessage && typeof systemMessage === 'string' && systemMessage.length > 5000) {
+      return new Response(JSON.stringify({ error: 'validation_error', message: 'System message exceeds 5,000 character limit' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Processing OpenAI request with prompt length:', prompt.length);
