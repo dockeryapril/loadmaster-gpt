@@ -31,7 +31,7 @@ import { features } from '@/utils/featureFlags';
 import { toast } from '@/components/ui/use-toast';
 import Auth from '@/pages/Auth';
 import AdminAnalytics from '@/pages/AdminAnalytics';
-import type { DecisionOutcome, LoadFormInput, Equipment } from '@/types/mvp';
+import type { DecisionOutcome, LoadFormInput, Equipment, CounterResult } from '@/types/mvp';
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
@@ -174,6 +174,10 @@ function MainApp() {
   const { isSyncing, syncToCloud } = useCloudSync();
   const [isSynced, setIsSynced] = useState(false);
   const [negotiationSheetOpen, setNegotiationSheetOpen] = useState(false);
+  const [negotiationOutcome, setNegotiationOutcome] = useState<{
+    counterResult?: CounterResult;
+    finalRate?: number;
+  }>({});
   const isAuthUIEnabled = features.authEnabled;
   const isOCRVisible = features.ocrEnabled;
 
@@ -376,6 +380,31 @@ function MainApp() {
       });
     }
 
+    const hasAcceptedCounter =
+      outcome === "counter" &&
+      negotiationOutcome.counterResult === "accepted" &&
+      typeof negotiationOutcome.finalRate === "number";
+
+    const effectiveRate = hasAcceptedCounter ? negotiationOutcome.finalRate : rate;
+    const effectiveCalculation =
+      effectiveRate !== rate
+        ? calculateDetailedProfit(
+            effectiveRate,
+            rawFsc,
+            rawTolls,
+            miles,
+            costProfile,
+            useSplit ? splitPercent : 100,
+            { includeFsc, includeTolls, includeFuel },
+            deadheadMiles,
+          )
+        : detailedCalculation;
+    const effectiveShareRpm =
+      effectiveCalculation.breakdown.loadedMiles > 0
+        ? effectiveCalculation.breakdown.yourShare /
+          effectiveCalculation.breakdown.loadedMiles
+        : 0;
+
     addDecision({
       outcome,
       origin: form.origin.trim(),
@@ -383,23 +412,28 @@ function MainApp() {
       miles,
       deadheadMiles: deadheadMiles > 0 ? deadheadMiles : undefined,
       rate,
-      fsc: detailedCalculation.adjustments.appliedFsc,
-      tolls: detailedCalculation.adjustments.appliedTolls,
-      fuelCost: detailedCalculation.breakdown.fuelCost,
-      profit,
-      rpm: trueRpm, // Use true RPM for decisions
+      fsc: effectiveCalculation.adjustments.appliedFsc,
+      tolls: effectiveCalculation.adjustments.appliedTolls,
+      fuelCost: effectiveCalculation.breakdown.fuelCost,
+      profit: effectiveCalculation.profit,
+      rpm: effectiveCalculation.breakdown.trueRpm, // Use true RPM for decisions
       notes: form.notes.trim() || undefined,
       splitPercent: useSplit ? splitPercent : undefined,
       fuelType: costProfile.fuelType,
+      counterResult: outcome === "counter" ? negotiationOutcome.counterResult : undefined,
+      finalRate:
+        outcome === "counter" && negotiationOutcome.counterResult === "accepted"
+          ? negotiationOutcome.finalRate
+          : undefined,
     });
 
     // Track calculation submitted and decision logged
     trackCalculationSubmitted({
       miles,
-      rate,
-      profit,
-      netRPM: trueRpm, // Use true RPM for analytics
-      shareRPM: yourShareRpm,
+      rate: effectiveRate,
+      profit: effectiveCalculation.profit,
+      netRPM: effectiveCalculation.breakdown.trueRpm, // Use true RPM for analytics
+      shareRPM: effectiveShareRpm,
     });
     trackDecisionLogged(outcome);
 
@@ -409,7 +443,22 @@ function MainApp() {
       equipment: form.equipment, // Keep equipment selection
     });
     setOutcome("book");
+    setNegotiationOutcome({});
     setTouched({});
+  };
+
+  const handleApplyNegotiationOutcome = ({
+    counterResult,
+    finalRate,
+  }: {
+    counterResult: CounterResult;
+    finalRate?: number;
+  }) => {
+    setNegotiationOutcome({ counterResult, finalRate });
+
+    if (counterResult === "accepted" && typeof finalRate === "number") {
+      setOutcome("counter");
+    }
   };
 
   return (
@@ -1019,6 +1068,7 @@ function MainApp() {
           onOpenChange={setNegotiationSheetOpen}
           calculation={negotiation.calculation}
           templates={negotiation.templates}
+          onApplyOutcome={handleApplyNegotiationOutcome}
         />
       )}
 

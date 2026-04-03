@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Settings, Info } from 'lucide-react';
+import { Settings, Info, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { useCostProfile } from '@/store/useDecisionStore';
+import { useCostProfile, useDecisionStore } from '@/store/useDecisionStore';
 import { defaultCostAssumptions } from '@/types/mvp';
 import type { CostAssumptions, Equipment, FuelType } from '@/types/mvp';
 import { toast } from '@/components/ui/use-toast';
@@ -20,6 +20,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { trackCostAssumptionsEdited, trackPresetToggled, trackCostEditorFirstOpen, trackFuelTypeChanged } from '@/utils/analytics';
 import { getPresetValues } from '@/config/vehicleDefaults';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
+import { computeThresholdRecommendation } from '@/utils/thresholdRecommendations';
 
 type EditingCostProfile = {
   fuelPricePerGallon: string;
@@ -54,6 +55,7 @@ const formatProfileForEditing = (profile: CostAssumptions): EditingCostProfile =
 
 export function CostProfileEditor({ currentEquipment = 'hotshot', onPresetApplied }: CostProfileEditorProps = {}) {
   const { costProfile, updateCostProfile } = useCostProfile();
+  const history = useDecisionStore((state) => state.history);
   const mergedCostProfile = useMemo(
     () => ({
       ...defaultCostAssumptions,
@@ -65,8 +67,14 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', onPresetApplie
     formatProfileForEditing(mergedCostProfile),
   );
   const [open, setOpen] = useState(false);
+  const [dismissedSuggestion, setDismissedSuggestion] = useState(false);
   const hasOpenedCostEditor = useOnboardingStore((state) => state.hasOpenedCostEditor);
   const markCostEditorOpened = useOnboardingStore((state) => state.markCostEditorOpened);
+
+  const thresholdSuggestion = useMemo(
+    () => computeThresholdRecommendation(history, mergedCostProfile),
+    [history, mergedCostProfile],
+  );
 
   // Track when cost profile editor opens
   useEffect(() => {
@@ -91,6 +99,17 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', onPresetApplie
       setEditingValues(formatProfileForEditing(mergedCostProfile));
     }
   }, [mergedCostProfile, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const dismissedUntilRaw = localStorage.getItem('lm:thresholdSuggestionDismissedUntil');
+    if (!dismissedUntilRaw) {
+      setDismissedSuggestion(false);
+      return;
+    }
+    const dismissedUntil = Number(dismissedUntilRaw);
+    setDismissedSuggestion(Number.isFinite(dismissedUntil) && dismissedUntil > Date.now());
+  }, [open]);
 
   // Apply presets when toggle is enabled and equipment/fuel changes
   useEffect(() => {
@@ -195,6 +214,27 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', onPresetApplie
         </ToastAction>
       ),
     });
+  };
+
+  const handleApplySuggestedThresholds = () => {
+    if (!thresholdSuggestion) return;
+    const { recommended } = thresholdSuggestion;
+    setEditingValues((prev) => ({
+      ...prev,
+      goodRpm: recommended.goodRpm.toFixed(2),
+      fairRpm: recommended.fairRpm.toFixed(2),
+      goodProfit: String(recommended.goodProfit),
+      fairProfit: String(recommended.fairProfit),
+    }));
+    toast({
+      description: 'Suggested thresholds applied. Save changes to persist.',
+    });
+  };
+
+  const handleDismissSuggestion = () => {
+    const dismissedUntil = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    localStorage.setItem('lm:thresholdSuggestionDismissedUntil', String(dismissedUntil));
+    setDismissedSuggestion(true);
   };
 
   return (
@@ -374,6 +414,36 @@ export function CostProfileEditor({ currentEquipment = 'hotshot', onPresetApplie
               <p className="text-xs text-muted-foreground mb-4">
                 These thresholds determine when to book, counter, or pass on a load based on Net RPM and profit
               </p>
+
+              {thresholdSuggestion && !dismissedSuggestion && (
+                <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-start gap-2">
+                    <Sparkles className="mt-0.5 h-4 w-4 text-primary" />
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-foreground">
+                        Suggested threshold update ({thresholdSuggestion.confidence} confidence)
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Based on {thresholdSuggestion.sampleSize} recent loads, we can tune your thresholds automatically.
+                      </p>
+                      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <p>Good RPM: ${thresholdSuggestion.recommended.goodRpm.toFixed(2)}/mi</p>
+                        <p>Fair RPM: ${thresholdSuggestion.recommended.fairRpm.toFixed(2)}/mi</p>
+                        <p>Good Profit: ${thresholdSuggestion.recommended.goodProfit}</p>
+                        <p>Fair Profit: ${thresholdSuggestion.recommended.fairProfit}</p>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <Button type="button" size="sm" onClick={handleApplySuggestedThresholds}>
+                          Apply suggested values
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={handleDismissSuggestion}>
+                          Dismiss 30 days
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <div className="space-y-2">

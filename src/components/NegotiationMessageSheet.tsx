@@ -11,8 +11,10 @@ import {
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import type { CalcResult } from '@/lib/negotiation/types';
+import type { CounterResult } from '@/types/mvp';
 import { trackNegotiationOpened } from '@/utils/analytics';
 
 interface NegotiationMessageSheetProps {
@@ -20,6 +22,7 @@ interface NegotiationMessageSheetProps {
   onOpenChange: (open: boolean) => void;
   calculation: CalcResult;
   templates: Array<{ label: string; message: string }>;
+  onApplyOutcome: (payload: { counterResult: CounterResult; finalRate?: number }) => void;
 }
 
 export function NegotiationMessageSheet({
@@ -27,8 +30,10 @@ export function NegotiationMessageSheet({
   onOpenChange,
   calculation,
   templates,
+  onApplyOutcome,
 }: NegotiationMessageSheetProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [customRate, setCustomRate] = useState('');
 
   // Track when negotiation sheet is opened
   useEffect(() => {
@@ -55,6 +60,30 @@ export function NegotiationMessageSheet({
   };
 
   const { anchor, target, floor } = calculation.negotiation;
+
+  const applyAcceptedRate = (value: number) => {
+    onApplyOutcome({ counterResult: 'accepted', finalRate: value });
+    toast.success(`Negotiation outcome applied at ${formatCurrency(value)}`);
+  };
+
+  const applyDeclined = () => {
+    onApplyOutcome({ counterResult: 'declined' });
+    toast.success('Marked as declined. Outcome remains manual.');
+  };
+
+  const applyPending = () => {
+    onApplyOutcome({ counterResult: 'pending' });
+    toast.success('Marked as pending.');
+  };
+
+  const applyCustom = () => {
+    const parsed = parseFloat(customRate);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      toast.error('Enter a valid custom rate first.');
+      return;
+    }
+    applyAcceptedRate(parsed);
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -122,6 +151,45 @@ export function NegotiationMessageSheet({
                 </div>
               </Card>
             </div>
+          </div>
+
+          {/* Call Outcome Capture */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Call Outcome
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Quickly confirm what rate you got while on the phone.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="secondary" onClick={() => applyAcceptedRate(anchor)}>
+                Got Ask Rate
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => applyAcceptedRate(target)}>
+                Got Target Rate
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => applyAcceptedRate(floor)}>
+                Got Floor Rate
+              </Button>
+              <Button type="button" variant="outline" onClick={applyDeclined}>
+                Declined
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="Custom agreed rate"
+                value={customRate}
+                onChange={(e) => setCustomRate(e.target.value)}
+              />
+              <Button type="button" onClick={applyCustom}>
+                Apply Custom
+              </Button>
+            </div>
+            <Button type="button" variant="ghost" className="w-full" onClick={applyPending}>
+              Mark as Pending
+            </Button>
           </div>
 
           {/* Message Templates */}
