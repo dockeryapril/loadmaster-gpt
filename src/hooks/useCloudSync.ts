@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadEntrySnapshot } from '@/types/mvp';
-import { useToast } from './use-toast';
 
 export function useCloudSync() {
   const { user } = useAuth();
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
-  const { toast } = useToast();
 
   // Sync local decisions to cloud (with rate limiting)
   const syncToCloud = async (decisions: LoadEntrySnapshot[]) => {
