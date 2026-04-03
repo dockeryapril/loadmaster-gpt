@@ -48,8 +48,9 @@ describe('PatternInsights', () => {
 
     useDecisionStore.setState({ history });
     
-    const { container } = render(<PatternInsights />);
-    expect(container.firstChild).toBeNull();
+    const { getByText } = render(<PatternInsights />);
+    expect(getByText('Need more data')).toBeDefined();
+    expect(getByText(/Log 3 more loads to see your performance patterns/)).toBeDefined();
   });
 
   it('should render insights when 5+ decisions', () => {

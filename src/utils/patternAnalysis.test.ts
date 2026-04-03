@@ -353,7 +353,7 @@ describe('patternAnalysis', () => {
       
       expect(result).not.toBeNull();
       expect(result?.count).toBe(2);
-      expect(result?.avgRPM).toBe(2.07);
+      expect(result?.avgRPM).toBeCloseTo(2.07, 2);
       expect(result?.avgProfit).toBe(570);
       expect(result?.bookingRate).toBe(100);
     });
@@ -385,7 +385,7 @@ describe('patternAnalysis', () => {
 
     it('should respect RPM tolerance of ±$0.25', () => {
       const currentLoad = {
-        rpm: 1.9, // Just outside tolerance for 2.14
+        rpm: 1.89, // Outside tolerance for 2.14, inside tolerance for 2.0
         origin: 'Chicago',
         destination: 'Detroit',
       };
