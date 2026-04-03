@@ -96,7 +96,16 @@ export function HistoryPanel() {
         ) : (
           <>
             {displayed.map((entry) => (
-              <div key={entry.id} className="rounded-xl border border-border bg-background p-4 shadow-sm">
+              <div key={entry.id} className={`rounded-xl border p-4 shadow-sm ${
+                (() => {
+                  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                  const isRecent = new Date(entry.createdAt).getTime() > sevenDaysAgo;
+                  const isBooked = entry.outcome === 'book';
+                  return isRecent && isBooked
+                    ? 'border-emerald-500/40 bg-emerald-500/5 ring-1 ring-emerald-500/20'
+                    : 'border-border bg-background';
+                })()
+              }`}>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <div className="font-semibold text-foreground">
                     {entry.origin} → {entry.destination}
