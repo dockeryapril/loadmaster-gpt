@@ -1,14 +1,12 @@
-import { useState } from 'react';
-import { useAuth } from './useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { LoadEntrySnapshot } from '@/types/mvp';
-import { useToast } from './use-toast';
+import { useState } from "react";
+import { useAuth } from "./useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadEntrySnapshot } from "@/types/mvp";
 
 export function useCloudSync() {
   const { user } = useAuth();
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
-  const { toast } = useToast();
 
   // Sync local decisions to cloud (with rate limiting)
   const syncToCloud = async (decisions: LoadEntrySnapshot[]) => {
@@ -16,7 +14,7 @@ export function useCloudSync() {
 
     // Rate limit: Only sync once per minute
     const now = Date.now();
-    const lastSync = sessionStorage.getItem('last_sync_time');
+    const lastSync = sessionStorage.getItem("last_sync_time");
     if (lastSync && now - parseInt(lastSync) < 60000) {
       return; // Skip sync if less than 1 minute since last sync
     }
@@ -25,8 +23,8 @@ export function useCloudSync() {
     try {
       // Only sync the last 50 decisions to reduce egress
       const recentDecisions = decisions.slice(-50);
-      
-      const loads = recentDecisions.map(decision => ({
+
+      const loads = recentDecisions.map((decision) => ({
         id: decision.id,
         user_id: user.id,
         origin: decision.origin,
@@ -39,7 +37,7 @@ export function useCloudSync() {
         fuel_cost: decision.fuelCost,
         rpm: decision.rpm,
         profit: decision.profit,
-        quality: 'good' as const,
+        quality: "good" as const,
         notes: decision.notes,
         outcome: decision.outcome,
         counter_result: decision.counterResult,
@@ -48,21 +46,20 @@ export function useCloudSync() {
       }));
 
       const { error } = await supabase
-        .from('loads')
-        .upsert(loads, { onConflict: 'id' });
+        .from("loads")
+        .upsert(loads, { onConflict: "id" });
 
       if (error) throw error;
 
-      sessionStorage.setItem('last_sync_time', now.toString());
+      sessionStorage.setItem("last_sync_time", now.toString());
       setLastSyncedAt(new Date());
     } catch (error) {
-      console.error('Sync failed:', error);
+      console.error("Sync failed:", error);
       // Silently fail - sync is optional and data is saved locally
     } finally {
       setIsSyncing(false);
     }
   };
-
 
   return {
     isSyncing,

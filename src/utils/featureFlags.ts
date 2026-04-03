@@ -7,10 +7,10 @@ export const features = {
   ocrEnabled: true,
   authEnabled: false,
   supabaseSync: false,
-  
+
   // Phase 6: Template negotiation enabled
   advancedNegotiation: true,
-  
+
   // Future phases (deferred)
   stripeIntegration: false,
   aiEnhancement: false,
