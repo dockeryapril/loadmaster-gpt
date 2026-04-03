@@ -916,3 +916,25 @@ Only after core loop is validated:
 
 ### What's Next
 → If you prefer a different background or stroke weight, tell me the exact spec and I’ll update the assets.
+
+---
+
+## ✅ Security Hardening — COMPLETED
+
+**Completed**: 2026-04-03
+
+### What Was Completed
+- ✅ Fixed build errors in edge functions (TypeScript type errors)
+- ✅ Added input validation to openai-chat (prompt 10K, systemMessage 5K char limits)
+- ✅ Removed subscriber self-upgrade vulnerability (dropped permissive UPDATE RLS policy)
+- ✅ Secured analytics views with security_invoker = true
+- ✅ Ignored false-positive always-true INSERT policies (intentional public access)
+
+### How to Test
+1. Deploy edge functions and send a prompt > 10,000 chars — should get HTTP 400
+2. As a non-admin, query user_activity_summary directly — should return empty
+3. As a user, try updating subscribers table — should fail with RLS error
+
+### What's Next
+→ Enable leaked password protection in Supabase dashboard
+→ Upgrade Postgres version in Supabase dashboard
