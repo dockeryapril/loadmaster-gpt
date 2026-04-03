@@ -1,10 +1,10 @@
-import { useCallback, useRef, useState } from 'react';
-import type { ChangeEvent, DragEvent } from 'react';
-import { FunctionsFetchError } from '@supabase/supabase-js';
-import type { LoadFormInput } from '@/types/mvp';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { trackScreenshotUploaded } from '@/utils/analytics';
+import { useCallback, useRef, useState } from "react";
+import type { ChangeEvent, DragEvent } from "react";
+import { FunctionsFetchError } from "@supabase/supabase-js";
+import type { LoadFormInput } from "@/types/mvp";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { trackScreenshotUploaded } from "@/utils/analytics";
 
 interface OCRDropzoneProps {
   onParse: (data: Partial<LoadFormInput>) => void;
@@ -29,7 +29,9 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [extractedData, setExtractedData] = useState<ExtractedData | null>(
+    null,
+  );
   const { toast } = useToast();
 
   const processImage = useCallback(
@@ -39,79 +41,97 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
 
       try {
         const formData = new FormData();
-        formData.append('file', file, file.name);
+        formData.append("file", file, file.name);
 
-        const { data, error } = await supabase.functions.invoke('extract-load-data', {
-          body: formData,
-        });
+        const { data, error } = await supabase.functions.invoke(
+          "extract-load-data",
+          {
+            body: formData,
+          },
+        );
 
         if (error) {
-          console.error('Edge function error:', error);
+          console.error("Edge function error:", error);
 
-          if (error instanceof FunctionsFetchError || error.message?.includes('Failed to send a request')) {
+          if (
+            error instanceof FunctionsFetchError ||
+            error.message?.includes("Failed to send a request")
+          ) {
             toast({
-              variant: 'destructive',
-              title: 'Connection issue',
-              description: 'We could not reach the OCR service. Check your connection or try a smaller image.',
+              variant: "destructive",
+              title: "Connection issue",
+              description:
+                "We could not reach the OCR service. Check your connection or try a smaller image.",
             });
             return;
           }
 
           // Handle specific error types
-          if (error.message?.includes('rate_limit') || error.message?.includes('429')) {
+          if (
+            error.message?.includes("rate_limit") ||
+            error.message?.includes("429")
+          ) {
             toast({
-              variant: 'destructive',
-              title: 'Too many requests',
-              description: 'Please wait a moment before trying again, or enter data manually.',
+              variant: "destructive",
+              title: "Too many requests",
+              description:
+                "Please wait a moment before trying again, or enter data manually.",
             });
             return;
           }
-          
-          if (error.message?.includes('payment_required') || error.message?.includes('402')) {
+
+          if (
+            error.message?.includes("payment_required") ||
+            error.message?.includes("402")
+          ) {
             toast({
-              variant: 'destructive',
-              title: 'AI credits depleted',
-              description: 'Manual entry is always available!',
+              variant: "destructive",
+              title: "AI credits depleted",
+              description: "Manual entry is always available!",
             });
             return;
           }
-          
-          throw new Error(error.message || 'OCR extraction failed');
+
+          throw new Error(error.message || "OCR extraction failed");
         }
 
         if (data?.error) {
-          console.error('Extraction error:', data.message);
+          console.error("Extraction error:", data.message);
           toast({
-            variant: 'destructive',
-            title: 'Could not extract data',
-            description: data.message || 'Try a clearer image or enter data manually.',
+            variant: "destructive",
+            title: "Could not extract data",
+            description:
+              data.message || "Try a clearer image or enter data manually.",
           });
           return;
         }
 
-        console.log('Extracted data:', data);
+        console.log("Extracted data:", data);
         setExtractedData(data);
         trackScreenshotUploaded();
 
         // Show warning for low confidence
         if (data.confidence && data.confidence < 0.7) {
           toast({
-            title: '⚠️ Low confidence',
-            description: 'Please review the extracted fields carefully before applying.',
+            title: "⚠️ Low confidence",
+            description:
+              "Please review the extracted fields carefully before applying.",
           });
         } else {
           toast({
-            title: '✨ Data extracted',
-            description: 'Review and apply the extracted fields to your form.',
+            title: "✨ Data extracted",
+            description: "Review and apply the extracted fields to your form.",
           });
         }
-
       } catch (err) {
-        console.error('OCR processing error:', err);
+        console.error("OCR processing error:", err);
         toast({
-          variant: 'destructive',
-          title: 'Upload failed',
-          description: err instanceof Error ? err.message : 'Try a clearer image or enter data manually.',
+          variant: "destructive",
+          title: "Upload failed",
+          description:
+            err instanceof Error
+              ? err.message
+              : "Try a clearer image or enter data manually.",
         });
       } finally {
         setIsLoading(false);
@@ -125,25 +145,25 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
       if (!file) return;
 
       // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         toast({
-          variant: 'destructive',
-          title: 'Invalid file',
-          description: 'Please upload an image file (JPG, PNG, WEBP).',
+          variant: "destructive",
+          title: "Invalid file",
+          description: "Please upload an image file (JPG, PNG, WEBP).",
         });
         return;
       }
-      
+
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast({
-          variant: 'destructive',
-          title: 'File too large',
-          description: 'Please upload an image smaller than 10MB.',
+          variant: "destructive",
+          title: "File too large",
+          description: "Please upload an image smaller than 10MB.",
         });
         return;
       }
-      
+
       await processImage(file);
     },
     [processImage, toast],
@@ -178,31 +198,31 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
     (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0] ?? null;
       void handleFile(file);
-      event.target.value = '';
+      event.target.value = "";
     },
     [handleFile],
   );
 
   const handleApply = useCallback(() => {
     if (!extractedData) return;
-    
+
     onParse({
-      origin: extractedData.origin || '',
-      destination: extractedData.destination || '',
-      miles: extractedData.miles || '',
-      rate: extractedData.rate || '',
-      fsc: extractedData.fsc || '',
-      tolls: extractedData.tolls || '',
-      notes: extractedData.loadReference 
-        ? `Load ref: ${extractedData.loadReference}` 
-        : '',
+      origin: extractedData.origin || "",
+      destination: extractedData.destination || "",
+      miles: extractedData.miles || "",
+      rate: extractedData.rate || "",
+      fsc: extractedData.fsc || "",
+      tolls: extractedData.tolls || "",
+      notes: extractedData.loadReference
+        ? `Load ref: ${extractedData.loadReference}`
+        : "",
     });
-    
+
     setExtractedData(null);
-    
+
     toast({
-      title: '✓ Fields applied',
-      description: 'Form has been auto-filled with extracted data.',
+      title: "✓ Fields applied",
+      description: "Form has been auto-filled with extracted data.",
     });
   }, [extractedData, onParse, toast]);
 
@@ -211,10 +231,10 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
   }, []);
 
   const borderClasses = disabled
-    ? 'border-muted'
+    ? "border-muted"
     : isDragging
-      ? 'border-primary bg-primary/10'
-      : 'border-dashed border-muted-foreground/40';
+      ? "border-primary bg-primary/10"
+      : "border-dashed border-muted-foreground/40";
 
   return (
     <div className="space-y-3">
@@ -233,7 +253,9 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
             onChange={onFileChange}
             disabled={disabled || isLoading}
           />
-          <p className="text-sm font-semibold">Drop a rate confirmation image</p>
+          <p className="text-sm font-semibold">
+            Drop a rate confirmation image
+          </p>
           <p className="mt-2 text-sm text-muted-foreground">or</p>
           <button
             type="button"
@@ -241,7 +263,7 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
             className="mt-2 rounded-full border border-primary px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
             disabled={disabled || isLoading}
           >
-            {isLoading ? 'Scanning...' : 'Browse files'}
+            {isLoading ? "Scanning..." : "Browse files"}
           </button>
           <p className="mt-3 text-xs text-muted-foreground">
             Supported: JPG, PNG, WEBP. Max 10MB.
@@ -252,18 +274,18 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold">Extracted fields</p>
             {extractedData.confidence !== undefined && (
-              <span 
+              <span
                 className={`text-xs ${
-                  extractedData.confidence >= 0.7 
-                    ? 'text-green-600' 
-                    : 'text-amber-600'
+                  extractedData.confidence >= 0.7
+                    ? "text-green-600"
+                    : "text-amber-600"
                 }`}
               >
                 {Math.round(extractedData.confidence * 100)}% confidence
               </span>
             )}
           </div>
-          
+
           <div className="space-y-2 text-sm">
             {extractedData.origin && (
               <div className="flex justify-between">
@@ -304,11 +326,13 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
             {extractedData.loadReference && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Load ref:</span>
-                <span className="font-medium">{extractedData.loadReference}</span>
+                <span className="font-medium">
+                  {extractedData.loadReference}
+                </span>
               </div>
             )}
           </div>
-          
+
           <div className="mt-4 flex gap-2">
             <button
               type="button"
