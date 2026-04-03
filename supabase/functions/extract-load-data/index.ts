@@ -85,7 +85,7 @@ serve(async (req) => {
         }
 
         const arrayBuffer = await file.arrayBuffer();
-        const base64String = base64Encode(new Uint8Array(arrayBuffer));
+        const base64String = base64Encode(arrayBuffer);
         const mimeType = file.type || 'image/jpeg';
         imageBase64 = `data:${mimeType};base64,${base64String}`;
       }
