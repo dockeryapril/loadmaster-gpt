@@ -91,6 +91,7 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
 
         console.log('Extracted data:', data);
         setExtractedData(data);
+        trackScreenshotUploaded();
 
         // Show warning for low confidence
         if (data.confidence && data.confidence < 0.7) {
@@ -122,10 +123,7 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
   const handleFile = useCallback(
     async (file: File | null) => {
       if (!file) return;
-      
-      // Track screenshot upload immediately
-      trackScreenshotUploaded();
-      
+
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
