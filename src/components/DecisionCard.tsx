@@ -16,6 +16,9 @@ interface DecisionCardProps {
   thresholds: CostAssumptions;
   offeredRate: number;
   deadheadMiles: number;
+  truckGross?: number;
+  driverPay?: number;
+  economicsLabel?: string;
   negotiation?: CalcResult | null;
   onOpenNegotiation?: () => void;
 }
@@ -26,6 +29,9 @@ export function DecisionCard({
   thresholds,
   offeredRate,
   deadheadMiles,
+  truckGross,
+  driverPay,
+  economicsLabel = 'True RPM',
   negotiation,
   onOpenNegotiation,
 }: DecisionCardProps) {
@@ -68,10 +74,17 @@ export function DecisionCard({
           <p className="font-semibold">{money(offeredRate)}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">True RPM</p>
+          <p className="text-xs text-muted-foreground">{economicsLabel}</p>
           <p className="font-semibold">${netRpm.toFixed(2)}/mi</p>
         </div>
       </div>
+
+      {(truckGross !== undefined || driverPay !== undefined) && (
+        <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-border/60 bg-background/80 p-3 text-sm">
+          <div><p className="text-xs text-muted-foreground">Truck gross</p><p className="font-semibold">{money(truckGross ?? offeredRate)}</p></div>
+          <div><p className="text-xs text-muted-foreground">Your estimated pay</p><p className="font-semibold">{money(driverPay ?? offeredRate)}</p></div>
+        </div>
+      )}
 
       <div className="mt-4 rounded-lg bg-background/70 p-3">
         <p className="text-xs font-semibold text-foreground">Why</p>
