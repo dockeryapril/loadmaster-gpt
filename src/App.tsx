@@ -839,7 +839,7 @@ function MainApp() {
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {user ?
-                    'Drop a clear screenshot to auto-fill the fields.' :
+                    'Upload up to 5 screenshots/photos from the same offer. LoadMaster will combine what it finds and flag conflicting values.' :
                     'Sign in to use OCR auto-fill.'}
                     </p>
                     <div className="mt-4">
