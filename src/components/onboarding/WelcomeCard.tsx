@@ -29,7 +29,7 @@ export function WelcomeCard() {
       
       <CardContent className="pt-6 pb-5 pr-12">
         <h3 className="text-lg font-semibold mb-3 text-foreground">
-          Welcome to LoadMaster! Here's how to get started:
+          Welcome to Load Master! Here's how to get started:
         </h3>
         
         <div className="space-y-2.5">
