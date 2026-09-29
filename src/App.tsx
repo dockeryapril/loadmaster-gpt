@@ -954,7 +954,7 @@ function MainApp() {
                     'Sign in to use OCR auto-fill.'}
                     </p>
                     <div className="mt-4">
-                      <OCRDropzone onParse={applyOcr} onExtract={handleOcrExtract} disabled={!user} />
+                      <OCRDropzone onExtract={handleOcrExtract} disabled={!user} />
                     </div>
                     {!user &&
                   <Link

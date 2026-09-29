@@ -51,8 +51,9 @@ export function DecisionCard({
 
   const why =
     deadheadMiles > 0
-      ? `${deadheadMiles.toLocaleString()} deadhead miles are included in your true RPM. ${guidance.message}`
+      ? `${deadheadMiles.toLocaleString()} deadhead miles are included in the all-in-mile economics. ${guidance.message}`
       : guidance.message;
+  const showTruckNegotiation = Boolean(negotiation && !negotiationUnavailableReason);
 
   return (
     <section className={`rounded-xl border p-5 ${guidance.colorClasses.bg} ${guidance.colorClasses.border}`}>
@@ -61,7 +62,7 @@ export function DecisionCard({
       </p>
       <h3 className={`mt-1 text-3xl font-bold ${guidance.colorClasses.text}`}>{title}</h3>
 
-      {negotiation && (
+      {showTruckNegotiation && negotiation && (
         <div className="mt-4 grid grid-cols-3 gap-2">
           <div className="rounded-lg border border-border/60 bg-background/80 p-3">
             <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Ask</p>
@@ -101,7 +102,7 @@ export function DecisionCard({
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{why}</p>
       </div>
 
-      {compensationCounter && (
+      {guidance.level === 'counter' && compensationCounter && (
         <div className="mt-4 rounded-lg border border-border/60 bg-background/80 p-3">
           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">What to negotiate</p>
           <p className="mt-1 text-sm font-semibold">{compensationCounter.label}: {money(compensationCounter.current)} → {money(compensationCounter.target)}</p>
@@ -109,14 +110,14 @@ export function DecisionCard({
         </div>
       )}
 
-      {negotiationUnavailableReason && (
+      {guidance.level === 'counter' && negotiationUnavailableReason && (
         <div className="mt-4 rounded-lg border border-border/60 bg-background/70 p-3">
           <p className="text-xs font-semibold">Counter math</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{negotiationUnavailableReason}</p>
         </div>
       )}
 
-      {negotiation && onOpenNegotiation && (
+      {guidance.level === 'counter' && negotiation && onOpenNegotiation && (
         <button
           type="button"
           onClick={onOpenNegotiation}

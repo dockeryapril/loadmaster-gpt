@@ -8,7 +8,7 @@ import { trackScreenshotUploaded } from "@/utils/analytics";
 import { mergeOcrExtractions, type OcrExtractedData } from "@/utils/mergeOcrExtractions";
 
 interface OCRDropzoneProps {
-  onParse: (data: Partial<LoadFormInput>) => void;
+  onParse?: (data: Partial<LoadFormInput>) => void;
   onExtract?: (data: Partial<LoadFormInput>, sources: Partial<Record<keyof OcrExtractedData, number[]>>) => void;
   disabled?: boolean;
 }
@@ -145,7 +145,7 @@ export function OCRDropzone({ onParse, onExtract, disabled }: OCRDropzoneProps) 
   const handleApply = useCallback(() => {
     if (!extractedData) return;
 
-    onParse({
+    onParse?.({
       origin: extractedData.origin || "",
       destination: extractedData.destination || "",
       miles: extractedData.miles || "",
@@ -213,6 +213,13 @@ export function OCRDropzone({ onParse, onExtract, disabled }: OCRDropzoneProps) 
           <p className="mt-3 text-xs text-muted-foreground">
             Upload up to 5 images. JPG, PNG, WEBP. Max 10MB each.
           </p>
+        </div>
+      ) : onExtract ? (
+        <div className="rounded-xl border border-border bg-background p-4">
+          <p className="text-sm font-semibold">Extraction ready</p>
+          <p className="mt-1 text-xs text-muted-foreground">Review the combined offer below before anything is applied to the calculator.</p>
+          {conflicts.length > 0 && <p className="mt-2 text-xs text-amber-700">{conflicts.length} conflicting field{conflicts.length === 1 ? '' : 's'} need review.</p>}
+          <button type="button" onClick={handleCancel} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-medium">Clear extraction</button>
         </div>
       ) : (
         <div className="rounded-xl border border-border bg-background p-4">
