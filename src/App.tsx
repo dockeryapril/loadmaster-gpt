@@ -36,6 +36,7 @@ import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
 import { parseOfferText } from '@/utils/parseOfferText';
+import { calculateCompensation, defaultCompensationProfile, type CompensationType } from '@/types/compensation';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -170,6 +171,12 @@ function MainApp() {
   const [includeFscInSplit, setIncludeFscInSplit] = useState(() =>
     getInitialToggleState("lm:includeFscInSplit", true),
   );
+  const [compensationType, setCompensationType] = useState<CompensationType>('truck');
+  const [perLoadedMile, setPerLoadedMile] = useState('');
+  const [perDeadheadMile, setPerDeadheadMile] = useState('');
+  const [flatPay, setFlatPay] = useState('');
+  const [deadheadFlatPay, setDeadheadFlatPay] = useState('');
+  const [deadheadFsc, setDeadheadFsc] = useState('');
   const addDecision = useDecisionStore((state) => state.addDecision);
   const history = useDecisionStore((state) => state.history);
   const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
@@ -240,6 +247,21 @@ function MainApp() {
   const displayedFuelCost = includeFuel
     ? detailedCalculation.breakdown.fuelCost
     : detailedCalculation.adjustments.originalFuelCost;
+
+  const compensation = useMemo(() => calculateCompensation({
+    ...defaultCompensationProfile,
+    type: compensationType,
+    percentage: splitPercent,
+    perLoadedMile: numberOrZero(perLoadedMile),
+    perDeadheadMile: numberOrZero(perDeadheadMile),
+    flatRate: numberOrZero(flatPay),
+    deadheadFlatPay: numberOrZero(deadheadFlatPay),
+    deadheadFsc: numberOrZero(deadheadFsc),
+    includeFscInPercentage: includeFscInSplit,
+  }, rate, includeFsc ? rawFsc : 0, miles, deadheadMiles), [
+    compensationType, splitPercent, perLoadedMile, perDeadheadMile, flatPay,
+    deadheadFlatPay, deadheadFsc, includeFscInSplit, rate, includeFsc, rawFsc, miles, deadheadMiles,
+  ]);
 
   // Negotiation engine (only when feature enabled)
   const negotiation = features.advancedNegotiation
