@@ -9,6 +9,7 @@ import { mergeOcrExtractions, type OcrExtractedData } from "@/utils/mergeOcrExtr
 
 interface OCRDropzoneProps {
   onParse: (data: Partial<LoadFormInput>) => void;
+  onExtract?: (data: Partial<LoadFormInput>, sources: Partial<Record<keyof OcrExtractedData, number[]>>) => void;
   disabled?: boolean;
 }
 
@@ -17,7 +18,7 @@ interface ExtractedData extends OcrExtractedData {
   message?: string;
 }
 
-export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
+export function OCRDropzone({ onParse, onExtract, disabled }: OCRDropzoneProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +59,15 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
         setExtractedData(reconciled.merged);
         setFieldSources(reconciled.sources);
         setConflicts(reconciled.conflicts);
+        onExtract?.({
+          origin: reconciled.merged.origin || "",
+          destination: reconciled.merged.destination || "",
+          miles: reconciled.merged.miles || "",
+          deadheadMiles: reconciled.merged.deadheadMiles || "",
+          rate: reconciled.merged.rate || "",
+          fsc: reconciled.merged.fsc || "",
+          tolls: reconciled.merged.tolls || "",
+        }, reconciled.sources);
         trackScreenshotUploaded();
 
         toast({
@@ -76,7 +86,7 @@ export function OCRDropzone({ onParse, disabled }: OCRDropzoneProps) {
         setIsLoading(false);
       }
     },
-    [toast],
+    [toast, onExtract],
   );
 
   const handleFiles = useCallback(async (files: File[]) => {
