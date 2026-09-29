@@ -608,8 +608,82 @@ function MainApp() {
             </header>
 
           <div className="rounded-2xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur">
-            {/* Revenue Split Toggle */}
             <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
+              <label className="text-sm font-medium text-foreground">How are you paid?</label>
+              <p className="mt-0.5 text-xs text-muted-foreground">Keep Truck economics for owner-operator profit, or calculate your personal driver/contractor pay.</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {([
+                  ['truck', 'Truck economics'],
+                  ['percentage', 'Percentage'],
+                  ['per_mile', 'Per mile'],
+                  ['flat', 'Flat rate'],
+                ] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setCompensationType(value);
+                      setUseSplit(value === 'percentage');
+                    }}
+                    className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                      compensationType === value
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-background text-muted-foreground hover:border-primary'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {compensationType === 'per_mile' && (
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Loaded $/mile</label>
+                    <input className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" inputMode="decimal" placeholder="$0.00" value={perLoadedMile} onChange={(e) => setPerLoadedMile(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Deadhead $/mile</label>
+                    <input className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" inputMode="decimal" placeholder="$0.00" value={perDeadheadMile} onChange={(e) => setPerDeadheadMile(e.target.value)} />
+                  </div>
+                </div>
+              )}
+
+              {compensationType === 'flat' && (
+                <div className="mt-4">
+                  <label className="text-xs text-muted-foreground">Your flat pay</label>
+                  <input className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" inputMode="decimal" placeholder="$0.00" value={flatPay} onChange={(e) => setFlatPay(e.target.value)} />
+                </div>
+              )}
+
+              {compensationType !== 'truck' && deadheadMiles > 0 && compensationType !== 'per_mile' && (
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Deadhead pay</label>
+                    <input className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" inputMode="decimal" placeholder="$0.00" value={deadheadFlatPay} onChange={(e) => setDeadheadFlatPay(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Deadhead FSC</label>
+                    <input className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" inputMode="decimal" placeholder="$0.00" value={deadheadFsc} onChange={(e) => setDeadheadFsc(e.target.value)} />
+                  </div>
+                </div>
+              )}
+
+              {compensationType !== 'truck' && (
+                <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <p className="text-xs uppercase tracking-wide text-primary">Estimated personal pay</p>
+                  <p className="mt-1 text-xl font-semibold text-foreground">{formatCurrency(compensation.pay)}</p>
+                  {deadheadMiles > 0 && compensation.deadheadPay + compensation.deadheadFsc > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Includes {formatCurrency(compensation.deadheadPay + compensation.deadheadFsc)} in deadhead compensation.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Revenue Split Toggle */}
+            <div className={`mb-6 rounded-lg border border-border bg-muted/30 p-4 ${compensationType === 'percentage' ? '' : 'hidden'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <label className="text-sm font-medium text-foreground">
