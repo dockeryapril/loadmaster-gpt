@@ -35,6 +35,7 @@ import type { DecisionOutcome, LoadFormInput, Equipment, CounterResult } from '@
 import { emptyLoadForm } from '@/types/mvp';
 import { Toaster } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
+import { parseOfferText } from '@/utils/parseOfferText';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -274,6 +275,7 @@ function MainApp() {
   };
 
   const [showAutoFillBadge, setShowAutoFillBadge] = useState(false);
+  const [offerText, setOfferText] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -369,6 +371,35 @@ function MainApp() {
     toast({
       title: "✅ Fields auto-filled!",
       description: "Review and adjust the values before calculating",
+    });
+  };
+
+  const applyPastedOffer = () => {
+    const parsed = parseOfferText(offerText);
+    const extracted = Object.entries(parsed).filter(([, value]) => Boolean(value));
+    if (extracted.length <= 1) {
+      toast({
+        title: "Couldn’t confidently read that offer",
+        description: "Try including pickup, delivery, loaded miles and rate. You can still enter the fields manually.",
+      });
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      ...(parsed.origin ? { origin: parsed.origin } : {}),
+      ...(parsed.destination ? { destination: parsed.destination } : {}),
+      ...(parsed.miles ? { miles: parsed.miles } : {}),
+      ...(parsed.deadheadMiles ? { deadheadMiles: parsed.deadheadMiles } : {}),
+      ...(parsed.rate ? { rate: parsed.rate } : {}),
+      ...(parsed.fsc ? { fsc: parsed.fsc } : {}),
+      ...(parsed.notes ? { notes: parsed.notes } : {}),
+    }));
+    setShowAutoFillBadge(true);
+    setTimeout(() => setShowAutoFillBadge(false), 5000);
+    toast({
+      title: "Offer parsed",
+      description: "Review the auto-filled fields before making a decision.",
     });
   };
 
@@ -672,6 +703,32 @@ function MainApp() {
                     </p>
                   </div>
                 </TooltipProvider>
+
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-semibold">Paste dispatch offer</h4>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Paste broker or dispatch text and LoadMaster will fill the fields it can identify.
+                      </p>
+                    </div>
+                  </div>
+                  <textarea
+                    className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    rows={4}
+                    placeholder={"PU Gainesville, GA\nDEL Laredo, TX\n1048 loaded / 42 DH\n$1750 + FSC $300"}
+                    value={offerText}
+                    onChange={(event) => setOfferText(event.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={applyPastedOffer}
+                    disabled={!offerText.trim()}
+                    className="mt-3 w-full rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Parse & Fill Offer
+                  </button>
+                </div>
 
                 {/* Rate confirmation assist - OCR */}
                 {isOCRVisible &&
