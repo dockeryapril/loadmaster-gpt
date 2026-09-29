@@ -14,10 +14,10 @@ import { trackOptionalTourStarted, trackOptionalTourCompleted, trackOptionalTour
 
 const tourSteps = [
   {
-    title: 'Welcome to LoadMaster',
+    title: 'Welcome to Load Master',
     description: 'Let\'s take a quick tour of how to use the calculator to maximize your profits.',
     icon: TrendingUp,
-    content: 'LoadMaster helps you make data-driven decisions on every load offer. We\'ll show you the key features in just 4 steps.',
+    content: 'Load Master helps you make data-driven decisions on every load offer. We\'ll show you the key features in just 4 steps.',
   },
   {
     title: 'Upload Rate Confirmations',

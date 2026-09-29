@@ -27,7 +27,7 @@ export function OfferReview({ offer, onApply, onCancel }: OfferReviewProps) {
         <div>
           <p className="text-sm font-semibold">Review extracted offer</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            LoadMaster combined your available sources. Verify before applying.
+            Load Master combined your available sources. Verify before applying.
           </p>
         </div>
         {hasConflicts && (

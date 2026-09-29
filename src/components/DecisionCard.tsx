@@ -58,7 +58,7 @@ export function DecisionCard({
   return (
     <section className={`rounded-xl border p-5 ${guidance.colorClasses.bg} ${guidance.colorClasses.border}`}>
       <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${guidance.colorClasses.text}`}>
-        LoadMaster decision
+        Load Master decision
       </p>
       <h3 className={`mt-1 text-3xl font-bold ${guidance.colorClasses.text}`}>{title}</h3>
 
