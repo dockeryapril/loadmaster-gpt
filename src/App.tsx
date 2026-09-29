@@ -44,6 +44,7 @@ import { useDriverProfileStore } from '@/store/useDriverProfileStore';
 import { applyProfileToOffer } from '@/utils/applyDriverProfile';
 import { calculateDriverDecisionEconomics } from '@/utils/driverDecisionEconomics';
 import { calculateDriverNegotiationTargets } from '@/utils/driverNegotiationEconomics';
+import { buildCompensationCounter } from '@/utils/compensationCounter';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -331,6 +332,17 @@ function MainApp() {
       includeFsc ? rawFsc : 0,
     ),
     [activeCompensationProfile, decisionEconomics.net, driverExpenses, rate, includeFsc, rawFsc],
+  );
+
+  const compensationCounter = useMemo(
+    () => buildCompensationCounter(
+      activeCompensationProfile,
+      miles,
+      deadheadMiles,
+      rate,
+      driverNegotiation.negotiable ? driverNegotiation.target : rate,
+    ),
+    [activeCompensationProfile, miles, deadheadMiles, rate, driverNegotiation],
   );
 
   // Negotiation engine (only when feature enabled)
@@ -1291,6 +1303,7 @@ function MainApp() {
                       : negotiation.calculation.negotiation,
                   } : null}
                   negotiationUnavailableReason={!driverNegotiation.negotiable ? driverNegotiation.reason : undefined}
+                  compensationCounter={compensationCounter}
                   onOpenNegotiation={
                     features.advancedNegotiation && canLog && driverNegotiation.negotiable
                       ? () => setNegotiationSheetOpen(true)
