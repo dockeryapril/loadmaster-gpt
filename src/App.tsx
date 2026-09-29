@@ -43,6 +43,7 @@ import { DriverProfileManager } from '@/components/DriverProfileManager';
 import { useDriverProfileStore } from '@/store/useDriverProfileStore';
 import { applyProfileToOffer } from '@/utils/applyDriverProfile';
 import { calculateDriverDecisionEconomics } from '@/utils/driverDecisionEconomics';
+import { calculateDriverNegotiationTargets } from '@/utils/driverNegotiationEconomics';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -307,6 +308,29 @@ function MainApp() {
       driverExpenses,
     ),
     [compensationType, compensation, profit, miles, deadheadMiles, driverExpenses],
+  );
+
+  const activeCompensationProfile = useMemo(() => ({
+    ...defaultCompensationProfile,
+    type: compensationType,
+    percentage: splitPercent,
+    perLoadedMile: numberOrZero(perLoadedMile),
+    perDeadheadMile: numberOrZero(perDeadheadMile),
+    flatRate: numberOrZero(flatPay),
+    deadheadFlatPay: numberOrZero(deadheadFlatPay),
+    deadheadFsc: numberOrZero(deadheadFsc),
+    includeFscInPercentage: includeFscInSplit,
+  }), [compensationType, splitPercent, perLoadedMile, perDeadheadMile, flatPay, deadheadFlatPay, deadheadFsc, includeFscInSplit]);
+
+  const driverNegotiation = useMemo(
+    () => calculateDriverNegotiationTargets(
+      activeCompensationProfile,
+      decisionEconomics.net,
+      driverExpenses,
+      rate,
+      includeFsc ? rawFsc : 0,
+    ),
+    [activeCompensationProfile, decisionEconomics.net, driverExpenses, rate, includeFsc, rawFsc],
   );
 
   // Negotiation engine (only when feature enabled)
@@ -1260,9 +1284,15 @@ function MainApp() {
                   truckGross={gross}
                   driverPay={compensation.pay}
                   economicsLabel={decisionEconomics.basis === 'driver' ? 'Your effective pay / all-in mile' : 'True RPM'}
-                  negotiation={negotiation.calculation}
+                  negotiation={negotiation.calculation ? {
+                    ...negotiation.calculation,
+                    negotiation: driverNegotiation.negotiable
+                      ? { anchor: driverNegotiation.anchor, target: driverNegotiation.target, floor: driverNegotiation.floor }
+                      : negotiation.calculation.negotiation,
+                  } : null}
+                  negotiationUnavailableReason={!driverNegotiation.negotiable ? driverNegotiation.reason : undefined}
                   onOpenNegotiation={
-                    features.advancedNegotiation && canLog
+                    features.advancedNegotiation && canLog && driverNegotiation.negotiable
                       ? () => setNegotiationSheetOpen(true)
                       : undefined
                   }
