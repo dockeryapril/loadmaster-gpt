@@ -30,7 +30,7 @@ export function parseOfferText(raw: string): ParsedOffer {
     /(?:PU|PICKUP|ORIGIN|FROM)\s*[:\-]?\s*([^\n]+?)(?=\s+(?:DEL|DELIVERY|DEST|DESTINATION|TO)\b|\n|$)/i,
   ]);
   const destination = firstMatch(text, [
-    /(?:DEL|DELIVERY|DEST|DESTINATION|TO)\s*[:\-]?\s*([^\n]+?)(?=\s+(?:\d[\d,]*\s*(?:LOADED|LD|MI|MILES)\b)|\n|$)/i,
+    /(?:DELIVERY|DESTINATION|DEST|DEL|TO)\s*[:\-]?\s*([^\n]+?)(?=\s+(?:\d[\d,]*\s*(?:LOADED|LD|MI|MILES)\b)|\n|$)/i,
   ]);
   const deadheadMiles = firstMatch(text, [
     /(?:DH|DEADHEAD)\s*[:\-]?\s*(\d[\d,]*(?:\.\d+)?)/i,
