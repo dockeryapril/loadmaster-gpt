@@ -19,6 +19,7 @@ interface DecisionCardProps {
   truckGross?: number;
   driverPay?: number;
   economicsLabel?: string;
+  negotiationUnavailableReason?: string;
   negotiation?: CalcResult | null;
   onOpenNegotiation?: () => void;
 }
@@ -32,6 +33,7 @@ export function DecisionCard({
   truckGross,
   driverPay,
   economicsLabel = 'True RPM',
+  negotiationUnavailableReason,
   negotiation,
   onOpenNegotiation,
 }: DecisionCardProps) {
@@ -90,6 +92,13 @@ export function DecisionCard({
         <p className="text-xs font-semibold text-foreground">Why</p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{why}</p>
       </div>
+
+      {negotiationUnavailableReason && (
+        <div className="mt-4 rounded-lg border border-border/60 bg-background/70 p-3">
+          <p className="text-xs font-semibold">Counter math</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{negotiationUnavailableReason}</p>
+        </div>
+      )}
 
       {negotiation && onOpenNegotiation && (
         <button
