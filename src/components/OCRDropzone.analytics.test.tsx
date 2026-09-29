@@ -31,7 +31,7 @@ describe('OCRDropzone analytics guardrail', () => {
     trackScreenshotUploadedMock.mockReset();
   });
 
-  it('emits screenshot_uploaded at most once for one successful upload/apply flow', async () => {
+  it('emits screenshot_uploaded once for one successful upload/apply flow', async () => {
     const onParse = vi.fn();
     invokeMock.mockResolvedValue({
       data: {
@@ -62,5 +62,38 @@ describe('OCRDropzone analytics guardrail', () => {
 
     expect(onParse).toHaveBeenCalledTimes(1);
     expect(trackScreenshotUploadedMock).toHaveBeenCalledTimes(1);
+  });
+
+
+  it('combines multiple images into one apply flow and tracks the batch once', async () => {
+    const onParse = vi.fn();
+    invokeMock
+      .mockResolvedValueOnce({
+        data: { origin: 'Atlanta, GA', destination: 'Laredo, TX', confidence: 0.95 },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { miles: '1048', rate: '1750', fsc: '300', confidence: 0.91 },
+        error: null,
+      });
+
+    const { container } = render(<OCRDropzone onParse={onParse} />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const first = new File(['one'], 'dispatch.png', { type: 'image/png' });
+    const second = new File(['two'], 'rate.png', { type: 'image/png' });
+
+    fireEvent.change(input, { target: { files: [first, second] } });
+
+    await waitFor(() => expect(invokeMock).toHaveBeenCalledTimes(2));
+    expect(trackScreenshotUploadedMock).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Apply to form' }));
+    expect(onParse).toHaveBeenCalledWith(expect.objectContaining({
+      origin: 'Atlanta, GA',
+      destination: 'Laredo, TX',
+      miles: '1048',
+      rate: '1750',
+      fsc: '300',
+    }));
   });
 });
