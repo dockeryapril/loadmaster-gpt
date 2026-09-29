@@ -40,6 +40,7 @@ import { calculateCompensation, defaultCompensationProfile, type CompensationTyp
 import { reconcileOfferSources, type UnifiedOffer } from '@/utils/reconcileOfferSources';
 import { OfferReview } from '@/components/OfferReview';
 import { DriverProfileManager } from '@/components/DriverProfileManager';
+import { useDriverProfileStore } from '@/store/useDriverProfileStore';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -183,7 +184,10 @@ function MainApp() {
   const addDecision = useDecisionStore((state) => state.addDecision);
   const history = useDecisionStore((state) => state.history);
   const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
-  const { costProfile } = useCostProfile();
+  const { costProfile, updateCostProfile } = useCostProfile();
+  const profiles = useDriverProfileStore((state) => state.profiles);
+  const activeProfileId = useDriverProfileStore((state) => state.activeProfileId);
+  const activeDriverProfile = profiles.find((profile) => profile.id === activeProfileId) ?? null;
   const { user } = useAuth();
   const { isSyncing, syncToCloud } = useCloudSync();
   const [isSynced, setIsSynced] = useState(false);
@@ -199,6 +203,31 @@ function MainApp() {
   useEffect(() => {
     trackSessionStart();
   }, []);
+
+  // A driver profile controls operating assumptions, not the current load offer.
+  useEffect(() => {
+    if (!activeDriverProfile) return;
+    const compensation = activeDriverProfile.compensation;
+
+    setForm((prev) => ({
+      ...prev,
+      equipment: activeDriverProfile.equipment,
+      splitPercent: String(compensation.percentage),
+    }));
+    setCompensationType(compensation.type);
+    setUseSplit(compensation.type === 'percentage');
+    setPersistedSplitPercent(String(compensation.percentage));
+    setIncludeFscInSplit(compensation.includeFscInPercentage);
+    setPerLoadedMile(compensation.perLoadedMile ? String(compensation.perLoadedMile) : '');
+    setPerDeadheadMile(compensation.perDeadheadMile ? String(compensation.perDeadheadMile) : '');
+    setFlatPay(compensation.flatRate ? String(compensation.flatRate) : '');
+    setDeadheadFlatPay(compensation.deadheadFlatPay ? String(compensation.deadheadFlatPay) : '');
+    setDeadheadFsc(compensation.deadheadFsc ? String(compensation.deadheadFsc) : '');
+    setIncludeFuel(!activeDriverProfile.carrierPaysFuel);
+    setIncludeTolls(!activeDriverProfile.carrierPaysTolls);
+    updateCostProfile(activeDriverProfile.costs);
+  }, [activeProfileId]);
+
 
   const miles = numberOrZero(form.miles);
   const deadheadMiles = numberOrZero(form.deadheadMiles);
