@@ -39,6 +39,7 @@ import { parseOfferText } from '@/utils/parseOfferText';
 import { calculateCompensation, defaultCompensationProfile, type CompensationType } from '@/types/compensation';
 import { reconcileOfferSources, type UnifiedOffer } from '@/utils/reconcileOfferSources';
 import { OfferReview } from '@/components/OfferReview';
+import { DriverProfileManager } from '@/components/DriverProfileManager';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -1140,6 +1141,7 @@ function MainApp() {
                 </div>
               </div>
               <div className="space-y-4">
+                <DriverProfileManager />
                 <div
                   className="rounded-xl bg-primary/5 p-4"
                   data-onboarding="step-2"
