@@ -21,6 +21,7 @@ interface DecisionCardProps {
   economicsLabel?: string;
   negotiationUnavailableReason?: string;
   compensationCounter?: { label: string; current: number; target: number; message: string };
+  profileDecision?: { level: 'book' | 'counter' | 'pass'; message: string } | null;
   negotiation?: CalcResult | null;
   onOpenNegotiation?: () => void;
 }
@@ -36,10 +37,15 @@ export function DecisionCard({
   economicsLabel = 'True RPM',
   negotiationUnavailableReason,
   compensationCounter,
+  profileDecision,
   negotiation,
   onOpenNegotiation,
 }: DecisionCardProps) {
-  const guidance = getLoadGuidance(netRpm, profit, thresholds);
+  const fallbackGuidance = getLoadGuidance(netRpm, profit, thresholds);
+  const guidance = profileDecision
+    ? { ...fallbackGuidance, level: profileDecision.level, message: profileDecision.message,
+        colorClasses: profileDecision.level === 'book' ? { bg:'bg-emerald-500/10', text:'text-emerald-600', border:'border-emerald-500/20' } : profileDecision.level === 'pass' ? { bg:'bg-rose-500/10', text:'text-rose-600', border:'border-rose-500/20' } : { bg:'bg-amber-500/10', text:'text-amber-600', border:'border-amber-500/20' } }
+    : fallbackGuidance;
   const title =
     guidance.level === 'book' ? 'BOOK' : guidance.level === 'pass' ? 'PASS' : 'COUNTER';
 
