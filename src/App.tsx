@@ -166,6 +166,9 @@ function MainApp() {
   const [includeFuel, setIncludeFuel] = useState(() =>
     getInitialToggleState("lm:includeFuel", true),
   );
+  const [includeFscInSplit, setIncludeFscInSplit] = useState(() =>
+    getInitialToggleState("lm:includeFscInSplit", true),
+  );
   const addDecision = useDecisionStore((state) => state.addDecision);
   const history = useDecisionStore((state) => state.history);
   const loadFromCloud = useDecisionStore((state) => state.loadFromCloud);
@@ -203,7 +206,7 @@ function MainApp() {
         miles,
         costProfile,
         useSplit ? splitPercent : 100,
-        { includeFsc, includeTolls, includeFuel },
+        { includeFsc, includeTolls, includeFuel, includeFscInSplit },
         deadheadMiles,
       ),
     [
@@ -218,6 +221,7 @@ function MainApp() {
       includeFsc,
       includeTolls,
       includeFuel,
+      includeFscInSplit,
     ],
   );
 
@@ -301,6 +305,14 @@ function MainApp() {
       includeFuel ? "true" : "false",
     );
   }, [includeFuel]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      "lm:includeFscInSplit",
+      includeFscInSplit ? "true" : "false",
+    );
+  }, [includeFscInSplit]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -395,7 +407,7 @@ function MainApp() {
             miles,
             costProfile,
             useSplit ? splitPercent : 100,
-            { includeFsc, includeTolls, includeFuel },
+            { includeFsc, includeTolls, includeFuel, includeFscInSplit },
             deadheadMiles,
           )
         : detailedCalculation;
@@ -575,6 +587,19 @@ function MainApp() {
                     <span>0%</span>
                     <span>50%</span>
                     <span>100%</span>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between rounded-lg border border-border bg-background p-3">
+                    <div className="pr-4">
+                      <p className="text-sm font-medium text-foreground">FSC is part of the percentage split</p>
+                      <p className="text-xs text-muted-foreground">
+                        Turn this off when your percentage is calculated on linehaul only.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={includeFscInSplit}
+                      onCheckedChange={setIncludeFscInSplit}
+                      aria-label="Include FSC in percentage split"
+                    />
                   </div>
                 </div>
               )}
