@@ -1,4 +1,5 @@
 import type { CompensationProfile } from '@/types/compensation';
+import type { CompensationTargets } from '@/types/driverProfile';
 
 export type CounterLever = 'truck_rate' | 'percentage' | 'loaded_mile_rate' | 'deadhead_rate' | 'flat_pay';
 
@@ -19,10 +20,11 @@ export function buildCompensationCounter(
   deadheadMiles: number,
   currentTruckRate: number,
   targetTruckRate: number,
+  targets?: Partial<CompensationTargets>,
 ): CompensationCounter {
   if (profile.type === 'per_mile') {
     if (deadheadMiles > 0 && profile.perDeadheadMile <= 0) {
-      const target = profile.perLoadedMile;
+      const target = targets?.targetDeadheadRate || profile.perLoadedMile;
       return {
         lever: 'deadhead_rate',
         label: 'Deadhead rate',
@@ -34,9 +36,10 @@ export function buildCompensationCounter(
     const allInMiles = loadedMiles + deadheadMiles;
     const currentPay = loadedMiles * profile.perLoadedMile + deadheadMiles * profile.perDeadheadMile;
     const targetPay = currentPay * 1.08;
-    const target = loadedMiles > 0
+    const calculatedTarget = loadedMiles > 0
       ? Math.max(profile.perLoadedMile, (targetPay - deadheadMiles * profile.perDeadheadMile) / loadedMiles)
       : profile.perLoadedMile;
+    const target = targets?.targetLoadedMileRate || calculatedTarget;
     return {
       lever: 'loaded_mile_rate',
       label: 'Loaded-mile rate',
@@ -47,7 +50,7 @@ export function buildCompensationCounter(
   }
 
   if (profile.type === 'flat') {
-    const target = Math.round(profile.flatRate * 1.08);
+    const target = targets?.targetFlatPay || Math.round(profile.flatRate * 1.08);
     return {
       lever: 'flat_pay',
       label: 'Driver flat pay',
