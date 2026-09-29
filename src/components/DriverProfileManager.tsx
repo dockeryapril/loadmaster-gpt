@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, UserRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Copy, Plus, Save, UserRound, X } from 'lucide-react';
 import { newDriverProfile, useDriverProfileStore } from '@/store/useDriverProfileStore';
 import type { OperationMode } from '@/types/driverProfile';
 import type { Equipment } from '@/types/mvp';
@@ -17,8 +17,22 @@ export function DriverProfileManager() {
   const updateProfile = useDriverProfileStore((state) => state.updateProfile);
   const setActiveProfile = useDriverProfileStore((state) => state.setActiveProfile);
   const [newName, setNewName] = useState('');
+  const [draft, setDraft] = useState<{ name: string; carrier: string; operationMode: OperationMode; equipment: Equipment } | null>(null);
 
   const active = profiles.find((profile) => profile.id === activeProfileId) ?? null;
+
+  useEffect(() => {
+    setDraft(active ? { name: active.name, carrier: active.carrier || '', operationMode: active.operationMode, equipment: active.equipment } : null);
+  }, [activeProfileId, active?.name, active?.carrier, active?.operationMode, active?.equipment]);
+
+  const saveDraft = () => { if (active && draft) updateProfile(active.id, { ...draft, name: draft.name.trim() || active.name }); };
+  const resetDraft = () => { if (active) setDraft({ name: active.name, carrier: active.carrier || '', operationMode: active.operationMode, equipment: active.equipment }); };
+  const duplicateActive = () => {
+    if (!active) return;
+    const fresh = newDriverProfile(active.name + ' copy');
+    addProfile({ ...active, id: fresh.id, name: fresh.name, compensation: { ...active.compensation }, costs: { ...active.costs } });
+    setActiveProfile(fresh.id);
+  };
 
   const createProfile = () => {
     const profile = newDriverProfile(newName.trim() || `Driving profile ${profiles.length + 1}`);
@@ -67,36 +81,24 @@ export function DriverProfileManager() {
         </button>
       </div>
 
-      {active && (
+      {active && draft && (
         <div className="mt-4 space-y-3 border-t border-border pt-4">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Profile name</label>
-            <input value={active.name} onChange={(e) => updateProfile(active.id, { name: e.target.value })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Carrier / company (optional)</label>
-            <input value={active.carrier || ''} onChange={(e) => updateProfile(active.id, { carrier: e.target.value })} placeholder="Enter any carrier or company" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
-          </div>
+          <p className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">Edit a draft below. Nothing changes in the saved profile until you choose Save profile.</p>
+          <div><label className="text-xs font-medium text-muted-foreground">Profile name</label><input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+          <div><label className="text-xs font-medium text-muted-foreground">Carrier / company (optional)</label><input value={draft.carrier} onChange={(e) => setDraft({ ...draft, carrier: e.target.value })} placeholder="Enter any carrier or company" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Operation</label>
-              <select value={active.operationMode} onChange={(e) => updateProfile(active.id, { operationMode: e.target.value as OperationMode })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
-                <option value="solo">Solo</option>
-                <option value="team">Team</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">Equipment</label>
-              <select value={active.equipment} onChange={(e) => updateProfile(active.id, { equipment: e.target.value as Equipment })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
-                {equipmentOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-              </select>
-            </div>
+            <div><label className="text-xs font-medium text-muted-foreground">Operation</label><select value={draft.operationMode} onChange={(e) => setDraft({ ...draft, operationMode: e.target.value as OperationMode })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="solo">Solo</option><option value="team">Team</option></select></div>
+            <div><label className="text-xs font-medium text-muted-foreground">Equipment</label><select value={draft.equipment} onChange={(e) => setDraft({ ...draft, equipment: e.target.value as Equipment })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">{equipmentOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            Team status is independent of carrier. Compensation and costs belong to this profile, so the same setup works with any carrier or contract.
-          </p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={saveDraft} className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"><Save className="h-3.5 w-3.5" /> Save profile</button>
+            <button type="button" onClick={resetDraft} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs font-medium"><X className="h-3.5 w-3.5" /> Discard edits</button>
+            <button type="button" onClick={duplicateActive} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs font-medium"><Copy className="h-3.5 w-3.5" /> Duplicate profile</button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Temporary calculator changes do not automatically rewrite this saved profile.</p>
         </div>
       )}
+
     </section>
   );
 }
