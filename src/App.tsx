@@ -647,7 +647,7 @@ function MainApp() {
               <Truck className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold">LoadMasterGPT</h1>
+              <h1 className="text-lg font-semibold">Load MasterGPT</h1>
               <p className="text-xs text-muted-foreground">
                 By Waypoint Labs LLC
               </p>
@@ -916,7 +916,7 @@ function MainApp() {
                     <div>
                       <h4 className="text-sm font-semibold">Paste dispatch offer</h4>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Paste broker or dispatch text and LoadMaster will fill the fields it can identify.
+                        Paste broker or dispatch text and Load Master will fill the fields it can identify.
                       </p>
                     </div>
                   </div>
@@ -950,7 +950,7 @@ function MainApp() {
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {user ?
-                    'Upload up to 5 screenshots/photos from the same offer. LoadMaster will combine what it finds and flag conflicting values.' :
+                    'Upload up to 5 screenshots/photos from the same offer. Load Master will combine what it finds and flag conflicting values.' :
                     'Sign in to use OCR auto-fill.'}
                     </p>
                     <div className="mt-4">
