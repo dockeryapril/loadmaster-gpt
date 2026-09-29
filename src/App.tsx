@@ -16,7 +16,7 @@ import {
 '@/utils/analytics';
 import { CostProfileEditor } from '@/components/CostProfileEditor';
 import { ProfitBreakdown } from '@/components/ProfitBreakdown';
-import { GuidanceBadge } from '@/components/GuidanceBadge';
+import { DecisionCard } from '@/components/DecisionCard';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { PatternInsights } from '@/components/PatternInsights';
 import { SimilarLoadIndicator } from '@/components/SimilarLoadIndicator';
@@ -1174,22 +1174,19 @@ function MainApp() {
                   }
                 />
 
-                <GuidanceBadge
+                <DecisionCard
                   netRpm={trueRpm}
                   profit={profit}
                   thresholds={costProfile}
+                  offeredRate={rate}
+                  deadheadMiles={deadheadMiles}
+                  negotiation={negotiation.calculation}
+                  onOpenNegotiation={
+                    features.advancedNegotiation && canLog
+                      ? () => setNegotiationSheetOpen(true)
+                      : undefined
+                  }
                 />
-
-                {features.advancedNegotiation && canLog && (
-                  <button
-                    type="button"
-                    onClick={() => setNegotiationSheetOpen(true)}
-                    className="w-full rounded-lg border-2 border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary transition hover:bg-primary/10 hover:border-primary/30"
-                  >
-                    <MessageSquare className="inline-block mr-2 h-4 w-4" />
-                    Generate Negotiation Message
-                  </button>
-                )}
 
                 <div className="rounded-xl border border-border bg-background p-4">
                   <p className="text-sm font-semibold">Decision</p>

@@ -98,7 +98,16 @@ vi.mock('@/components/OCRDropzone', () => ({
 
 vi.mock('@/components/CostProfileEditor', () => ({ CostProfileEditor: () => <div /> }));
 vi.mock('@/components/ProfitBreakdown', () => ({ ProfitBreakdown: () => <div /> }));
-vi.mock('@/components/GuidanceBadge', () => ({ GuidanceBadge: () => <div /> }));
+vi.mock('@/components/GuidanceBadge', () => ({
+  GuidanceBadge: () => <div />,
+  getLoadGuidance: () => ({
+    level: 'book',
+    label: 'Book it',
+    message: 'Test guidance',
+    icon: () => null,
+    colorClasses: { bg: '', text: '', border: '' },
+  }),
+}));
 vi.mock('@/components/HistoryPanel', () => ({ HistoryPanel: () => <div /> }));
 vi.mock('@/components/PatternInsights', () => ({ PatternInsights: () => <div /> }));
 vi.mock('@/components/SimilarLoadIndicator', () => ({ SimilarLoadIndicator: () => <div /> }));
