@@ -56,10 +56,17 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
                 <span>{formatCurrency(breakdown.grossRevenue)}</span>
               </div>
               {breakdown.splitPercent < 100 && (
-                <div className="flex justify-between text-primary">
-                  <span>Your split ({breakdown.splitPercent}%):</span>
-                  <span className="font-medium">{formatCurrency(breakdown.yourShare)}</span>
-                </div>
+                <>
+                  <div className="flex justify-between text-primary">
+                    <span>Your split ({breakdown.splitPercent}%):</span>
+                    <span className="font-medium">{formatCurrency(breakdown.yourShare)}</span>
+                  </div>
+                  {!adjustments.includeFscInSplit && breakdown.fsc > 0 && (
+                    <p className="text-right text-xs text-muted-foreground">
+                      Split base: {formatCurrency(breakdown.splitEligibleRevenue)} linehaul-only revenue. FSC is shown in truck gross but is not part of your percentage pay base.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -136,7 +143,9 @@ export function ProfitBreakdown({ calculation }: ProfitBreakdownProps) {
               {adjustments.includeFsc ? ' + FSC' : ' (FSC excluded)'}
             </li>
             {breakdown.splitPercent < 100 && (
-              <li><strong>Your share</strong> = Gross revenue × ({breakdown.splitPercent}% ÷ 100)</li>
+              <li>
+                <strong>Your share</strong> = {adjustments.includeFscInSplit ? 'Linehaul + FSC' : 'Linehaul only'} × ({breakdown.splitPercent}% ÷ 100)
+              </li>
             )}
             {breakdown.deadheadMiles > 0 && (
               <li className="text-amber-600"><strong>Total miles</strong> = Loaded miles ({breakdown.loadedMiles}) + Deadhead ({breakdown.deadheadMiles}) = {breakdown.totalMiles} mi</li>

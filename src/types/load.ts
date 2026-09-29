@@ -18,6 +18,8 @@ export const calculateProfit = (
 export interface ProfitBreakdown {
   grossRevenue: number;
   yourShare: number;
+  splitEligibleRevenue: number;
+  fscOutsideSplit: number;
   splitPercent: number;
   linehaulRate: number;
   fsc: number;
@@ -38,6 +40,7 @@ export interface CalculationAdjustments {
   includeFsc: boolean;
   includeTolls: boolean;
   includeFuel: boolean;
+  includeFscInSplit: boolean;
   originalFsc: number;
   originalTolls: number;
   originalFuelCost: number;
@@ -58,6 +61,7 @@ export interface CalculationOptions {
   includeFsc?: boolean;
   includeTolls?: boolean;
   includeFuel?: boolean;
+  includeFscInSplit?: boolean;
 }
 
 export function calculateDetailedProfit(
@@ -73,6 +77,7 @@ export function calculateDetailedProfit(
   const includeFsc = options.includeFsc ?? true;
   const includeTolls = options.includeTolls ?? true;
   const includeFuel = options.includeFuel ?? true;
+  const includeFscInSplit = options.includeFscInSplit ?? true;
 
   const appliedFsc = includeFsc ? fsc : 0;
   const appliedTolls = includeTolls ? tolls : 0;
@@ -82,7 +87,9 @@ export function calculateDetailedProfit(
 
   // Revenue
   const grossRevenue = rate + appliedFsc;
-  const yourShare = grossRevenue * (splitPercent / 100);
+  const splitEligibleRevenue = rate + (includeFscInSplit ? appliedFsc : 0);
+  const fscOutsideSplit = splitPercent < 100 && !includeFscInSplit ? appliedFsc : 0;
+  const yourShare = splitEligibleRevenue * (splitPercent / 100);
 
   // Costs - calculated on TOTAL miles (loaded + deadhead)
   const variableCosts = totalMiles * costProfile.variableCostPerMile;
@@ -110,6 +117,8 @@ export function calculateDetailedProfit(
     breakdown: {
       grossRevenue,
       yourShare,
+      splitEligibleRevenue,
+      fscOutsideSplit,
       splitPercent,
       linehaulRate: rate,
       fsc: appliedFsc,
@@ -131,6 +140,7 @@ export function calculateDetailedProfit(
       includeFsc,
       includeTolls,
       includeFuel,
+      includeFscInSplit,
       originalFsc: fsc,
       originalTolls: tolls,
       originalFuelCost,
