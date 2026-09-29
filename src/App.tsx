@@ -41,6 +41,7 @@ import { reconcileOfferSources, type UnifiedOffer } from '@/utils/reconcileOffer
 import { OfferReview } from '@/components/OfferReview';
 import { DriverProfileManager } from '@/components/DriverProfileManager';
 import { useDriverProfileStore } from '@/store/useDriverProfileStore';
+import { applyProfileToOffer } from '@/utils/applyDriverProfile';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -209,11 +210,7 @@ function MainApp() {
     if (!activeDriverProfile) return;
     const compensation = activeDriverProfile.compensation;
 
-    setForm((prev) => ({
-      ...prev,
-      equipment: activeDriverProfile.equipment,
-      splitPercent: String(compensation.percentage),
-    }));
+    setForm((prev) => applyProfileToOffer(prev, activeDriverProfile));
     setCompensationType(compensation.type);
     setUseSplit(compensation.type === 'percentage');
     setPersistedSplitPercent(String(compensation.percentage));
