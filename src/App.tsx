@@ -37,6 +37,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { Switch } from '@/components/ui/switch';
 import { parseOfferText } from '@/utils/parseOfferText';
 import { calculateCompensation, defaultCompensationProfile, type CompensationType } from '@/types/compensation';
+import { reconcileOfferSources, type UnifiedOffer } from '@/utils/reconcileOfferSources';
+import { OfferReview } from '@/components/OfferReview';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -298,6 +300,10 @@ function MainApp() {
 
   const [showAutoFillBadge, setShowAutoFillBadge] = useState(false);
   const [offerText, setOfferText] = useState("");
+  const [pastedOfferData, setPastedOfferData] = useState<Partial<LoadFormInput> | null>(null);
+  const [ocrOfferData, setOcrOfferData] = useState<Partial<LoadFormInput> | null>(null);
+  const [ocrOfferSources, setOcrOfferSources] = useState<Record<string, number[]>>({});
+  const [offerReview, setOfferReview] = useState<UnifiedOffer | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -396,33 +402,51 @@ function MainApp() {
     });
   };
 
+  const buildOfferReview = (pasteData: Partial<LoadFormInput> | null, imageData: Partial<LoadFormInput> | null, imageSources: Record<string, number[]> = {}) => {
+    const sources: Array<{ label: string; data: Record<string, string | undefined> }> = [];
+    if (pasteData) sources.push({ label: "Pasted text", data: pasteData });
+    if (imageData) {
+      const fields = ["origin", "destination", "miles", "deadheadMiles", "rate", "fsc", "tolls"] as const;
+      for (const field of fields) {
+        const value = imageData[field];
+        if (!value) continue;
+        const nums = imageSources[field] || [];
+        sources.push({ label: nums.length ? nums.map((n) => `Image ${n}`).join(" + ") : "Uploaded image", data: { [field]: value } });
+      }
+    }
+    setOfferReview(reconcileOfferSources(sources as Parameters<typeof reconcileOfferSources>[0]));
+  };
+
   const applyPastedOffer = () => {
     const parsed = parseOfferText(offerText);
-    const extracted = Object.entries(parsed).filter(([, value]) => Boolean(value));
-    if (extracted.length <= 1) {
-      toast({
-        title: "Couldn’t confidently read that offer",
-        description: "Try including pickup, delivery, loaded miles and rate. You can still enter the fields manually.",
-      });
-      return;
-    }
-
-    setForm((prev) => ({
-      ...prev,
+    const data: Partial<LoadFormInput> = {
       ...(parsed.origin ? { origin: parsed.origin } : {}),
       ...(parsed.destination ? { destination: parsed.destination } : {}),
       ...(parsed.miles ? { miles: parsed.miles } : {}),
       ...(parsed.deadheadMiles ? { deadheadMiles: parsed.deadheadMiles } : {}),
       ...(parsed.rate ? { rate: parsed.rate } : {}),
       ...(parsed.fsc ? { fsc: parsed.fsc } : {}),
-      ...(parsed.notes ? { notes: parsed.notes } : {}),
-    }));
+    };
+    if (Object.keys(data).length < 2) {
+      toast({ title: "Couldn’t confidently read that offer", description: "Try including pickup, delivery, loaded miles and rate." });
+      return;
+    }
+    setPastedOfferData(data);
+    buildOfferReview(data, ocrOfferData, ocrOfferSources);
+  };
+
+  const handleOcrExtract = (data: Partial<LoadFormInput>, sources: Record<string, number[]>) => {
+    setOcrOfferData(data);
+    setOcrOfferSources(sources);
+    buildOfferReview(pastedOfferData, data, sources);
+  };
+
+  const applyReviewedOffer = (data: Partial<LoadFormInput>) => {
+    setForm((prev) => ({ ...prev, ...data, ...(offerText.trim() ? { notes: offerText.trim() } : {}) }));
+    setOfferReview(null);
     setShowAutoFillBadge(true);
     setTimeout(() => setShowAutoFillBadge(false), 5000);
-    toast({
-      title: "Offer parsed",
-      description: "Review the auto-filled fields before making a decision.",
-    });
+    toast({ title: "Offer applied", description: "Verified fields are ready for calculation." });
   };
 
   const handleLogDecision = () => {
@@ -843,7 +867,7 @@ function MainApp() {
                     'Sign in to use OCR auto-fill.'}
                     </p>
                     <div className="mt-4">
-                      <OCRDropzone onParse={applyOcr} disabled={!user} />
+                      <OCRDropzone onParse={applyOcr} onExtract={handleOcrExtract} disabled={!user} />
                     </div>
                     {!user &&
                   <Link
@@ -855,6 +879,14 @@ function MainApp() {
                   }
                   </div>
                 }
+
+                {offerReview && (
+                  <OfferReview
+                    offer={offerReview}
+                    onApply={applyReviewedOffer}
+                    onCancel={() => setOfferReview(null)}
+                  />
+                )}
 
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
