@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Copy, Plus, Save, UserRound, X } from 'lucide-react';
 import { newDriverProfile, useDriverProfileStore } from '@/store/useDriverProfileStore';
-import type { OperationMode } from '@/types/driverProfile';
+import type { CompensationTargets, OperationMode } from '@/types/driverProfile';
 import type { Equipment } from '@/types/mvp';
 
 const equipmentOptions: Array<{ value: Equipment; label: string }> = [
@@ -17,20 +17,20 @@ export function DriverProfileManager() {
   const updateProfile = useDriverProfileStore((state) => state.updateProfile);
   const setActiveProfile = useDriverProfileStore((state) => state.setActiveProfile);
   const [newName, setNewName] = useState('');
-  const [draft, setDraft] = useState<{ name: string; carrier: string; operationMode: OperationMode; equipment: Equipment } | null>(null);
+  const [draft, setDraft] = useState<{ name: string; carrier: string; operationMode: OperationMode; equipment: Equipment; compensationTargets: CompensationTargets } | null>(null);
 
   const active = profiles.find((profile) => profile.id === activeProfileId) ?? null;
 
   useEffect(() => {
-    setDraft(active ? { name: active.name, carrier: active.carrier || '', operationMode: active.operationMode, equipment: active.equipment } : null);
-  }, [activeProfileId, active?.name, active?.carrier, active?.operationMode, active?.equipment]);
+    setDraft(active ? { name: active.name, carrier: active.carrier || '', operationMode: active.operationMode, equipment: active.equipment, compensationTargets: active.compensationTargets || { targetLoadedMileRate: 0, minimumLoadedMileRate: 0, targetDeadheadRate: 0, minimumDeadheadRate: 0, targetFlatPay: 0, minimumFlatPay: 0, targetPercentage: 0, minimumPercentage: 0 } } : null);
+  }, [activeProfileId, active?.name, active?.carrier, active?.operationMode, active?.equipment, active?.compensationTargets]);
 
   const saveDraft = () => { if (active && draft) updateProfile(active.id, { ...draft, name: draft.name.trim() || active.name }); };
-  const resetDraft = () => { if (active) setDraft({ name: active.name, carrier: active.carrier || '', operationMode: active.operationMode, equipment: active.equipment }); };
+  const resetDraft = () => { if (active) setDraft({ name: active.name, carrier: active.carrier || '', operationMode: active.operationMode, equipment: active.equipment, compensationTargets: active.compensationTargets || { targetLoadedMileRate: 0, minimumLoadedMileRate: 0, targetDeadheadRate: 0, minimumDeadheadRate: 0, targetFlatPay: 0, minimumFlatPay: 0, targetPercentage: 0, minimumPercentage: 0 } }); };
   const duplicateActive = () => {
     if (!active) return;
     const fresh = newDriverProfile(active.name + ' copy');
-    addProfile({ ...active, id: fresh.id, name: fresh.name, compensation: { ...active.compensation }, costs: { ...active.costs } });
+    addProfile({ ...active, id: fresh.id, name: fresh.name, compensation: { ...active.compensation }, compensationTargets: { ...(active.compensationTargets || { targetLoadedMileRate: 0, minimumLoadedMileRate: 0, targetDeadheadRate: 0, minimumDeadheadRate: 0, targetFlatPay: 0, minimumFlatPay: 0, targetPercentage: 0, minimumPercentage: 0 }) }, costs: { ...active.costs } });
     setActiveProfile(fresh.id);
   };
 
@@ -89,6 +89,27 @@ export function DriverProfileManager() {
           <div className="grid grid-cols-2 gap-3">
             <div><label className="text-xs font-medium text-muted-foreground">Operation</label><select value={draft.operationMode} onChange={(e) => setDraft({ ...draft, operationMode: e.target.value as OperationMode })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="solo">Solo</option><option value="team">Team</option></select></div>
             <div><label className="text-xs font-medium text-muted-foreground">Equipment</label><select value={draft.equipment} onChange={(e) => setDraft({ ...draft, equipment: e.target.value as Equipment })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">{equipmentOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
+          </div>
+          <div className="rounded-lg border border-border p-3">
+            <p className="text-xs font-semibold">Your compensation targets</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Optional. When set, LoadMaster uses these instead of a generic percentage bump.</p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {([
+                ['targetLoadedMileRate', 'Target loaded $/mi'],
+                ['minimumLoadedMileRate', 'Minimum loaded $/mi'],
+                ['targetDeadheadRate', 'Target deadhead $/mi'],
+                ['minimumDeadheadRate', 'Minimum deadhead $/mi'],
+                ['targetFlatPay', 'Target flat pay'],
+                ['minimumFlatPay', 'Minimum flat pay'],
+                ['targetPercentage', 'Target percentage'],
+                ['minimumPercentage', 'Minimum percentage'],
+              ] as const).map(([key, label]) => (
+                <div key={key}>
+                  <label className="text-[11px] font-medium text-muted-foreground">{label}</label>
+                  <input type="number" min="0" step="0.01" value={draft.compensationTargets[key] || ''} onChange={(e) => setDraft({ ...draft, compensationTargets: { ...draft.compensationTargets, [key]: Number(e.target.value || 0) } })} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={saveDraft} className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"><Save className="h-3.5 w-3.5" /> Save profile</button>

@@ -341,8 +341,9 @@ function MainApp() {
       deadheadMiles,
       rate,
       driverNegotiation.negotiable ? driverNegotiation.target : rate,
+      activeDriverProfile?.compensationTargets,
     ),
-    [activeCompensationProfile, miles, deadheadMiles, rate, driverNegotiation],
+    [activeCompensationProfile, miles, deadheadMiles, rate, driverNegotiation, activeDriverProfile?.compensationTargets],
   );
 
   // Negotiation engine (only when feature enabled)
