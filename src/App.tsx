@@ -42,6 +42,7 @@ import { OfferReview } from '@/components/OfferReview';
 import { DriverProfileManager } from '@/components/DriverProfileManager';
 import { useDriverProfileStore } from '@/store/useDriverProfileStore';
 import { applyProfileToOffer } from '@/utils/applyDriverProfile';
+import { calculateDriverDecisionEconomics } from '@/utils/driverDecisionEconomics';
 
 const numberOrZero = (value: string) => {
   const parsed = parseFloat(value.replace(/[^\d.-]/g, ""));
@@ -291,6 +292,22 @@ function MainApp() {
     compensationType, splitPercent, perLoadedMile, perDeadheadMile, flatPay,
     deadheadFlatPay, deadheadFsc, includeFscInSplit, rate, includeFsc, rawFsc, miles, deadheadMiles,
   ]);
+
+  const driverExpenses = compensationType === 'truck'
+    ? 0
+    : (includeFuel ? detailedCalculation.breakdown.fuelCost : 0) +
+      (includeTolls ? detailedCalculation.breakdown.tollsCost : 0);
+  const decisionEconomics = useMemo(
+    () => calculateDriverDecisionEconomics(
+      compensationType,
+      compensation,
+      profit,
+      miles,
+      deadheadMiles,
+      driverExpenses,
+    ),
+    [compensationType, compensation, profit, miles, deadheadMiles, driverExpenses],
+  );
 
   // Negotiation engine (only when feature enabled)
   const negotiation = features.advancedNegotiation
@@ -1235,11 +1252,14 @@ function MainApp() {
                 />
 
                 <DecisionCard
-                  netRpm={trueRpm}
-                  profit={profit}
+                  netRpm={decisionEconomics.effectiveRpm}
+                  profit={decisionEconomics.net}
                   thresholds={costProfile}
                   offeredRate={rate}
                   deadheadMiles={deadheadMiles}
+                  truckGross={gross}
+                  driverPay={compensation.pay}
+                  economicsLabel={decisionEconomics.basis === 'driver' ? 'Your effective pay / all-in mile' : 'True RPM'}
                   negotiation={negotiation.calculation}
                   onOpenNegotiation={
                     features.advancedNegotiation && canLog
